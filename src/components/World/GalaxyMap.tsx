@@ -946,7 +946,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
-        const repelForce = 15; // For��a da repulsão
+        const repelForce = 15; // For����a da repulsão
 
         // Para o movimento atual imediatamente
         setVelocity({ x: 0, y: 0 });
@@ -1900,13 +1900,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const touchX = touch.clientX - rect.left - dragOffset.x;
         const touchY = touch.clientY - rect.top - dragOffset.y;
 
-        // Direct map coordinates - no conversion needed
-        const currentMapX = mapX.get();
-        const currentMapY = mapY.get();
-
-        // Calculate the map coordinates where the touch is pointing
-        const newX = currentMapX + (touchX - rect.width / 2);
-        const newY = currentMapY + (touchY - rect.height / 2);
+        // Simple percentage system - no barriers
+        const newX = (touchX / rect.width) * 100;
+        const newY = (touchY / rect.height) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2438,15 +2434,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-
-    // Calculate point position in screen coordinates using new system
-    const pointScreenX = rect.width / 2 + (point.x - mapX.get()) / 10;
-    const pointScreenY = rect.height / 2 + (point.y - mapY.get()) / 10;
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
 
     setDraggingPoint(point.id);
     setDragOffset({
-      x: mouseX - pointScreenX,
-      y: mouseY - pointScreenY,
+      x: mouseX - pointX,
+      y: mouseY - pointY,
     });
   };
 
@@ -2464,15 +2458,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const touchX = touch.clientX - rect.left;
     const touchY = touch.clientY - rect.top;
-
-    // Calculate point position in screen coordinates using new system
-    const pointScreenX = rect.width / 2 + (point.x - mapX.get()) / 10;
-    const pointScreenY = rect.height / 2 + (point.y - mapY.get()) / 10;
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
 
     setDraggingPoint(point.id);
     setDragOffset({
-      x: touchX - pointScreenX,
-      y: touchY - pointScreenY,
+      x: touchX - pointX,
+      y: touchY - pointY,
     });
   };
 
@@ -2803,8 +2795,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   : "cursor-pointer"
               } ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`}
               style={{
-                left: `${50 + (point.x - mapX.get()) / 10}px`,
-                top: `${50 + (point.y - mapY.get()) / 10}px`,
+                left: `${point.x}%`,
+                top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
               onClick={() => handlePointClick(point)}
