@@ -2493,7 +2493,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Allow small margin to prevent complete cutoff but keep most freedom
     const marginX = 2; // 2% margin on each side
-    const marginY = (imageSize / 2 / rect.height) * 100;
+    const marginY = 2; // 2% margin on each side
 
     const newX = Math.max(
       marginX,
