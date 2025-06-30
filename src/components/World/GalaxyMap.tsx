@@ -1285,7 +1285,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return Math.sqrt(minDx * minDx + minDy * minDy);
   };
 
-  // Salva posição - simples
+  // Salva posi��ão - simples
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isDragging && !isAutoPilot) {
@@ -2881,6 +2881,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     <div className="text-yellow-400 text-xs mt-1">
                       <div>�� Arraste para mover</div>
                       <div>🔧 Ctrl+Arraste para redimensionar</div>
+                      <div>🔄 Alt+Arraste para rotacionar</div>
                     </div>
                   )}
 
