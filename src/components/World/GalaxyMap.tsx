@@ -2872,6 +2872,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                       Escala: {point.scale.toFixed(1)}x
                     </div>
                   )}
+                  {point.rotation && point.rotation !== 0 && (
+                    <div className="text-purple-300 text-xs">
+                      Rotação: {point.rotation.toFixed(0)}°
+                    </div>
+                  )}
                   {isAdmin && (
                     <div className="text-yellow-400 text-xs mt-1">
                       <div>�� Arraste para mover</div>
