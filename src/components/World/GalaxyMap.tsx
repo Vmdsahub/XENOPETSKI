@@ -45,9 +45,10 @@ const galaxyWorldToPoint = (world: GalaxyWorld): Point => ({
   image: world.imageUrl,
   type: "world",
   scale: world.scale,
+  rotation: world.rotation || 0,
 });
 
-// 7 pontos distribuídos em c����rculo ao redor do centro
+// 7 pontos distribuídos em c��rculo ao redor do centro
 const createDefaultPoints = (): Point[] => {
   const centerX = 50;
   const centerY = 50;
