@@ -272,10 +272,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     velocityX: 0, // velocidade atual em X
     velocityY: 0, // velocidade atual em Y
     rotation: 0,
-    baseSpeed: 0.2, // velocidade 4x mais rápida
-    maxSpeed: 0.4, // velocidade máxima 4x mais rápida
+    baseSpeed: 0.15, // velocidade reduzida para movimento mais suave
+    maxSpeed: 0.3, // velocidade máxima reduzida
     direction: Math.random() * Math.PI * 2, // direção atual em radianos
-    targetDirection: Math.random() * Math.PI * 2, // direção alvo
+    targetDirection: Math.random() * Math.PI * 2, // dire��ão alvo
     directionChangeTimer: 0,
     nextDirectionChange: 300 + Math.random() * 600, // 5-15 segundos para próxima mudança
     isMoving: true,
@@ -286,6 +286,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     nearestWorldDistance: 100,
     hasRecentlyPaused: false,
     pauseCooldown: 0,
+    // Sistema de comportamento inteligente
+    behavior: "free", // "free", "approaching", "orbiting", "leaving"
+    behaviorTimer: 0,
+    nextBehaviorChange: 1800 + Math.random() * 1200, // 30-50 segundos
+    targetPlanet: null,
+    orbitRadius: 15,
+    orbitAngle: 0,
+    orbitSpeed: 0.02,
+    approachDistance: 18,
   });
 
   const mapRef = useRef<HTMLDivElement>(null);
