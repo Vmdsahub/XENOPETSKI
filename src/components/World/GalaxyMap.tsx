@@ -78,7 +78,7 @@ const createDefaultPoints = (): Point[] => {
         "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F02782c34d2cd4353a884ab021ce35173?format=webp&width=1600",
     },
     {
-      label: "Dimensão Alienígena",
+      label: "Dimens��o Alienígena",
       type: "alien",
       image:
         "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Facb3e8e8eb33422a88b01594f5d1c470?format=webp&width=1600",
@@ -1344,6 +1344,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isAutoPilot) {
       setIsAutoPilot(false);
+      return;
+    }
+
+    // Sair do modo de redimensionamento ao clicar no canvas
+    if (resizingPoint !== null) {
+      setResizingPoint(null);
+      setResizeStartScale(1);
+      setResizeStartY(0);
       return;
     }
 
