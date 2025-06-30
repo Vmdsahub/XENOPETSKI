@@ -240,8 +240,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [rotateStartAngle, setRotateStartAngle] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Ref para acessar estado atual nos event listeners
+  // Refs para acessar estados atuais nos event listeners
   const resizingPointRef = useRef<number | null>(null);
+  const rotatingPointRef = useRef<number | null>(null);
   const [isColliding, setIsColliding] = useState(false);
   const [collisionNotification, setCollisionNotification] = useState<{
     show: boolean;
