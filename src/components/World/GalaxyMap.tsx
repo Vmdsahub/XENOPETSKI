@@ -280,7 +280,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Motion values para posi����o do mapa (movimento inverso da nave)
+  // Motion values para posi��ão do mapa (movimento inverso da nave)
   const getInitialMapPosition = () => {
     const saved = localStorage.getItem("xenopets-player-data");
     const data = saved
@@ -892,6 +892,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [shipRotation]);
 
+  // Sincronizar refs com estados
+  useEffect(() => {
+    resizingPointRef.current = resizingPoint;
+  }, [resizingPoint]);
+
+  useEffect(() => {
+    isCtrlPressedRef.current = isCtrlPressed;
+  }, [isCtrlPressed]);
+
   // Controle da tecla Ctrl para modo de redimensionamento
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1043,7 +1052,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
-  // Função para atualizar direç��o do auto-piloto baseada na posição do mouse
+  // Função para atualizar direção do auto-piloto baseada na posição do mouse
   const updateAutoPilotDirection = useCallback(
     (mouseX: number, mouseY: number) => {
       const canvas = canvasRef.current;
@@ -1538,7 +1547,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       WORLD_CONFIG.height,
     );
 
-    // Sistema de detecç��o de colisão
+    // Sistema de detecç���o de colisão
     const collision = checkCollisionWithBarriers(proposedX, proposedY);
     const allowMovement = !collision.isColliding;
 
@@ -2286,7 +2295,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       } else {
         // Atualiza volume do som existente com suavidade
         merchantEngineSound.setVolume(volume);
-        console.log(`��� Volume atualizado: ${volume.toFixed(3)}`);
+        console.log(`🔊 Volume atualizado: ${volume.toFixed(3)}`);
       }
     } else {
       // Para o som se existir
