@@ -2438,13 +2438,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    const pointX = (point.x / 100) * rect.width;
-    const pointY = (point.y / 100) * rect.height;
+
+    // Calculate point position in screen coordinates using new system
+    const pointScreenX = rect.width / 2 + (point.x - mapX.get()) / 10;
+    const pointScreenY = rect.height / 2 + (point.y - mapY.get()) / 10;
 
     setDraggingPoint(point.id);
     setDragOffset({
-      x: mouseX - pointX,
-      y: mouseY - pointY,
+      x: mouseX - pointScreenX,
+      y: mouseY - pointScreenY,
     });
   };
 
@@ -2462,13 +2464,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const touchX = touch.clientX - rect.left;
     const touchY = touch.clientY - rect.top;
-    const pointX = (point.x / 100) * rect.width;
-    const pointY = (point.y / 100) * rect.height;
+
+    // Calculate point position in screen coordinates using new system
+    const pointScreenX = rect.width / 2 + (point.x - mapX.get()) / 10;
+    const pointScreenY = rect.height / 2 + (point.y - mapY.get()) / 10;
 
     setDraggingPoint(point.id);
     setDragOffset({
-      x: touchX - pointX,
-      y: touchY - pointY,
+      x: touchX - pointScreenX,
+      y: touchY - pointScreenY,
     });
   };
 
