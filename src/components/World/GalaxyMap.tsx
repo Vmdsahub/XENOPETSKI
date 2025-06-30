@@ -2671,9 +2671,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               key={point.id}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
                 isAdmin
-                  ? "cursor-grab hover:cursor-grab active:cursor-grabbing"
+                  ? isCtrlPressed || resizingPoint === point.id
+                    ? "cursor-crosshair"
+                    : "cursor-grab hover:cursor-grab active:cursor-grabbing"
                   : "cursor-pointer"
-              } ${draggingPoint === point.id ? "z-50" : "z-30"}`}
+              } ${draggingPoint === point.id || resizingPoint === point.id ? "z-50" : "z-30"}`}
               style={{
                 left: `${point.x}%`,
                 top: `${point.y}%`,
