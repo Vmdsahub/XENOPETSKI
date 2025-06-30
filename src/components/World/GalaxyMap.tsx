@@ -1349,16 +1349,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Sair do modo de redimensionamento ao clicar no canvas
-    if (resizingPoint !== null) {
-      setResizingPoint(null);
-      setResizeStartScale(1);
-      setResizeStartY(0);
-      return;
-    }
-
-    // Não inicia drag do mapa se estiver arrastando um ponto
-    if (draggingPoint !== null) return;
+    // Não inicia drag do mapa se estiver arrastando um ponto ou redimensionando
+    if (draggingPoint !== null || resizingPoint !== null) return;
 
     setIsDragging(true);
     setHasMoved(false);
