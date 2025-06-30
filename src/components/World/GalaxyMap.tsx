@@ -3037,32 +3037,46 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         })}
 
         {/* Estrelas maiores e mais brilhantes */}
-        {Array.from({ length: 25 }, (_, i) => {
+        {Array.from({ length: 30 }, (_, i) => {
           const x = (i * 197.3) % 100;
           const y = (i * 89.7) % 100;
-          const size = 1.5 + (i % 2) * 0.5;
-          const opacity = 0.4 + (i % 3) * 0.2;
-          const parallaxSpeed = 0.5 + (i % 2) * 0.3;
+          const size = 2 + (i % 3) * 1; // Tamanhos maiores: 2px, 3px, 4px
+          const opacity = 0.7 + (i % 3) * 0.1; // Mais visíveis
+          const parallaxSpeed = 0.6 + (i % 2) * 0.4;
 
           return (
             <div
               key={`bright-star-${i}`}
-              className="absolute rounded-full animate-pulse"
+              className="absolute rounded-full"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
                 width: `${size}px`,
                 height: `${size}px`,
-                background: `radial-gradient(circle, ${i % 3 === 0 ? "#93c5fd" : i % 3 === 1 ? "#fbbf24" : "#ffffff"}, transparent)`,
+                background: `radial-gradient(circle, ${i % 3 === 0 ? "#60a5fa" : i % 3 === 1 ? "#fbbf24" : "#ffffff"} 0%, transparent 70%)`,
                 opacity: opacity,
                 transform: `translate(${mapX.get() * parallaxSpeed}px, ${mapY.get() * parallaxSpeed}px)`,
-                animationDelay: `${(i * 0.2) % 4}s`,
-                animationDuration: `${3 + (i % 2)}s`,
-                boxShadow: `0 0 ${size * 2}px ${i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#f59e0b" : "#ffffff"}40`,
+                boxShadow: `0 0 ${size * 3}px ${i % 3 === 0 ? "#3b82f680" : i % 3 === 1 ? "#f59e0b80" : "#ffffff80"}`,
+                animation: `pulse ${2 + (i % 3)}s ease-in-out infinite`,
+                animationDelay: `${(i * 0.3) % 2}s`,
               }}
             />
           );
         })}
+
+        {/* Algumas estrelas muito brilhantes para teste */}
+        <div
+          className="absolute top-10 left-10 w-4 h-4 bg-cyan-400 rounded-full animate-pulse"
+          style={{ boxShadow: "0 0 20px #22d3ee" }}
+        />
+        <div
+          className="absolute top-20 right-20 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"
+          style={{ boxShadow: "0 0 15px #facc15" }}
+        />
+        <div
+          className="absolute bottom-20 left-20 w-5 h-5 bg-white rounded-full animate-pulse"
+          style={{ boxShadow: "0 0 25px #ffffff" }}
+        />
       </div>
 
       {/* Modal da Nave Navegante */}
