@@ -888,6 +888,47 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [shipRotation]);
 
+  // Controle da tecla Ctrl para modo de redimensionamento
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Control" || e.ctrlKey) {
+        setIsCtrlPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Control" || !e.ctrlKey) {
+        setIsCtrlPressed(false);
+        // Sair do modo de redimensionamento quando Ctrl for solto
+        if (resizingPoint !== null) {
+          setResizingPoint(null);
+          setResizeStartScale(1);
+          setResizeStartY(0);
+        }
+      }
+    };
+
+    // Também detecta quando a janela perde foco (Alt+Tab, etc)
+    const handleWindowBlur = () => {
+      setIsCtrlPressed(false);
+      if (resizingPoint !== null) {
+        setResizingPoint(null);
+        setResizeStartScale(1);
+        setResizeStartY(0);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, [resizingPoint]);
+
   // Função para repelir o jogador
   const repelPlayer = useCallback(
     (collisionX: number, collisionY: number) => {
