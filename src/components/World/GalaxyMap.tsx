@@ -693,8 +693,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           const starHash = hash(gx + 137, gy + 241, 5);
           const starHash2 = hash(gx + 173, gy + 197, 6);
 
-          const localX = starHash * 150;
-          const localY = starHash2 * 150;
+          const localX = starHash * 120;
+          const localY = starHash2 * 120;
 
           const worldX = gx + localX;
           const worldY = gy + localY;
