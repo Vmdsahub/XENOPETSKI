@@ -101,15 +101,15 @@ const createDefaultPoints = (): Point[] => {
 
   const points: Point[] = [];
 
-  // Todas as ilhas agrupadas bem próximas no centro da tela
+  // Posições bem espaçadas para garantir que todas as 7 ilhas sejam visíveis
   const positions = [
-    { x: 45, y: 40 }, // Gaia Selvagem
-    { x: 55, y: 40 }, // Mundo Gelado
-    { x: 60, y: 50 }, // Reino Desértico
-    { x: 50, y: 60 }, // Aldeia Pacífica
-    { x: 40, y: 50 }, // Dimensão Alienígena
-    { x: 45, y: 55 }, // Estação Mineradora
-    { x: 55, y: 45 }, // Estação Orbital
+    { x: 30, y: 30 }, // Gaia Selvagem
+    { x: 50, y: 25 }, // Mundo Gelado
+    { x: 70, y: 30 }, // Reino Desértico
+    { x: 25, y: 50 }, // Aldeia Pacífica
+    { x: 75, y: 50 }, // Dimensão Alienígena
+    { x: 35, y: 70 }, // Estação Mineradora
+    { x: 65, y: 70 }, // Estação Orbital
   ];
 
   for (let i = 0; i < 7; i++) {
