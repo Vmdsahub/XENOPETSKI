@@ -101,15 +101,22 @@ const createDefaultPoints = (): Point[] => {
 
   const points: Point[] = [];
 
-  for (let i = 0; i < 7; i++) {
-    const angle = (i * 2 * Math.PI) / 7;
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius;
+  // Posições específicas para que todos fiquem visíveis e bem distribuídos
+  const positions = [
+    { x: 20, y: 20 }, // Gaia Selvagem - canto superior esquerdo
+    { x: 50, y: 15 }, // Mundo Gelado - centro superior
+    { x: 80, y: 20 }, // Reino Desértico - canto superior direito
+    { x: 15, y: 50 }, // Aldeia Pacífica - centro esquerda
+    { x: 85, y: 50 }, // Dimensão Alienígena - centro direita
+    { x: 25, y: 80 }, // Estação Mineradora - canto inferior esquerdo
+    { x: 75, y: 80 }, // Estação Orbital - canto inferior direito
+  ];
 
+  for (let i = 0; i < 7; i++) {
     points.push({
       id: i + 1,
-      x: Math.max(10, Math.min(90, x)),
-      y: Math.max(10, Math.min(90, y)),
+      x: positions[i].x,
+      y: positions[i].y,
       label: pointData[i].label,
       type: pointData[i].type,
       image: pointData[i].image,
@@ -1555,7 +1562,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       setShipPosition({ x: newX, y: newY });
     }
 
-    // Só atualiza mapa visual se movimento é permitido
+    // S�� atualiza mapa visual se movimento é permitido
     if (allowMovement) {
       // Atualiza mapa visual com wrap
       let newMapX = mapX.get() + deltaX;
