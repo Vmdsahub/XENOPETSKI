@@ -1685,11 +1685,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        // Account for image size (192px = w-48) to prevent overflow
-        // Calculate minimum margin needed (half of image size)
-        const imageSize = 192; // 48 * 4 = 192px
-        const marginX = (imageSize / 2 / rect.width) * 100;
-        const marginY = (imageSize / 2 / rect.height) * 100;
+        // Allow small margin to prevent complete cutoff but keep most freedom
+        const marginX = 2; // 2% margin on each side
+        const marginY = 2; // 2% margin on each side
 
         const newX = Math.max(
           marginX,
@@ -2493,10 +2491,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    // Account for image size (192px = w-48) to prevent overflow
-    // Calculate minimum margin needed (half of image size)
-    const imageSize = 192; // 48 * 4 = 192px
-    const marginX = (imageSize / 2 / rect.width) * 100;
+    // Allow small margin to prevent complete cutoff but keep most freedom
+    const marginX = 2; // 2% margin on each side
     const marginY = (imageSize / 2 / rect.height) * 100;
 
     const newX = Math.max(
