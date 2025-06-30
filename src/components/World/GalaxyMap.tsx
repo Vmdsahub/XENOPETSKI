@@ -2017,7 +2017,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
     };
 
-    if (isDragging || draggingPoint !== null) {
+    if (isDragging || draggingPoint !== null || rotatingPoint !== null) {
       document.addEventListener("mousemove", handleGlobalMouseMove);
       document.addEventListener("mouseup", handleGlobalMouseUp);
       document.addEventListener("touchmove", handleGlobalTouchMove, {
