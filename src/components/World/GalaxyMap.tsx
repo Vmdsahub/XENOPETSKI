@@ -839,7 +839,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     ctx.globalAlpha = 1;
   }, [mapX, mapY, updateShootingStars, renderShootingStars]);
 
-  // Sistema de animação otimizado para Canvas
+  // Sistema de animaç��o otimizado para Canvas
   useEffect(() => {
     const animate = () => {
       renderStarsCanvas();
@@ -3013,14 +3013,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       {/* Canvas para estrelas parallax acima do jogador */}
       <canvas
-        ref={(canvas) => {
-          if (canvas && containerRef.current) {
-            const container = containerRef.current;
-            const rect = container.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-          }
-        }}
+        ref={parallaxCanvasRef}
         className="absolute inset-0 pointer-events-none"
         style={{ zIndex: 25 }}
       />
