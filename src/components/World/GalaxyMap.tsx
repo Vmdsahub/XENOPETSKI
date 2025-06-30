@@ -1685,9 +1685,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        // No barriers - allow full positioning freedom from 0% to 100%
-        const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
-        const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
+        // Convert mouse position to map coordinates (-5000 to +5000)
+        const currentMapX = mapX.get();
+        const currentMapY = mapY.get();
+
+        // Calculate the map coordinates where the mouse is pointing
+        const mapCoordX = currentMapX + (mouseX - rect.width / 2);
+        const mapCoordY = currentMapY + (mouseY - rect.height / 2);
+
+        // Convert map coordinates back to percentage for storage (but allow full range)
+        const newX = ((mapCoordX + 5000) / 10000) * 100; // -5000 to +5000 mapped to 0% to 100%
+        const newY = ((mapCoordY + 5000) / 10000) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -1896,9 +1904,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const touchX = touch.clientX - rect.left - dragOffset.x;
         const touchY = touch.clientY - rect.top - dragOffset.y;
 
-        // No barriers - allow full positioning freedom from 0% to 100%
-        const newX = Math.max(0, Math.min(100, (touchX / rect.width) * 100));
-        const newY = Math.max(0, Math.min(100, (touchY / rect.height) * 100));
+        // Convert touch position to map coordinates (-5000 to +5000)
+        const currentMapX = mapX.get();
+        const currentMapY = mapY.get();
+
+        // Calculate the map coordinates where the touch is pointing
+        const mapCoordX = currentMapX + (touchX - rect.width / 2);
+        const mapCoordY = currentMapY + (touchY - rect.height / 2);
+
+        // Convert map coordinates back to percentage for storage (but allow full range)
+        const newX = ((mapCoordX + 5000) / 10000) * 100; // -5000 to +5000 mapped to 0% to 100%
+        const newY = ((mapCoordY + 5000) / 10000) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2473,9 +2489,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    // No barriers - allow full positioning freedom from 0% to 100%
-    const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
-    const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
+    // Convert mouse position to map coordinates (-5000 to +5000)
+    const currentMapX = mapX.get();
+    const currentMapY = mapY.get();
+
+    // Calculate the map coordinates where the mouse is pointing
+    const mapCoordX = currentMapX + (mouseX - rect.width / 2);
+    const mapCoordY = currentMapY + (mouseY - rect.height / 2);
+
+    // Convert map coordinates back to percentage for storage (but allow full range)
+    const newX = ((mapCoordX + 5000) / 10000) * 100; // -5000 to +5000 mapped to 0% to 100%
+    const newY = ((mapCoordY + 5000) / 10000) * 100;
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
