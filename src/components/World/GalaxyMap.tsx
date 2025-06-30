@@ -905,13 +905,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     rotatingPointRef.current = rotatingPoint;
   }, [rotatingPoint]);
 
-  // Tecla Esc para sair do modo de redimensionamento
+  // Tecla Esc para sair dos modos de edição
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && resizingPointRef.current !== null) {
-        setResizingPoint(null);
-        setResizeStartScale(1);
-        setResizeStartY(0);
+      if (e.key === "Escape") {
+        if (resizingPointRef.current !== null) {
+          setResizingPoint(null);
+          setResizeStartScale(1);
+          setResizeStartY(0);
+        }
+        if (rotatingPointRef.current !== null) {
+          setRotatingPoint(null);
+          setRotateStartRotation(0);
+          setRotateStartAngle(0);
+        }
       }
     };
 
