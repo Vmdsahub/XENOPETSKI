@@ -178,7 +178,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           } else {
             const defaultPoints = createDefaultPoints();
             setPoints(defaultPoints);
-            console.log("🎯 Usando pontos padrão");
+            console.log("��� Usando pontos padrão");
           }
         }
       } catch (error) {
@@ -894,10 +894,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   useEffect(() => {
     resizingPointRef.current = resizingPoint;
   }, [resizingPoint]);
-
-  useEffect(() => {
-    isCtrlPressedRef.current = isCtrlPressed;
-  }, [isCtrlPressed]);
 
   // Controle da tecla Ctrl para modo de redimensionamento
   useEffect(() => {
