@@ -895,6 +895,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         console.log("🔧 Ctrl pressionado, ativando modo redimensionar");
         setIsCtrlPressed(true);
       }
+      // Tecla Esc para sair do modo de redimensionamento
+      if (e.key === "Escape" && resizingPoint !== null) {
+        console.log("🔧 Esc pressionado, saindo do modo redimensionar");
+        setResizingPoint(null);
+        setResizeStartScale(1);
+        setResizeStartY(0);
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
