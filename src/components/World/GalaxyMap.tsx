@@ -1685,17 +1685,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        // Convert mouse position to map coordinates (-5000 to +5000)
+        // Direct map coordinates - no conversion needed
         const currentMapX = mapX.get();
         const currentMapY = mapY.get();
 
         // Calculate the map coordinates where the mouse is pointing
-        const mapCoordX = currentMapX + (mouseX - rect.width / 2);
-        const mapCoordY = currentMapY + (mouseY - rect.height / 2);
-
-        // Convert map coordinates back to percentage for storage (but allow full range)
-        const newX = ((mapCoordX + 5000) / 10000) * 100; // -5000 to +5000 mapped to 0% to 100%
-        const newY = ((mapCoordY + 5000) / 10000) * 100;
+        const newX = currentMapX + (mouseX - rect.width / 2);
+        const newY = currentMapY + (mouseY - rect.height / 2);
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2485,17 +2481,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    // Convert mouse position to map coordinates (-5000 to +5000)
+    // Direct map coordinates - no conversion needed
     const currentMapX = mapX.get();
     const currentMapY = mapY.get();
 
     // Calculate the map coordinates where the mouse is pointing
-    const mapCoordX = currentMapX + (mouseX - rect.width / 2);
-    const mapCoordY = currentMapY + (mouseY - rect.height / 2);
-
-    // Convert map coordinates back to percentage for storage (but allow full range)
-    const newX = ((mapCoordX + 5000) / 10000) * 100; // -5000 to +5000 mapped to 0% to 100%
-    const newY = ((mapCoordY + 5000) / 10000) * 100;
+    const newX = currentMapX + (mouseX - rect.width / 2);
+    const newY = currentMapY + (mouseY - rect.height / 2);
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2682,7 +2674,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             }}
             transition={{
               rotate: {
-                duration: 600, // Rotaç��o muito mais lenta - 10 minutos por volta
+                duration: 600, // Rotação muito mais lenta - 10 minutos por volta
                 repeat: Infinity,
                 ease: "linear",
               },
