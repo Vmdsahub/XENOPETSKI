@@ -275,7 +275,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     baseSpeed: 0.15, // velocidade reduzida para movimento mais suave
     maxSpeed: 0.3, // velocidade máxima reduzida
     direction: Math.random() * Math.PI * 2, // direção atual em radianos
-    targetDirection: Math.random() * Math.PI * 2, // dire��ão alvo
+    targetDirection: Math.random() * Math.PI * 2, // direção alvo
     directionChangeTimer: 0,
     nextDirectionChange: 300 + Math.random() * 600, // 5-15 segundos para próxima mudança
     isMoving: true,
@@ -559,7 +559,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const opacity = Math.min(1, (star.life / star.maxLife) * 1.2); // Mais luminosas
         const timeDelta = (currentTime - star.startTime) * 0.001;
 
-        // Animaç����o de tamanho baseada em seno
+        // Animaç�����o de tamanho baseada em seno
         const sizeVariation = 1 + Math.sin(timeDelta * 8) * 0.3; // Pulso mais intenso
         const currentSize = star.size * sizeVariation;
 
@@ -2177,34 +2177,106 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           hasRecentlyPaused = false;
         }
 
-        // Sistema de mudança suave de direção
+        // Sistema de comportamento inteligente
+        let behavior = prev.behavior;
+        let behaviorTimer = prev.behaviorTimer + 1;
+        let nextBehaviorChange = prev.nextBehaviorChange;
+        let targetPlanet = prev.targetPlanet;
+        let orbitAngle = prev.orbitAngle;
         let newDirection = prev.direction;
         let newTargetDirection = prev.targetDirection;
-        let newDirectionChangeTimer = prev.directionChangeTimer + 1;
-        let newNextDirectionChange = prev.nextDirectionChange;
+        let currentSpeed = prev.baseSpeed;
 
-        // Hora de mudar direção?
-        if (newDirectionChangeTimer >= newNextDirectionChange) {
-          newTargetDirection = Math.random() * Math.PI * 2;
-          newDirectionChangeTimer = 0;
-          newNextDirectionChange = 300 + Math.random() * 600; // 5-15 segundos
+        // Verifica se deve mudar comportamento
+        if (behaviorTimer >= nextBehaviorChange) {
+          if (behavior === "free" && points && points.length > 0) {
+            // Escolhe um planeta aleatório para orbitar
+            targetPlanet = points[Math.floor(Math.random() * points.length)];
+            behavior = "approaching";
+            behaviorTimer = 0;
+            nextBehaviorChange = 9999; // Não muda até completar a sequência
+          } else if (behavior === "orbiting") {
+            behavior = "leaving";
+            behaviorTimer = 0;
+            nextBehaviorChange = 300 + Math.random() * 300; // 5-10 segundos saindo
+          } else if (behavior === "leaving") {
+            behavior = "free";
+            targetPlanet = null;
+            behaviorTimer = 0;
+            nextBehaviorChange = 1200 + Math.random() * 1800; // 20-50 segundos livre
+          }
         }
 
-        // Interpola suavemente para a nova direção
-        let directionDiff = newTargetDirection - newDirection;
-        if (directionDiff > Math.PI) directionDiff -= Math.PI * 2;
-        if (directionDiff < -Math.PI) directionDiff += Math.PI * 2;
-        newDirection += directionDiff * 0.01; // Interpolação muito suave
+        let newVelocityX = 0;
+        let newVelocityY = 0;
 
-        // Velocidade variável baseada em ondas suaves
-        const time = Date.now() * 0.001;
-        const speedMultiplier =
-          0.7 + 0.6 * Math.sin(time * 0.5) * Math.sin(time * 0.3);
-        const currentSpeed = prev.baseSpeed * speedMultiplier;
+        if (behavior === "approaching" && targetPlanet) {
+          // Movimento direcionado para o planeta
+          const dx = targetPlanet.x - prev.x;
+          const dy = targetPlanet.y - prev.y;
+          const distanceToPlanet = Math.sqrt(dx * dx + dy * dy);
 
-        // Calcula nova velocidade baseada na direção
-        const newVelocityX = Math.cos(newDirection) * currentSpeed;
-        const newVelocityY = Math.sin(newDirection) * currentSpeed;
+          if (distanceToPlanet <= prev.approachDistance) {
+            behavior = "orbiting";
+            behaviorTimer = 0;
+            nextBehaviorChange = 1800 + Math.random() * 1200; // 30-50 segundos orbitando
+            orbitAngle = Math.atan2(dy, dx);
+          } else {
+            newDirection = Math.atan2(dy, dx);
+            currentSpeed = prev.baseSpeed * 1.5; // Mais rápido ao se aproximar
+            newVelocityX = Math.cos(newDirection) * currentSpeed;
+            newVelocityY = Math.sin(newDirection) * currentSpeed;
+          }
+        } else if (behavior === "orbiting" && targetPlanet) {
+          // Movimento orbital ao redor do planeta
+          orbitAngle += prev.orbitSpeed;
+          const orbitX =
+            targetPlanet.x + Math.cos(orbitAngle) * prev.orbitRadius;
+          const orbitY =
+            targetPlanet.y + Math.sin(orbitAngle) * prev.orbitRadius;
+
+          // Move suavemente para a posição orbital
+          const dx = orbitX - prev.x;
+          const dy = orbitY - prev.y;
+          newVelocityX = dx * 0.1;
+          newVelocityY = dy * 0.1;
+
+          // Direção tangencial à órbita
+          newDirection = orbitAngle + Math.PI / 2;
+        } else if (behavior === "leaving" && targetPlanet) {
+          // Movimento se afastando do planeta
+          const dx = prev.x - targetPlanet.x;
+          const dy = prev.y - targetPlanet.y;
+          newDirection = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.0;
+          currentSpeed = prev.baseSpeed * 1.2;
+          newVelocityX = Math.cos(newDirection) * currentSpeed;
+          newVelocityY = Math.sin(newDirection) * currentSpeed;
+        } else {
+          // Comportamento livre - movimento aleatório suave
+          let newDirectionChangeTimer = prev.directionChangeTimer + 1;
+          let newNextDirectionChange = prev.nextDirectionChange;
+
+          if (newDirectionChangeTimer >= newNextDirectionChange) {
+            newTargetDirection = Math.random() * Math.PI * 2;
+            newDirectionChangeTimer = 0;
+            newNextDirectionChange = 300 + Math.random() * 600;
+          }
+
+          // Interpola suavemente para a nova direção
+          let directionDiff = newTargetDirection - newDirection;
+          if (directionDiff > Math.PI) directionDiff -= Math.PI * 2;
+          if (directionDiff < -Math.PI) directionDiff += Math.PI * 2;
+          newDirection += directionDiff * 0.01;
+
+          // Velocidade variável
+          const time = Date.now() * 0.001;
+          const speedMultiplier =
+            0.7 + 0.6 * Math.sin(time * 0.5) * Math.sin(time * 0.3);
+          currentSpeed = prev.baseSpeed * speedMultiplier;
+
+          newVelocityX = Math.cos(newDirection) * currentSpeed;
+          newVelocityY = Math.sin(newDirection) * currentSpeed;
+        }
 
         // Aplica movimento suave com interpolação
         const newX = prev.x + newVelocityX;
