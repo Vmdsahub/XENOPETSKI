@@ -2329,7 +2329,16 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     e.stopPropagation();
 
     // Check if holding Ctrl for resize mode
+    console.log("🔧 handlePointMouseDown:", {
+      ctrlKey: e.ctrlKey,
+      isCtrlPressed,
+      pointId: point.id,
+    });
     if (e.ctrlKey || isCtrlPressed) {
+      console.log(
+        "🔧 Ativando modo de redimensionamento para ponto:",
+        point.id,
+      );
       setResizingPoint(point.id);
       setResizeStartScale(point.scale || 1);
       setResizeStartY(e.clientY);
