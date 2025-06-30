@@ -2799,8 +2799,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   : "cursor-pointer"
               } ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`}
               style={{
-                left: `${point.x}%`,
-                top: `${point.y}%`,
+                left: `${50 + (point.x - mapX.get()) / 10}px`,
+                top: `${50 + (point.y - mapY.get()) / 10}px`,
                 pointerEvents: "auto",
               }}
               onClick={() => handlePointClick(point)}
