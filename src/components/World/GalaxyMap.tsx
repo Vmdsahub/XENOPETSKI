@@ -2197,9 +2197,30 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const newVelocityX = Math.cos(newDirection) * currentSpeed;
         const newVelocityY = Math.sin(newDirection) * currentSpeed;
 
-        // Aplica movimento suave com interpolação - NAVEGAÇÃO LIVRE
-        const finalX = prev.x + newVelocityX;
-        const finalY = prev.y + newVelocityY;
+        // Aplica movimento suave com interpolação
+        const newX = prev.x + newVelocityX;
+        const newY = prev.y + newVelocityY;
+
+        // Mantém nave dentro da barreira tracejada (35% do centro)
+        const barrierLimit = 32; // Ligeiramente menor que 35% para ficar bem dentro da barreira
+        const distanceFromCenter = Math.sqrt(
+          (newX - 50) * (newX - 50) + (newY - 50) * (newY - 50),
+        );
+
+        let finalX = newX;
+        let finalY = newY;
+        let bounceDirection = newDirection;
+
+        // Se chegar perto da barreira, muda direção suavemente
+        if (distanceFromCenter > barrierLimit) {
+          // Calcula direção de volta para o centro com variação aleatória
+          const angleToCenter = Math.atan2(50 - newY, 50 - newX);
+          bounceDirection = angleToCenter + (Math.random() - 0.5) * 1.0;
+
+          // Mantém na posição atual para evitar teleporte
+          finalX = prev.x;
+          finalY = prev.y;
+        }
 
         // Calcula rotação baseada na direção do movimento
         const newRotation = (newDirection * 180) / Math.PI + 90;
@@ -2210,7 +2231,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           y: finalY,
           velocityX: newVelocityX,
           velocityY: newVelocityY,
-          direction: newDirection,
+          direction:
+            distanceFromCenter > barrierLimit ? bounceDirection : newDirection,
           targetDirection: newTargetDirection,
           directionChangeTimer: newDirectionChangeTimer,
           nextDirectionChange: newNextDirectionChange,
@@ -2581,7 +2603,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         />
       </div>
 
-      {/* ��rea de drag fixa - sempre cobre toda a tela */}
+      {/* Área de drag fixa - sempre cobre toda a tela */}
       <div
         className={`absolute inset-0 z-5 ${
           draggingPoint !== null
@@ -2630,7 +2652,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             zIndex: 5,
           }}
         >
-          {/* Animação de rota����o continua */}
+          {/* Animação de rotaç��o continua */}
           <motion.div
             className="w-full h-full rounded-full border-2 border-dashed"
             style={{
