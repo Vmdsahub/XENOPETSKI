@@ -1656,8 +1656,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const point = points.find((p) => p.id === rotatingPoint);
         if (!point) return;
 
-        const centerX = (point.x / 100) * rect.width;
-        const centerY = (point.y / 100) * rect.height;
+        const centerX = rect.width / 2 + (point.x - mapX.get()) / 10;
+        const centerY = rect.height / 2 + (point.y - mapY.get()) / 10;
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
@@ -1871,8 +1871,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const point = points.find((p) => p.id === rotatingPoint);
         if (!point) return;
 
-        const centerX = (point.x / 100) * rect.width;
-        const centerY = (point.y / 100) * rect.height;
+        const centerX = rect.width / 2 + (point.x - mapX.get()) / 10;
+        const centerY = rect.height / 2 + (point.y - mapY.get()) / 10;
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
 
@@ -2419,8 +2419,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      const centerX = (point.x / 100) * rect.width;
-      const centerY = (point.y / 100) * rect.height;
+      const centerX = rect.width / 2 + (point.x - mapX.get()) / 10;
+      const centerY = rect.height / 2 + (point.y - mapY.get()) / 10;
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
