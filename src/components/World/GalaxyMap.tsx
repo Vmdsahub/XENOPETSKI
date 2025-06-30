@@ -326,6 +326,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   // Canvas ref para estrelas
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const parallaxCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
 
   // Refs para auto-piloto
@@ -899,7 +900,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
-      // Interpola��ão suave fixa
+      // Interpolação suave fixa
       const newAngle = currentAngle + diff * 0.15;
 
       shipRotation.set(newAngle);
