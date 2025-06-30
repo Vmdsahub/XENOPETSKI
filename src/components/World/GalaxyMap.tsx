@@ -908,7 +908,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         setIsCtrlPressed(true);
       }
       // Tecla Esc para sair do modo de redimensionamento
-      if (e.key === "Escape" && resizingPoint !== null) {
+      if (e.key === "Escape" && resizingPointRef.current !== null) {
         setResizingPoint(null);
         setResizeStartScale(1);
         setResizeStartY(0);
@@ -919,7 +919,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       if (e.key === "Control" || !e.ctrlKey) {
         setIsCtrlPressed(false);
         // Sair do modo de redimensionamento quando Ctrl for solto
-        if (resizingPoint !== null) {
+        if (resizingPointRef.current !== null) {
           setResizingPoint(null);
           setResizeStartScale(1);
           setResizeStartY(0);
@@ -930,7 +930,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     // Também detecta quando a janela perde foco (Alt+Tab, etc)
     const handleWindowBlur = () => {
       setIsCtrlPressed(false);
-      if (resizingPoint !== null) {
+      if (resizingPointRef.current !== null) {
         setResizingPoint(null);
         setResizeStartScale(1);
         setResizeStartY(0);
@@ -1547,7 +1547,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       WORLD_CONFIG.height,
     );
 
-    // Sistema de detecç���o de colisão
+    // Sistema de detecç��o de colisão
     const collision = checkCollisionWithBarriers(proposedX, proposedY);
     const allowMovement = !collision.isColliding;
 
