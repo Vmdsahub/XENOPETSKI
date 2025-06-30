@@ -967,14 +967,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   // Atualiza canvas size quando container muda
   useEffect(() => {
     const canvas = canvasRef.current;
+    const parallaxCanvas = parallaxCanvasRef.current;
     const container = containerRef.current;
 
-    if (!canvas || !container) return;
+    if (!canvas || !parallaxCanvas || !container) return;
 
     const updateCanvasSize = () => {
       const rect = container.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
+      parallaxCanvas.width = rect.width;
+      parallaxCanvas.height = rect.height;
     };
 
     updateCanvasSize();
