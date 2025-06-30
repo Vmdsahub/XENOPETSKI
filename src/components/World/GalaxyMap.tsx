@@ -235,6 +235,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [resizingPoint, setResizingPoint] = useState<number | null>(null);
   const [resizeStartScale, setResizeStartScale] = useState<number>(1);
   const [resizeStartY, setResizeStartY] = useState<number>(0);
+  const [rotatingPoint, setRotatingPoint] = useState<number | null>(null);
+  const [rotateStartRotation, setRotateStartRotation] = useState<number>(0);
+  const [rotateStartAngle, setRotateStartAngle] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
 
   // Ref para acessar estado atual nos event listeners
