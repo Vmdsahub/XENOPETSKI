@@ -829,6 +829,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     generateLayer(8, 0.08, 1); // Background
     generateLayer(4, 0.25, 2); // Middle
     generateLayer(2, 0.5, 3); // Foreground
+    generateLayer(3, 0.8, 4); // Parallax - camada acima do jogador
 
     // Atualiza e renderiza estrelas cadentes
     updateShootingStars(Date.now());
