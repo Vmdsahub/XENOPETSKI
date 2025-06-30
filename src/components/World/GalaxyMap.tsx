@@ -2355,7 +2355,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       isCtrlPressed,
       pointId: point.id,
     });
-    if (e.ctrlKey || isCtrlPressed) {
+    if (e.ctrlKey) {
       console.log(
         "🔧 Ativando modo de redimensionamento para ponto:",
         point.id,
