@@ -1013,7 +1013,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
-  // Função para atualizar direção do auto-piloto baseada na posição do mouse
+  // Função para atualizar dire��ão do auto-piloto baseada na posição do mouse
   const updateAutoPilotDirection = useCallback(
     (mouseX: number, mouseY: number) => {
       const canvas = canvasRef.current;
@@ -2291,16 +2291,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     e.stopPropagation();
 
     // Check if holding Ctrl for resize mode
-    console.log("🔧 handlePointMouseDown:", {
-      ctrlKey: e.ctrlKey,
-      isCtrlPressed,
-      pointId: point.id,
-    });
     if (e.ctrlKey) {
-      console.log(
-        "🔧 Ativando modo de redimensionamento para ponto:",
-        point.id,
-      );
       setResizingPoint(point.id);
       setResizeStartScale(point.scale || 1);
       setResizeStartY(e.clientY);
@@ -2905,7 +2896,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                         Área de Interação
                       </p>
                       <p className="text-xs text-gray-500">
-                        Comércio • Missões ��� Informações
+                        Comércio • Missões • Informações
                       </p>
                     </div>
                   </div>
