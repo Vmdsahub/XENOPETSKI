@@ -2927,6 +2927,28 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         )}
       </AnimatePresence>
 
+      {/* Notificação do modo de redimensionamento ativo */}
+      {resizingPoint !== null && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <motion.div
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg border border-blue-400"
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">
+                🔧 Modo Redimensionar Ativo
+              </span>
+            </div>
+            <div className="text-xs text-blue-100 mt-1">
+              Solte Ctrl ou clique fora para sair
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Coordenadas simplificadas na parte inferior */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/20 text-xs font-mono font-thin whitespace-nowrap">
         X: {mapX.get().toFixed(1)} Y: {mapY.get().toFixed(1)}
