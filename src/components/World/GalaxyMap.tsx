@@ -904,11 +904,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   // Controle da tecla Ctrl para modo de redimensionamento
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      console.log(
+        "🔧 handleKeyDown:",
+        e.key,
+        "ctrlKey:",
+        e.ctrlKey,
+        "current isCtrlPressed:",
+        isCtrlPressedRef.current,
+      );
       if (e.key === "Control" || e.ctrlKey) {
+        console.log("🔧 Setting isCtrlPressed to true");
         setIsCtrlPressed(true);
       }
       // Tecla Esc para sair do modo de redimensionamento
       if (e.key === "Escape" && resizingPointRef.current !== null) {
+        console.log("🔧 Esc pressed, exiting resize mode");
         setResizingPoint(null);
         setResizeStartScale(1);
         setResizeStartY(0);
@@ -916,10 +926,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      console.log(
+        "🔧 handleKeyUp:",
+        e.key,
+        "ctrlKey:",
+        e.ctrlKey,
+        "current resizingPoint:",
+        resizingPointRef.current,
+      );
       if (e.key === "Control" || !e.ctrlKey) {
+        console.log("🔧 Setting isCtrlPressed to false");
         setIsCtrlPressed(false);
         // Sair do modo de redimensionamento quando Ctrl for solto
         if (resizingPointRef.current !== null) {
+          console.log("🔧 Ctrl released, exiting resize mode");
           setResizingPoint(null);
           setResizeStartScale(1);
           setResizeStartY(0);
