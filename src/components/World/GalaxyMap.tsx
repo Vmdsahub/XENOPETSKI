@@ -276,7 +276,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Motion values para posição do mapa (movimento inverso da nave)
+  // Motion values para posi��ão do mapa (movimento inverso da nave)
   const getInitialMapPosition = () => {
     const saved = localStorage.getItem("xenopets-player-data");
     const data = saved
@@ -2311,7 +2311,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     e.stopPropagation();
 
     // Check if holding Ctrl for resize mode
-    if (e.ctrlKey) {
+    if (e.ctrlKey || isCtrlPressed) {
       setResizingPoint(point.id);
       setResizeStartScale(point.scale || 1);
       setResizeStartY(e.clientY);
