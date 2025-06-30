@@ -1685,18 +1685,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        // Allow small margin to prevent complete cutoff but keep most freedom
-        const marginX = 2; // 2% margin on each side
-        const marginY = 2; // 2% margin on each side
-
-        const newX = Math.max(
-          marginX,
-          Math.min(100 - marginX, (mouseX / rect.width) * 100),
-        );
-        const newY = Math.max(
-          marginY,
-          Math.min(100 - marginY, (mouseY / rect.height) * 100),
-        );
+        // No barriers - allow full positioning freedom from 0% to 100%
+        const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
+        const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2491,18 +2482,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    // Allow small margin to prevent complete cutoff but keep most freedom
-    const marginX = 2; // 2% margin on each side
-    const marginY = 2; // 2% margin on each side
-
-    const newX = Math.max(
-      marginX,
-      Math.min(100 - marginX, (mouseX / rect.width) * 100),
-    );
-    const newY = Math.max(
-      marginY,
-      Math.min(100 - marginY, (mouseY / rect.height) * 100),
-    );
+    // No barriers - allow full positioning freedom from 0% to 100%
+    const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
+    const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
