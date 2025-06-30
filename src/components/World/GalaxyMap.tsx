@@ -2315,6 +2315,25 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
+    // Check if holding Alt for rotation mode
+    if (e.altKey) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const centerX = (point.x / 100) * rect.width;
+      const centerY = (point.y / 100) * rect.height;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const startAngle =
+        Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+
+      setRotatingPoint(point.id);
+      setRotateStartRotation(point.rotation || 0);
+      setRotateStartAngle(startAngle);
+      return;
+    }
+
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
 
