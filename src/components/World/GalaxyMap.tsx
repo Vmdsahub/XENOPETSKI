@@ -33,6 +33,7 @@ interface Point {
   image: string;
   type: string;
   scale?: number;
+  rotation?: number;
 }
 
 // Converter GalaxyWorld para Point
@@ -46,7 +47,7 @@ const galaxyWorldToPoint = (world: GalaxyWorld): Point => ({
   scale: world.scale,
 });
 
-// 7 pontos distribuídos em c��rculo ao redor do centro
+// 7 pontos distribuídos em c����rculo ao redor do centro
 const createDefaultPoints = (): Point[] => {
   const centerX = 50;
   const centerY = 50;
