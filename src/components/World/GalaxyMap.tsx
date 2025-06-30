@@ -2043,6 +2043,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     showCollisionNotification,
     draggingPoint,
     dragOffset,
+    rotatingPoint,
+    rotateStartRotation,
+    rotateStartAngle,
     points,
     isAdmin,
   ]);
