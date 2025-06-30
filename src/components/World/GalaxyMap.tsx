@@ -933,7 +933,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       document.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", handleWindowBlur);
     };
-  }, [resizingPoint]);
+  }, []);
 
   // Função para repelir o jogador
   const repelPlayer = useCallback(
@@ -2790,7 +2790,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   )}
                   {isAdmin && (
                     <div className="text-yellow-400 text-xs mt-1">
-                      <div>⚡ Arraste para mover</div>
+                      <div>�� Arraste para mover</div>
                       <div>🔧 Ctrl+Arraste para redimensionar</div>
                     </div>
                   )}
