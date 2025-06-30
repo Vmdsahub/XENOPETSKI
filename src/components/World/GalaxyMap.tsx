@@ -2760,7 +2760,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
           {/* Nave mercante navegante dentro da barreira */}
           <motion.div
-            className="absolute cursor-pointer z-10"
+            className="absolute cursor-pointer z-40"
             style={{
               left: `${wanderingShip.x}%`,
               top: `${wanderingShip.y}%`,
