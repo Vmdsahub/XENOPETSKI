@@ -1685,8 +1685,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
-        const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
+        // Account for image size (192px = w-48) to prevent overflow
+        // Calculate minimum margin needed (half of image size)
+        const imageSize = 192; // 48 * 4 = 192px
+        const marginX = (imageSize / 2 / rect.width) * 100;
+        const marginY = (imageSize / 2 / rect.height) * 100;
+
+        const newX = Math.max(
+          marginX,
+          Math.min(100 - marginX, (mouseX / rect.width) * 100),
+        );
+        const newY = Math.max(
+          marginY,
+          Math.min(100 - marginY, (mouseY / rect.height) * 100),
+        );
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -1895,8 +1907,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const touchX = touch.clientX - rect.left - dragOffset.x;
         const touchY = touch.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(0, Math.min(100, (touchX / rect.width) * 100));
-        const newY = Math.max(0, Math.min(100, (touchY / rect.height) * 100));
+        // Account for image size (192px = w-48) to prevent overflow
+        // Calculate minimum margin needed (half of image size)
+        const imageSize = 192; // 48 * 4 = 192px
+        const marginX = (imageSize / 2 / rect.width) * 100;
+        const marginY = (imageSize / 2 / rect.height) * 100;
+
+        const newX = Math.max(
+          marginX,
+          Math.min(100 - marginX, (touchX / rect.width) * 100),
+        );
+        const newY = Math.max(
+          marginY,
+          Math.min(100 - marginY, (touchY / rect.height) * 100),
+        );
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2471,8 +2495,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
-    const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
+    // Account for image size (192px = w-48) to prevent overflow
+    // Calculate minimum margin needed (half of image size)
+    const imageSize = 192; // 48 * 4 = 192px
+    const marginX = (imageSize / 2 / rect.width) * 100;
+    const marginY = (imageSize / 2 / rect.height) * 100;
+
+    const newX = Math.max(
+      marginX,
+      Math.min(100 - marginX, (mouseX / rect.width) * 100),
+    );
+    const newY = Math.max(
+      marginY,
+      Math.min(100 - marginY, (mouseY / rect.height) * 100),
+    );
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
