@@ -1251,7 +1251,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     showCollisionNotification,
   ]);
 
-  // Função para calcular distância toroidal correta
+  // Fun��ão para calcular distância toroidal correta
   const getToroidalDistance = (
     pos1: { x: number; y: number },
     pos2: { x: number; y: number },
@@ -2651,7 +2651,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               key={point.id}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
                 isAdmin
-                  ? isCtrlPressed || resizingPoint === point.id
+                  ? resizingPoint === point.id
                     ? "cursor-crosshair"
                     : "cursor-grab hover:cursor-grab active:cursor-grabbing"
                   : "cursor-pointer"
