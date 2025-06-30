@@ -899,7 +899,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
-      // Interpolação suave fixa
+      // Interpola��ão suave fixa
       const newAngle = currentAngle + diff * 0.15;
 
       shipRotation.set(newAngle);
@@ -3010,6 +3010,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         />
       </div>
 
+      {/* Canvas para estrelas parallax acima do jogador */}
+      <canvas
+        ref={(canvas) => {
+          if (canvas && containerRef.current) {
+            const container = containerRef.current;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+          }
+        }}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 25 }}
+      />
+
       {/* Modal da Nave Navegante */}
       <AnimatePresence>
         {showShipModal && (
@@ -3099,7 +3113,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </p>
                           <p className="text-sm text-gray-600">
                             "Precisa de alguma coisa? Tenho suprimentos frescos
-                            de todas as dimens��es!"
+                            de todas as dimensões!"
                           </p>
                         </div>
                       </div>
