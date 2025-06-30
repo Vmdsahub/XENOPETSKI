@@ -559,7 +559,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const opacity = Math.min(1, (star.life / star.maxLife) * 1.2); // Mais luminosas
         const timeDelta = (currentTime - star.startTime) * 0.001;
 
-        // Animaç�����o de tamanho baseada em seno
+        // Animaç����o de tamanho baseada em seno
         const sizeVariation = 1 + Math.sin(timeDelta * 8) * 0.3; // Pulso mais intenso
         const currentSize = star.size * sizeVariation;
 
@@ -2315,8 +2315,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           direction:
             distanceFromCenter > barrierLimit ? bounceDirection : newDirection,
           targetDirection: newTargetDirection,
-          directionChangeTimer: newDirectionChangeTimer,
-          nextDirectionChange: newNextDirectionChange,
+          directionChangeTimer: prev.directionChangeTimer + 1,
+          nextDirectionChange: prev.nextDirectionChange,
           rotation: newRotation,
           isMoving: true,
           isPaused: false,
@@ -2325,6 +2325,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           pauseCooldown,
           distanceToPlayer,
           nearestWorldDistance,
+          behavior,
+          behaviorTimer,
+          nextBehaviorChange,
+          targetPlanet,
+          orbitAngle,
         };
       });
     };
