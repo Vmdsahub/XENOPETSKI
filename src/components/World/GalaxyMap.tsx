@@ -946,7 +946,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
-        const repelForce = 15; // For����a da repulsão
+        const repelForce = 15; // For��a da repulsão
 
         // Para o movimento atual imediatamente
         setVelocity({ x: 0, y: 0 });
@@ -1685,13 +1685,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        // Direct map coordinates - no conversion needed
-        const currentMapX = mapX.get();
-        const currentMapY = mapY.get();
-
-        // Calculate the map coordinates where the mouse is pointing
-        const newX = currentMapX + (mouseX - rect.width / 2);
-        const newY = currentMapY + (mouseY - rect.height / 2);
+        // Simple percentage system - no barriers
+        const newX = (mouseX / rect.width) * 100;
+        const newY = (mouseY / rect.height) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2477,13 +2473,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    // Direct map coordinates - no conversion needed
-    const currentMapX = mapX.get();
-    const currentMapY = mapY.get();
-
-    // Calculate the map coordinates where the mouse is pointing
-    const newX = currentMapX + (mouseX - rect.width / 2);
-    const newY = currentMapY + (mouseY - rect.height / 2);
+    // Simple percentage system - no barriers
+    const newX = (mouseX / rect.width) * 100;
+    const newY = (mouseY / rect.height) * 100;
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
