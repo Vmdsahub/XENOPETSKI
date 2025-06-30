@@ -649,6 +649,112 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
+  // Renderização das estrelas parallax (acima do jogador)
+  const renderParallaxStars = useCallback(() => {
+    const canvas = parallaxCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const currentMapX = mapX.get();
+    const currentMapY = mapY.get();
+    const parallaxSpeed = 0.8; // Velocidade de parallax mais rápida
+    const cameraX = -currentMapX * parallaxSpeed;
+    const cameraY = -currentMapY * parallaxSpeed;
+
+    // Função hash para gerar posições consistentes
+    const hash = (x: number, y: number, layer: number) => {
+      let h = 1779033703 ^ layer;
+      h = Math.imul(h ^ Math.floor(x), 3432918353);
+      h = (h << 13) | (h >>> 19);
+      h = Math.imul(h ^ Math.floor(y), 461845907);
+      h = (h << 13) | (h >>> 19);
+      return (h >>> 0) / 4294967296;
+    };
+
+    // Gera estrelas de forma similar ao sistema principal
+    const margin = 200;
+    const startX = Math.floor((cameraX - margin) / 50) * 50;
+    const endX = Math.ceil((cameraX + canvas.width + margin) / 50) * 50;
+    const startY = Math.floor((cameraY - margin) / 50) * 50;
+    const endY = Math.ceil((cameraY + canvas.height + margin) / 50) * 50;
+
+    for (let gx = startX; gx < endX; gx += 50) {
+      for (let gy = startY; gy < endY; gy += 50) {
+        const cellHash = hash(gx, gy, 5); // Layer 5 para parallax
+
+        const numStars = Math.floor(cellHash * 2); // Menos estrelas para não poluir
+
+        for (let i = 0; i < numStars; i++) {
+          const starHash = hash(gx + i * 137, gy + i * 241, 5 + i);
+          const starHash2 = hash(gx + i * 173, gy + i * 197, 5 + i + 1000);
+
+          const localX = starHash * 50;
+          const localY = starHash2 * 50;
+
+          const worldX = gx + localX;
+          const worldY = gy + localY;
+
+          const screenX = worldX - cameraX;
+          const screenY = worldY - cameraY;
+
+          if (
+            screenX >= -10 &&
+            screenX <= canvas.width + 10 &&
+            screenY >= -10 &&
+            screenY <= canvas.height + 10
+          ) {
+            const sizeHash = hash(worldX * 1.1, worldY * 1.3, 5);
+            const opacityHash = hash(worldX * 1.7, worldY * 1.9, 5);
+            const colorHash = hash(worldX * 2.1, worldY * 2.3, 5);
+
+            const size = 1.2 + sizeHash * 1.5; // Estrelas um pouco maiores
+            const opacity = 0.5 + opacityHash * 0.4; // Mais visíveis
+
+            const isColorful = colorHash > 0.7;
+            const colors = ["#60a5fa", "#fbbf24", "#f472b6", "#34d399"];
+            const color = isColorful
+              ? colors[Math.floor(colorHash * colors.length)]
+              : "#ffffff";
+
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = color;
+
+            if (isColorful) {
+              const gradient = ctx.createRadialGradient(
+                screenX,
+                screenY,
+                0,
+                screenX,
+                screenY,
+                size * 3,
+              );
+              gradient.addColorStop(0, color);
+              gradient.addColorStop(0.4, color + "77");
+              gradient.addColorStop(1, color + "00");
+              ctx.fillStyle = gradient;
+
+              ctx.beginPath();
+              ctx.arc(screenX, screenY, size * 3, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = color;
+            }
+
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    ctx.globalAlpha = 1;
+  }, [mapX, mapY]);
+
   // Geração dinâmica de estrelas baseada na posição da câmera
   const renderStarsCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -839,7 +945,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     ctx.globalAlpha = 1;
   }, [mapX, mapY, updateShootingStars, renderShootingStars]);
 
-  // Sistema de animaç��o otimizado para Canvas
+  // Sistema de animação otimizado para Canvas
   useEffect(() => {
     const animate = () => {
       renderStarsCanvas();
