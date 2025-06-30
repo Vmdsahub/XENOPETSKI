@@ -535,7 +535,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const opacity = Math.min(1, (star.life / star.maxLife) * 1.2); // Mais luminosas
         const timeDelta = (currentTime - star.startTime) * 0.001;
 
-        // Animaç��o de tamanho baseada em seno
+        // Animaç����o de tamanho baseada em seno
         const sizeVariation = 1 + Math.sin(timeDelta * 8) * 0.3; // Pulso mais intenso
         const currentSize = star.size * sizeVariation;
 
@@ -892,12 +892,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Control" || e.ctrlKey) {
-        console.log("🔧 Ctrl pressionado, ativando modo redimensionar");
         setIsCtrlPressed(true);
       }
       // Tecla Esc para sair do modo de redimensionamento
       if (e.key === "Escape" && resizingPoint !== null) {
-        console.log("🔧 Esc pressionado, saindo do modo redimensionar");
         setResizingPoint(null);
         setResizeStartScale(1);
         setResizeStartY(0);
@@ -906,7 +904,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === "Control" || !e.ctrlKey) {
-        console.log("🔧 Ctrl solto, desativando modo redimensionar");
         setIsCtrlPressed(false);
         // Sair do modo de redimensionamento quando Ctrl for solto
         if (resizingPoint !== null) {
@@ -2203,7 +2200,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         0,
         Math.min(1, distance / maxDistance),
       );
-      const volume = (1 - normalizedDistance) * 0.5; // Volume máximo aumentado para 0.5
+      const volume = (1 - normalizedDistance) * 0.5; // Volume m��ximo aumentado para 0.5
 
       if (!merchantEngineSound) {
         // Cria um som de motor diferente para a nave mercante
