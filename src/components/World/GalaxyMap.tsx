@@ -1375,16 +1375,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Sair do modo de redimensionamento ao tocar no canvas
-    if (resizingPoint !== null) {
-      setResizingPoint(null);
-      setResizeStartScale(1);
-      setResizeStartY(0);
-      return;
-    }
-
-    // Não inicia drag do mapa se estiver arrastando um ponto
-    if (draggingPoint !== null) return;
+    // Não inicia drag do mapa se estiver arrastando um ponto ou redimensionando
+    if (draggingPoint !== null || resizingPoint !== null) return;
 
     const touch = e.touches[0];
     if (!touch) return;
@@ -1538,7 +1530,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       WORLD_CONFIG.height,
     );
 
-    // Sistema de detecção de colisão
+    // Sistema de detecç��o de colisão
     const collision = checkCollisionWithBarriers(proposedX, proposedY);
     const allowMovement = !collision.isColliding;
 
