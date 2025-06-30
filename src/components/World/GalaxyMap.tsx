@@ -1251,7 +1251,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     showCollisionNotification,
   ]);
 
-  // Fun��ão para calcular distância toroidal correta
+  // Função para calcular distância toroidal correta
   const getToroidalDistance = (
     pos1: { x: number; y: number },
     pos2: { x: number; y: number },
@@ -2723,7 +2723,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     }}
                     onError={(e) => {
                       console.error(
-                        `❌ Erro ao carregar imagem: ${point.label}`,
+                        `�� Erro ao carregar imagem: ${point.label}`,
                         point.image,
                       );
                     }}
@@ -2923,7 +2923,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               </span>
             </div>
             <div className="text-xs text-blue-100 mt-1">
-              Solte Ctrl ou pressione Esc para sair
+              Pressione Esc para sair
             </div>
           </motion.div>
         </div>
