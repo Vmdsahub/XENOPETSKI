@@ -892,12 +892,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Control" || e.ctrlKey) {
+        console.log("🔧 Ctrl pressionado, ativando modo redimensionar");
         setIsCtrlPressed(true);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === "Control" || !e.ctrlKey) {
+        console.log("🔧 Ctrl solto, desativando modo redimensionar");
         setIsCtrlPressed(false);
         // Sair do modo de redimensionamento quando Ctrl for solto
         if (resizingPoint !== null) {
