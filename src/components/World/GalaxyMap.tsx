@@ -943,7 +943,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repuls��o
+        // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -1685,8 +1685,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(5, Math.min(95, (mouseX / rect.width) * 100));
-        const newY = Math.max(5, Math.min(95, (mouseY / rect.height) * 100));
+        const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
+        const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -1895,8 +1895,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const touchX = touch.clientX - rect.left - dragOffset.x;
         const touchY = touch.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(5, Math.min(95, (touchX / rect.width) * 100));
-        const newY = Math.max(5, Math.min(95, (touchY / rect.height) * 100));
+        const newX = Math.max(0, Math.min(100, (touchX / rect.width) * 100));
+        const newY = Math.max(0, Math.min(100, (touchY / rect.height) * 100));
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2471,8 +2471,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    const newX = Math.max(5, Math.min(95, (mouseX / rect.width) * 100));
-    const newY = Math.max(5, Math.min(95, (mouseY / rect.height) * 100));
+    const newX = Math.max(0, Math.min(100, (mouseX / rect.width) * 100));
+    const newY = Math.max(0, Math.min(100, (mouseY / rect.height) * 100));
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
