@@ -33,6 +33,7 @@ interface Point {
   image: string;
   type: string;
   scale?: number;
+  rotation?: number;
 }
 
 // Converter GalaxyWorld para Point
@@ -44,6 +45,7 @@ const galaxyWorldToPoint = (world: GalaxyWorld): Point => ({
   image: world.imageUrl,
   type: "world",
   scale: world.scale,
+  rotation: world.rotation || 0,
 });
 
 // 7 pontos distribuídos em c��rculo ao redor do centro
@@ -78,7 +80,7 @@ const createDefaultPoints = (): Point[] => {
         "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F02782c34d2cd4353a884ab021ce35173?format=webp&width=1600",
     },
     {
-      label: "Dimensão Alienígena",
+      label: "Dimens��o Alienígena",
       type: "alien",
       image:
         "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Facb3e8e8eb33422a88b01594f5d1c470?format=webp&width=1600",
@@ -178,7 +180,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           } else {
             const defaultPoints = createDefaultPoints();
             setPoints(defaultPoints);
-            console.log("🎯 Usando pontos padrão");
+            console.log("��� Usando pontos padrão");
           }
         }
       } catch (error) {
@@ -233,7 +235,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [resizingPoint, setResizingPoint] = useState<number | null>(null);
   const [resizeStartScale, setResizeStartScale] = useState<number>(1);
   const [resizeStartY, setResizeStartY] = useState<number>(0);
+  const [rotatingPoint, setRotatingPoint] = useState<number | null>(null);
+  const [rotateStartRotation, setRotateStartRotation] = useState<number>(0);
+  const [rotateStartAngle, setRotateStartAngle] = useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Refs para acessar estados atuais nos event listeners
+  const resizingPointRef = useRef<number | null>(null);
+  const rotatingPointRef = useRef<number | null>(null);
   const [isColliding, setIsColliding] = useState(false);
   const [collisionNotification, setCollisionNotification] = useState<{
     show: boolean;
@@ -275,7 +284,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Motion values para posição do mapa (movimento inverso da nave)
+  // Motion values para posi��ão do mapa (movimento inverso da nave)
   const getInitialMapPosition = () => {
     const saved = localStorage.getItem("xenopets-player-data");
     const data = saved
@@ -534,7 +543,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const opacity = Math.min(1, (star.life / star.maxLife) * 1.2); // Mais luminosas
         const timeDelta = (currentTime - star.startTime) * 0.001;
 
-        // Animaç��o de tamanho baseada em seno
+        // Animaç����o de tamanho baseada em seno
         const sizeVariation = 1 + Math.sin(timeDelta * 8) * 0.3; // Pulso mais intenso
         const currentSize = star.size * sizeVariation;
 
@@ -887,6 +896,36 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [shipRotation]);
 
+  // Sincronizar refs com estados
+  useEffect(() => {
+    resizingPointRef.current = resizingPoint;
+  }, [resizingPoint]);
+
+  useEffect(() => {
+    rotatingPointRef.current = rotatingPoint;
+  }, [rotatingPoint]);
+
+  // Tecla Esc para sair dos modos de edição
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (resizingPointRef.current !== null) {
+          setResizingPoint(null);
+          setResizeStartScale(1);
+          setResizeStartY(0);
+        }
+        if (rotatingPointRef.current !== null) {
+          setRotatingPoint(null);
+          setRotateStartRotation(0);
+          setRotateStartAngle(0);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Função para repelir o jogador
   const repelPlayer = useCallback(
     (collisionX: number, collisionY: number) => {
@@ -904,7 +943,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repulsão
+        // Normaliza a direç���o e aplica força de repuls��o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -991,7 +1030,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
-  // Função para atualizar direção do auto-piloto baseada na posição do mouse
+  // Função para atualizar dire��ão do auto-piloto baseada na posição do mouse
   const updateAutoPilotDirection = useCallback(
     (mouseX: number, mouseY: number) => {
       const canvas = canvasRef.current;
@@ -1246,7 +1285,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return Math.sqrt(minDx * minDx + minDy * minDy);
   };
 
-  // Salva posição - simples
+  // Salva posi��ão - simples
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isDragging && !isAutoPilot) {
@@ -1305,8 +1344,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Não inicia drag do mapa se estiver arrastando um ponto
-    if (draggingPoint !== null) return;
+    // Não inicia drag do mapa se estiver arrastando um ponto, redimensionando ou rotacionando
+    if (
+      draggingPoint !== null ||
+      resizingPoint !== null ||
+      rotatingPoint !== null
+    )
+      return;
 
     setIsDragging(true);
     setHasMoved(false);
@@ -1331,8 +1375,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Não inicia drag do mapa se estiver arrastando um ponto
-    if (draggingPoint !== null) return;
+    // Não inicia drag do mapa se estiver arrastando um ponto, redimensionando ou rotacionando
+    if (
+      draggingPoint !== null ||
+      resizingPoint !== null ||
+      rotatingPoint !== null
+    )
+      return;
 
     const touch = e.touches[0];
     if (!touch) return;
@@ -1486,7 +1535,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       WORLD_CONFIG.height,
     );
 
-    // Sistema de detecção de colisão
+    // Sistema de detecç��o de colisão
     const collision = checkCollisionWithBarriers(proposedX, proposedY);
     const allowMovement = !collision.isColliding;
 
@@ -1593,6 +1642,35 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
         const newPoints = points.map((p) =>
           p.id === resizingPoint ? { ...p, scale: newScale } : p,
+        );
+
+        setPoints(newPoints);
+        return;
+      }
+
+      // Handle point rotation
+      if (isAdmin && rotatingPoint !== null) {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const point = points.find((p) => p.id === rotatingPoint);
+        if (!point) return;
+
+        const centerX = (point.x / 100) * rect.width;
+        const centerY = (point.y / 100) * rect.height;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const currentAngle =
+          Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+        const angleDelta = currentAngle - rotateStartAngle;
+        let newRotation = (rotateStartRotation + angleDelta) % 360;
+
+        // Normalize to 0-360 range
+        if (newRotation < 0) newRotation += 360;
+
+        const newPoints = points.map((p) =>
+          p.id === rotatingPoint ? { ...p, rotation: newRotation } : p,
         );
 
         setPoints(newPoints);
@@ -1722,6 +1800,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         return;
       }
 
+      // Handle point rotation end
+      if (isAdmin && rotatingPoint !== null) {
+        await savePoints(points);
+        setRotatingPoint(null);
+        setRotateStartRotation(0);
+        setRotateStartAngle(0);
+        return;
+      }
+
       // Handle point dragging end
       if (isAdmin && draggingPoint !== null) {
         await savePoints(points);
@@ -1767,6 +1854,35 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const newPoints = points.map((p) =>
           p.id === resizingPoint ? { ...p, scale: newScale } : p,
         );
+        setPoints(newPoints);
+        return;
+      }
+
+      // Handle point rotation
+      if (isAdmin && rotatingPoint !== null) {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const point = points.find((p) => p.id === rotatingPoint);
+        if (!point) return;
+
+        const centerX = (point.x / 100) * rect.width;
+        const centerY = (point.y / 100) * rect.height;
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+
+        const currentAngle =
+          Math.atan2(touchY - centerY, touchX - centerX) * (180 / Math.PI);
+        const angleDelta = currentAngle - rotateStartAngle;
+        let newRotation = (rotateStartRotation + angleDelta) % 360;
+
+        // Normalize to 0-360 range
+        if (newRotation < 0) newRotation += 360;
+
+        const newPoints = points.map((p) =>
+          p.id === rotatingPoint ? { ...p, rotation: newRotation } : p,
+        );
+
         setPoints(newPoints);
         return;
       }
@@ -1874,6 +1990,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         return;
       }
 
+      // Handle point rotation end
+      if (isAdmin && rotatingPoint !== null) {
+        await savePoints(points);
+        setRotatingPoint(null);
+        setRotateStartRotation(0);
+        setRotateStartAngle(0);
+        return;
+      }
+
       // Handle point dragging end
       if (isAdmin && draggingPoint !== null) {
         await savePoints(points);
@@ -1902,7 +2027,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
     };
 
-    if (isDragging || draggingPoint !== null) {
+    if (isDragging || draggingPoint !== null || rotatingPoint !== null) {
       document.addEventListener("mousemove", handleGlobalMouseMove);
       document.addEventListener("mouseup", handleGlobalMouseUp);
       document.addEventListener("touchmove", handleGlobalTouchMove, {
@@ -1928,6 +2053,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     showCollisionNotification,
     draggingPoint,
     dragOffset,
+    rotatingPoint,
+    rotateStartRotation,
+    rotateStartAngle,
     points,
     isAdmin,
   ]);
@@ -2152,7 +2280,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         0,
         Math.min(1, distance / maxDistance),
       );
-      const volume = (1 - normalizedDistance) * 0.5; // Volume máximo aumentado para 0.5
+      const volume = (1 - normalizedDistance) * 0.5; // Volume m��ximo aumentado para 0.5
 
       if (!merchantEngineSound) {
         // Cria um som de motor diferente para a nave mercante
@@ -2273,6 +2401,25 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       setResizingPoint(point.id);
       setResizeStartScale(point.scale || 1);
       setResizeStartY(e.clientY);
+      return;
+    }
+
+    // Check if holding Alt for rotation mode
+    if (e.altKey) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const centerX = (point.x / 100) * rect.width;
+      const centerY = (point.y / 100) * rect.height;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const startAngle =
+        Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+
+      setRotatingPoint(point.id);
+      setRotateStartRotation(point.rotation || 0);
+      setRotateStartAngle(startAngle);
       return;
     }
 
@@ -2629,9 +2776,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               key={point.id}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${
                 isAdmin
-                  ? "cursor-grab hover:cursor-grab active:cursor-grabbing"
+                  ? resizingPoint === point.id
+                    ? "cursor-crosshair"
+                    : rotatingPoint === point.id
+                      ? "cursor-alias"
+                      : "cursor-grab hover:cursor-grab active:cursor-grabbing"
                   : "cursor-pointer"
-              } ${draggingPoint === point.id ? "z-50" : "z-30"}`}
+              } ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`}
               style={{
                 left: `${point.x}%`,
                 top: `${point.y}%`,
@@ -2679,13 +2830,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                         : "hover:scale-105 hover:brightness-110"
                   }`}
                   style={{
-                    transform: `scale(${point.scale || 1})`,
+                    transform: `scale(${point.scale || 1}) rotate(${point.rotation || 0}deg)`,
                     filter:
                       draggingPoint === point.id
                         ? "drop-shadow(0 0 20px rgba(255, 255, 0, 0.8)) drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4))"
                         : resizingPoint === point.id
                           ? "drop-shadow(0 0 25px rgba(0, 255, 255, 0.8)) drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4))"
-                          : "drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.1))",
+                          : rotatingPoint === point.id
+                            ? "drop-shadow(0 0 25px rgba(255, 0, 255, 0.8)) drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4))"
+                            : "drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.1))",
                   }}
                 >
                   <img
@@ -2699,7 +2852,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     }}
                     onError={(e) => {
                       console.error(
-                        `❌ Erro ao carregar imagem: ${point.label}`,
+                        `�� Erro ao carregar imagem: ${point.label}`,
                         point.image,
                       );
                     }}
@@ -2729,10 +2882,16 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                       Escala: {point.scale.toFixed(1)}x
                     </div>
                   )}
+                  {point.rotation && point.rotation !== 0 && (
+                    <div className="text-purple-300 text-xs">
+                      Rotação: {point.rotation.toFixed(0)}°
+                    </div>
+                  )}
                   {isAdmin && (
                     <div className="text-yellow-400 text-xs mt-1">
-                      <div>⚡ Arraste para mover</div>
+                      <div>�� Arraste para mover</div>
                       <div>🔧 Ctrl+Arraste para redimensionar</div>
+                      <div>🔄 Alt+Arraste para rotacionar</div>
                     </div>
                   )}
 
@@ -2882,6 +3041,48 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           </>
         )}
       </AnimatePresence>
+
+      {/* Notificação do modo de redimensionamento ativo */}
+      {resizingPoint !== null && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <motion.div
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg border border-blue-400"
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">
+                🔧 Modo Redimensionar Ativo
+              </span>
+            </div>
+            <div className="text-xs text-blue-100 mt-1">
+              Pressione Esc para sair
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Notificação do modo de rotação ativo */}
+      {rotatingPoint !== null && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <motion.div
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg border border-purple-400"
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">🔄 Modo Rotação Ativo</span>
+            </div>
+            <div className="text-xs text-purple-100 mt-1">
+              Pressione Esc para sair
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Coordenadas simplificadas na parte inferior */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/20 text-xs font-mono font-thin whitespace-nowrap">
