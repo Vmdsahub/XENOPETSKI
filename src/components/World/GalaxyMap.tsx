@@ -949,6 +949,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   useEffect(() => {
     const animate = () => {
       renderStarsCanvas();
+      renderParallaxStars();
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
