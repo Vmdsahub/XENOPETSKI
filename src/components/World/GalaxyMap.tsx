@@ -873,7 +873,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sistema de momentum/in��rcia
+  // Sistema de momentum/in���rcia
   useEffect(() => {
     velocityRef.current = velocity;
   }, [velocity]);
@@ -3007,12 +3007,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       {/* Camada de estrelas com parallax acima do jogador */}
       <div className="absolute inset-0 z-25 pointer-events-none overflow-hidden">
-        {Array.from({ length: 150 }, (_, i) => {
-          const x = (i * 137.5) % 100; // Distribuição pseudo-aleatória
+        {/* Estrelas pequenas com parallax */}
+        {Array.from({ length: 120 }, (_, i) => {
+          const x = (i * 137.5) % 100;
           const y = (i * 73.8) % 100;
-          const size = 0.5 + (i % 3) * 0.3; // Tamanhos variados: 0.5px, 0.8px, 1.1px
-          const opacity = 0.2 + (i % 4) * 0.15; // Opacidades variadas
-          const parallaxSpeed = 0.3 + (i % 3) * 0.2; // Velocidades diferentes de parallax
+          const size = 0.5 + (i % 3) * 0.2;
+          const opacity = 0.15 + (i % 4) * 0.1;
+          const parallaxSpeed = 0.3 + (i % 3) * 0.15;
 
           return (
             <div
@@ -3027,6 +3028,34 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 transform: `translate(${mapX.get() * parallaxSpeed}px, ${mapY.get() * parallaxSpeed}px)`,
                 animationDelay: `${(i * 0.1) % 3}s`,
                 animationDuration: `${2 + (i % 3)}s`,
+              }}
+            />
+          );
+        })}
+
+        {/* Estrelas maiores e mais brilhantes */}
+        {Array.from({ length: 25 }, (_, i) => {
+          const x = (i * 197.3) % 100;
+          const y = (i * 89.7) % 100;
+          const size = 1.5 + (i % 2) * 0.5;
+          const opacity = 0.4 + (i % 3) * 0.2;
+          const parallaxSpeed = 0.5 + (i % 2) * 0.3;
+
+          return (
+            <div
+              key={`bright-star-${i}`}
+              className="absolute rounded-full animate-pulse"
+              style={{
+                left: `${x}%`,
+                top: `${y}%`,
+                width: `${size}px`,
+                height: `${size}px`,
+                background: `radial-gradient(circle, ${i % 3 === 0 ? "#93c5fd" : i % 3 === 1 ? "#fbbf24" : "#ffffff"}, transparent)`,
+                opacity: opacity,
+                transform: `translate(${mapX.get() * parallaxSpeed}px, ${mapY.get() * parallaxSpeed}px)`,
+                animationDelay: `${(i * 0.2) % 4}s`,
+                animationDuration: `${3 + (i % 2)}s`,
+                boxShadow: `0 0 ${size * 2}px ${i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#f59e0b" : "#ffffff"}40`,
               }}
             />
           );
