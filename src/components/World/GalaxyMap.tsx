@@ -675,21 +675,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return (h >>> 0) / 4294967296;
     };
 
-    // Gera muito menos estrelas, espaçadas
+    // Gera mais estrelas, mas ainda espaçadas
     const margin = 100;
-    const startX = Math.floor((cameraX - margin) / 150) * 150; // Células maiores = menos estrelas
-    const endX = Math.ceil((cameraX + canvas.width + margin) / 150) * 150;
-    const startY = Math.floor((cameraY - margin) / 150) * 150;
-    const endY = Math.ceil((cameraY + canvas.height + margin) / 150) * 150;
+    const startX = Math.floor((cameraX - margin) / 120) * 120; // Células um pouco menores = mais estrelas
+    const endX = Math.ceil((cameraX + canvas.width + margin) / 120) * 120;
+    const startY = Math.floor((cameraY - margin) / 120) * 120;
+    const endY = Math.ceil((cameraY + canvas.height + margin) / 120) * 120;
 
     const time = Date.now() * 0.001; // Para animação de piscar
 
-    for (let gx = startX; gx < endX; gx += 150) {
-      for (let gy = startY; gy < endY; gy += 150) {
+    for (let gx = startX; gx < endX; gx += 120) {
+      for (let gy = startY; gy < endY; gy += 120) {
         const cellHash = hash(gx, gy, 5);
 
-        // Máximo 1 estrela por célula, chance de 60%
-        if (cellHash > 0.4) {
+        // Máximo 1 estrela por célula, chance de 75%
+        if (cellHash > 0.25) {
           const starHash = hash(gx + 137, gy + 241, 5);
           const starHash2 = hash(gx + 173, gy + 197, 6);
 
