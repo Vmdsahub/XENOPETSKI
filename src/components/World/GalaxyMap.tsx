@@ -661,7 +661,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     const currentMapX = mapX.get();
     const currentMapY = mapY.get();
-    const parallaxSpeed = 0.8; // Velocidade de parallax mais rápida
+    const parallaxSpeed = 2.5; // Parallax muito mais forte
     const cameraX = -currentMapX * parallaxSpeed;
     const cameraY = -currentMapY * parallaxSpeed;
 
@@ -675,25 +675,26 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return (h >>> 0) / 4294967296;
     };
 
-    // Gera estrelas de forma similar ao sistema principal
-    const margin = 200;
-    const startX = Math.floor((cameraX - margin) / 50) * 50;
-    const endX = Math.ceil((cameraX + canvas.width + margin) / 50) * 50;
-    const startY = Math.floor((cameraY - margin) / 50) * 50;
-    const endY = Math.ceil((cameraY + canvas.height + margin) / 50) * 50;
+    // Gera muito menos estrelas, espaçadas
+    const margin = 100;
+    const startX = Math.floor((cameraX - margin) / 150) * 150; // Células maiores = menos estrelas
+    const endX = Math.ceil((cameraX + canvas.width + margin) / 150) * 150;
+    const startY = Math.floor((cameraY - margin) / 150) * 150;
+    const endY = Math.ceil((cameraY + canvas.height + margin) / 150) * 150;
 
-    for (let gx = startX; gx < endX; gx += 50) {
-      for (let gy = startY; gy < endY; gy += 50) {
-        const cellHash = hash(gx, gy, 5); // Layer 5 para parallax
+    const time = Date.now() * 0.001; // Para animação de piscar
 
-        const numStars = Math.floor(cellHash * 2); // Menos estrelas para não poluir
+    for (let gx = startX; gx < endX; gx += 150) {
+      for (let gy = startY; gy < endY; gy += 150) {
+        const cellHash = hash(gx, gy, 5);
 
-        for (let i = 0; i < numStars; i++) {
-          const starHash = hash(gx + i * 137, gy + i * 241, 5 + i);
-          const starHash2 = hash(gx + i * 173, gy + i * 197, 5 + i + 1000);
+        // Máximo 1 estrela por célula, chance de 60%
+        if (cellHash > 0.4) {
+          const starHash = hash(gx + 137, gy + 241, 5);
+          const starHash2 = hash(gx + 173, gy + 197, 6);
 
-          const localX = starHash * 50;
-          const localY = starHash2 * 50;
+          const localX = starHash * 150;
+          const localY = starHash2 * 150;
 
           const worldX = gx + localX;
           const worldY = gy + localY;
@@ -707,43 +708,34 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             screenY >= -10 &&
             screenY <= canvas.height + 10
           ) {
-            const sizeHash = hash(worldX * 1.1, worldY * 1.3, 5);
             const opacityHash = hash(worldX * 1.7, worldY * 1.9, 5);
             const colorHash = hash(worldX * 2.1, worldY * 2.3, 5);
+            const blinkHash = hash(worldX * 3.1, worldY * 4.3, 5);
 
-            const size = 1.2 + sizeHash * 1.5; // Estrelas um pouco maiores
-            const opacity = 0.5 + opacityHash * 0.4; // Mais visíveis
+            // Pontinhos pequenos: 0.8px a 1.5px
+            const size = 0.8 + opacityHash * 0.7;
 
-            const isColorful = colorHash > 0.7;
-            const colors = ["#60a5fa", "#fbbf24", "#f472b6", "#34d399"];
+            // Animação de piscar baseada no hash único de cada estrela
+            const blinkSpeed = 1.5 + blinkHash * 2; // Velocidades diferentes
+            const blinkOffset = blinkHash * Math.PI * 2; // Fases diferentes
+            const blinkFactor =
+              0.3 + 0.7 * (1 + Math.sin(time * blinkSpeed + blinkOffset)) * 0.5;
+
+            // Opacidade base baixa com piscar
+            const baseOpacity = 0.4 + opacityHash * 0.3;
+            const finalOpacity = baseOpacity * blinkFactor;
+
+            // Só algumas estrelas coloridas (20%)
+            const isColorful = colorHash > 0.8;
+            const colors = ["#60a5fa", "#fbbf24", "#ffffff"];
             const color = isColorful
               ? colors[Math.floor(colorHash * colors.length)]
               : "#ffffff";
 
-            ctx.globalAlpha = opacity;
+            ctx.globalAlpha = finalOpacity;
             ctx.fillStyle = color;
 
-            if (isColorful) {
-              const gradient = ctx.createRadialGradient(
-                screenX,
-                screenY,
-                0,
-                screenX,
-                screenY,
-                size * 3,
-              );
-              gradient.addColorStop(0, color);
-              gradient.addColorStop(0.4, color + "77");
-              gradient.addColorStop(1, color + "00");
-              ctx.fillStyle = gradient;
-
-              ctx.beginPath();
-              ctx.arc(screenX, screenY, size * 3, 0, Math.PI * 2);
-              ctx.fill();
-
-              ctx.fillStyle = color;
-            }
-
+            // Apenas pontinhos simples, sem gradientes
             ctx.beginPath();
             ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
             ctx.fill();
