@@ -2201,7 +2201,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const newX = prev.x + newVelocityX;
         const newY = prev.y + newVelocityY;
 
-        // Verifica limites da barreira circular (raio máximo de ~35%)
+        // Verifica limites numa área maior para navegação livre (aproximadamente 1000x1000)
+        // Permitindo que a nave navegue numa área muito maior que a barreira visual
+        const maxDistance = 50; // 50% da tela = área muito maior que a barreira visual
         const distanceFromCenter = Math.sqrt(
           (newX - 50) * (newX - 50) + (newY - 50) * (newY - 50),
         );
@@ -2209,17 +2211,18 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         let finalY = newY;
         let bounceDirection = newDirection;
 
-        if (distanceFromCenter > 35) {
+        // Só aplica limitações se a nave sair MUITO longe da área de jogo
+        if (distanceFromCenter > maxDistance) {
           // Reflexão suave sem teleporte - só muda direção
           const angleToCenter = Math.atan2(50 - prev.y, 50 - prev.x);
           bounceDirection =
             angleToCenter + Math.PI + (Math.random() - 0.5) * 0.8;
 
           // Mantém posição atual (não teleporta) e só ajusta se necessário
-          if (distanceFromCenter > 36) {
+          if (distanceFromCenter > maxDistance + 2) {
             // Só reposiciona se realmente saiu muito do limite
-            finalX = 50 + Math.cos(angleToCenter) * 35;
-            finalY = 50 + Math.sin(angleToCenter) * 35;
+            finalX = 50 + Math.cos(angleToCenter) * maxDistance;
+            finalY = 50 + Math.sin(angleToCenter) * maxDistance;
           } else {
             // Usa posição anterior para evitar teleporte
             finalX = prev.x;
@@ -2236,7 +2239,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           y: finalY,
           velocityX: newVelocityX,
           velocityY: newVelocityY,
-          direction: distanceFromCenter > 35 ? bounceDirection : newDirection,
+          direction:
+            distanceFromCenter > maxDistance ? bounceDirection : newDirection,
           targetDirection: newTargetDirection,
           directionChangeTimer: newDirectionChangeTimer,
           nextDirectionChange: newNextDirectionChange,
