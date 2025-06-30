@@ -3010,64 +3010,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         />
       </div>
 
-      {/* Canvas para estrelas parallax acima do jogador */}
-      <canvas
-        ref={(canvas) => {
-          if (canvas) {
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-              // Renderiza apenas a camada parallax
-              const container = containerRef.current;
-              if (container) {
-                const rect = container.getBoundingClientRect();
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Renderiza camada parallax
-                const currentMapX = mapX.get();
-                const currentMapY = mapY.get();
-                const parallaxSpeed = 0.8;
-                const cameraX = -currentMapX * parallaxSpeed;
-                const cameraY = -currentMapY * parallaxSpeed;
-
-                // Gera estrelas parallax
-                for (let i = 0; i < 150; i++) {
-                  const x = (i * 137.5) % canvas.width;
-                  const y = (i * 73.8) % canvas.height;
-                  const size = 1 + (i % 3) * 0.5;
-                  const opacity = 0.4 + (i % 3) * 0.2;
-
-                  const screenX = x + cameraX * 0.3;
-                  const screenY = y + cameraY * 0.3;
-
-                  if (
-                    screenX >= 0 &&
-                    screenX <= canvas.width &&
-                    screenY >= 0 &&
-                    screenY <= canvas.height
-                  ) {
-                    ctx.globalAlpha = opacity;
-                    ctx.fillStyle =
-                      i % 3 === 0
-                        ? "#60a5fa"
-                        : i % 3 === 1
-                          ? "#fbbf24"
-                          : "#ffffff";
-                    ctx.beginPath();
-                    ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
-                    ctx.fill();
-                  }
-                }
-                ctx.globalAlpha = 1;
-              }
-            }
-          }
-        }}
-        className="absolute inset-0 pointer-events-none z-30"
-      />
-
       {/* Modal da Nave Navegante */}
       <AnimatePresence>
         {showShipModal && (
@@ -3157,7 +3099,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </p>
                           <p className="text-sm text-gray-600">
                             "Precisa de alguma coisa? Tenho suprimentos frescos
-                            de todas as dimensões!"
+                            de todas as dimens��es!"
                           </p>
                         </div>
                       </div>
