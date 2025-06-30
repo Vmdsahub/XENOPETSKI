@@ -951,7 +951,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Calcula dire��ão da repuls��o (do centro da barreira para fora)
+      // Calcula direção da repuls��o (do centro da barreira para fora)
       const repelDirectionX = collisionX - centerX;
       const repelDirectionY = collisionY - centerY;
       const distance = Math.sqrt(
@@ -3003,6 +3003,34 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           isDragging={isDragging || isAutoPilot}
           isDecelerating={isDecelerating}
         />
+      </div>
+
+      {/* Camada de estrelas com parallax acima do jogador */}
+      <div className="absolute inset-0 z-25 pointer-events-none overflow-hidden">
+        {Array.from({ length: 150 }, (_, i) => {
+          const x = (i * 137.5) % 100; // Distribuição pseudo-aleatória
+          const y = (i * 73.8) % 100;
+          const size = 0.5 + (i % 3) * 0.3; // Tamanhos variados: 0.5px, 0.8px, 1.1px
+          const opacity = 0.2 + (i % 4) * 0.15; // Opacidades variadas
+          const parallaxSpeed = 0.3 + (i % 3) * 0.2; // Velocidades diferentes de parallax
+
+          return (
+            <div
+              key={`parallax-star-${i}`}
+              className="absolute bg-white rounded-full animate-pulse"
+              style={{
+                left: `${x}%`,
+                top: `${y}%`,
+                width: `${size}px`,
+                height: `${size}px`,
+                opacity: opacity,
+                transform: `translate(${mapX.get() * parallaxSpeed}px, ${mapY.get() * parallaxSpeed}px)`,
+                animationDelay: `${(i * 0.1) % 3}s`,
+                animationDuration: `${2 + (i % 3)}s`,
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Modal da Nave Navegante */}
