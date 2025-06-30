@@ -101,15 +101,22 @@ const createDefaultPoints = (): Point[] => {
 
   const points: Point[] = [];
 
-  for (let i = 0; i < 7; i++) {
-    const angle = (i * 2 * Math.PI) / 7;
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius;
+  // Posições bem espaçadas para garantir que todas as 7 ilhas sejam visíveis
+  const positions = [
+    { x: 30, y: 30 }, // Gaia Selvagem
+    { x: 50, y: 25 }, // Mundo Gelado
+    { x: 70, y: 30 }, // Reino Desértico
+    { x: 25, y: 50 }, // Aldeia Pacífica
+    { x: 75, y: 50 }, // Dimensão Alienígena
+    { x: 35, y: 70 }, // Estação Mineradora
+    { x: 65, y: 70 }, // Estação Orbital
+  ];
 
+  for (let i = 0; i < 7; i++) {
     points.push({
       id: i + 1,
-      x: Math.max(10, Math.min(90, x)),
-      y: Math.max(10, Math.min(90, y)),
+      x: positions[i].x,
+      y: positions[i].y,
       label: pointData[i].label,
       type: pointData[i].type,
       image: pointData[i].image,
@@ -943,7 +950,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repuls��o
+        // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -1167,7 +1174,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpolação
+  // Sistema de momentum mais suave usando interpola��ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -1685,8 +1692,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const mouseX = e.clientX - rect.left - dragOffset.x;
         const mouseY = e.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(5, Math.min(95, (mouseX / rect.width) * 100));
-        const newY = Math.max(5, Math.min(95, (mouseY / rect.height) * 100));
+        // Simple percentage system - no barriers
+        const newX = (mouseX / rect.width) * 100;
+        const newY = (mouseY / rect.height) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -1895,8 +1903,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const touchX = touch.clientX - rect.left - dragOffset.x;
         const touchY = touch.clientY - rect.top - dragOffset.y;
 
-        const newX = Math.max(5, Math.min(95, (touchX / rect.width) * 100));
-        const newY = Math.max(5, Math.min(95, (touchY / rect.height) * 100));
+        // Simple percentage system - no barriers
+        const newX = (touchX / rect.width) * 100;
+        const newY = (touchY / rect.height) * 100;
 
         const newPoints = points.map((p) =>
           p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
@@ -2471,8 +2480,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const mouseX = e.clientX - rect.left - dragOffset.x;
     const mouseY = e.clientY - rect.top - dragOffset.y;
 
-    const newX = Math.max(5, Math.min(95, (mouseX / rect.width) * 100));
-    const newY = Math.max(5, Math.min(95, (mouseY / rect.height) * 100));
+    // Simple percentage system - no barriers
+    const newX = (mouseX / rect.width) * 100;
+    const newY = (mouseY / rect.height) * 100;
 
     const newPoints = points.map((p) =>
       p.id === draggingPoint ? { ...p, x: newX, y: newY } : p,
