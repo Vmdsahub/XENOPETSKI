@@ -427,6 +427,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       foreground: Array.from({ length: 300 }, (_, i) =>
         createStar(i + 3000, "fg"),
       ),
+      parallax: Array.from({ length: 150 }, (_, i) =>
+        createStar(i + 4000, "fg"),
+      ),
     };
   }, []);
 
