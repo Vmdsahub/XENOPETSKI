@@ -215,14 +215,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
 
     loadGalaxyWorlds();
-
-    // Force show all 7 islands temporarily
-    setTimeout(() => {
-      localStorage.removeItem("xenopets-galaxy-points");
-      const defaultPoints = createDefaultPoints();
-      setPoints(defaultPoints);
-      console.log("🌌 Forçando 7 ilhas:", defaultPoints);
-    }, 1000);
   }, []);
 
   // Cleanup music when component unmounts
