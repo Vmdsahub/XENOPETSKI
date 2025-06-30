@@ -895,56 +895,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     resizingPointRef.current = resizingPoint;
   }, [resizingPoint]);
 
-  // Controle da tecla Ctrl para modo de redimensionamento
+  // Tecla Esc para sair do modo de redimensionamento
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log(
-        "🔧 handleKeyDown:",
-        e.key,
-        "ctrlKey:",
-        e.ctrlKey,
-        "current isCtrlPressed:",
-        isCtrlPressedRef.current,
-      );
-      if (e.key === "Control" || e.ctrlKey) {
-        console.log("🔧 Setting isCtrlPressed to true");
-        setIsCtrlPressed(true);
-      }
-      // Tecla Esc para sair do modo de redimensionamento
       if (e.key === "Escape" && resizingPointRef.current !== null) {
-        console.log("🔧 Esc pressed, exiting resize mode");
-        setResizingPoint(null);
-        setResizeStartScale(1);
-        setResizeStartY(0);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      console.log(
-        "🔧 handleKeyUp:",
-        e.key,
-        "ctrlKey:",
-        e.ctrlKey,
-        "current resizingPoint:",
-        resizingPointRef.current,
-      );
-      if (e.key === "Control" || !e.ctrlKey) {
-        console.log("🔧 Setting isCtrlPressed to false");
-        setIsCtrlPressed(false);
-        // Sair do modo de redimensionamento quando Ctrl for solto
-        if (resizingPointRef.current !== null) {
-          console.log("🔧 Ctrl released, exiting resize mode");
-          setResizingPoint(null);
-          setResizeStartScale(1);
-          setResizeStartY(0);
-        }
-      }
-    };
-
-    // Também detecta quando a janela perde foco (Alt+Tab, etc)
-    const handleWindowBlur = () => {
-      setIsCtrlPressed(false);
-      if (resizingPointRef.current !== null) {
         setResizingPoint(null);
         setResizeStartScale(1);
         setResizeStartY(0);
@@ -952,14 +906,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", handleWindowBlur);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("blur", handleWindowBlur);
-    };
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Função para repelir o jogador
@@ -2958,7 +2905,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                         Área de Interação
                       </p>
                       <p className="text-xs text-gray-500">
-                        Comércio • Missões • Informações
+                        Comércio • Missões ��� Informações
                       </p>
                     </div>
                   </div>
