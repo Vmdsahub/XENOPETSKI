@@ -233,12 +233,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [resizingPoint, setResizingPoint] = useState<number | null>(null);
   const [resizeStartScale, setResizeStartScale] = useState<number>(1);
   const [resizeStartY, setResizeStartY] = useState<number>(0);
-  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Refs para acessar estados atuais nos event listeners
+  // Ref para acessar estado atual nos event listeners
   const resizingPointRef = useRef<number | null>(null);
-  const isCtrlPressedRef = useRef<boolean>(false);
   const [isColliding, setIsColliding] = useState(false);
   const [collisionNotification, setCollisionNotification] = useState<{
     show: boolean;
