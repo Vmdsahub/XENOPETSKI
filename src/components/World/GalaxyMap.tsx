@@ -235,6 +235,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [resizeStartY, setResizeStartY] = useState<number>(0);
   const [isCtrlPressed, setIsCtrlPressed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Refs para acessar estados atuais nos event listeners
+  const resizingPointRef = useRef<number | null>(null);
+  const isCtrlPressedRef = useRef<boolean>(false);
   const [isColliding, setIsColliding] = useState(false);
   const [collisionNotification, setCollisionNotification] = useState<{
     show: boolean;
@@ -276,7 +280,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Motion values para posi��ão do mapa (movimento inverso da nave)
+  // Motion values para posi����o do mapa (movimento inverso da nave)
   const getInitialMapPosition = () => {
     const saved = localStorage.getItem("xenopets-player-data");
     const data = saved
@@ -1039,7 +1043,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
-  // Função para atualizar direção do auto-piloto baseada na posição do mouse
+  // Função para atualizar direç��o do auto-piloto baseada na posição do mouse
   const updateAutoPilotDirection = useCallback(
     (mouseX: number, mouseY: number) => {
       const canvas = canvasRef.current;
@@ -2282,7 +2286,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       } else {
         // Atualiza volume do som existente com suavidade
         merchantEngineSound.setVolume(volume);
-        console.log(`🔊 Volume atualizado: ${volume.toFixed(3)}`);
+        console.log(`��� Volume atualizado: ${volume.toFixed(3)}`);
       }
     } else {
       // Para o som se existir
