@@ -1980,6 +1980,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         return;
       }
 
+      // Handle point rotation end
+      if (isAdmin && rotatingPoint !== null) {
+        await savePoints(points);
+        setRotatingPoint(null);
+        setRotateStartRotation(0);
+        setRotateStartAngle(0);
+        return;
+      }
+
       // Handle point dragging end
       if (isAdmin && draggingPoint !== null) {
         await savePoints(points);
