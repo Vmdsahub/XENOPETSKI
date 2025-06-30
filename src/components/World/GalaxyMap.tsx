@@ -1839,6 +1839,35 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         return;
       }
 
+      // Handle point rotation
+      if (isAdmin && rotatingPoint !== null) {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const point = points.find((p) => p.id === rotatingPoint);
+        if (!point) return;
+
+        const centerX = (point.x / 100) * rect.width;
+        const centerY = (point.y / 100) * rect.height;
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+
+        const currentAngle =
+          Math.atan2(touchY - centerY, touchX - centerX) * (180 / Math.PI);
+        const angleDelta = currentAngle - rotateStartAngle;
+        let newRotation = (rotateStartRotation + angleDelta) % 360;
+
+        // Normalize to 0-360 range
+        if (newRotation < 0) newRotation += 360;
+
+        const newPoints = points.map((p) =>
+          p.id === rotatingPoint ? { ...p, rotation: newRotation } : p,
+        );
+
+        setPoints(newPoints);
+        return;
+      }
+
       // Handle point dragging
       if (isAdmin && draggingPoint !== null) {
         const rect = containerRef.current?.getBoundingClientRect();
