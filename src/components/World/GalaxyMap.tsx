@@ -2961,7 +2961,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               </span>
             </div>
             <div className="text-xs text-blue-100 mt-1">
-              Solte Ctrl ou clique fora para sair
+              Solte Ctrl ou pressione Esc para sair
             </div>
           </motion.div>
         </div>
