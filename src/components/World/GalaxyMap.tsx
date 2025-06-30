@@ -943,7 +943,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repulsão
+        // Normaliza a direç���o e aplica força de repuls��o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -3048,6 +3048,26 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               </span>
             </div>
             <div className="text-xs text-blue-100 mt-1">
+              Pressione Esc para sair
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Notificação do modo de rotação ativo */}
+      {rotatingPoint !== null && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <motion.div
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg border border-purple-400"
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          >
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">🔄 Modo Rotação Ativo</span>
+            </div>
+            <div className="text-xs text-purple-100 mt-1">
               Pressione Esc para sair
             </div>
           </motion.div>
