@@ -3006,7 +3006,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       </div>
 
       {/* Camada de estrelas com parallax acima do jogador */}
-      <div className="absolute inset-0 z-25 pointer-events-none overflow-hidden">
+      <div
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: 25 }}
+      >
         {/* Estrelas pequenas com parallax */}
         {Array.from({ length: 120 }, (_, i) => {
           const x = (i * 137.5) % 100;
