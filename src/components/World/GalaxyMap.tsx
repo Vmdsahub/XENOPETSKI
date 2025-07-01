@@ -20,6 +20,7 @@ import {
   stopEngineSound,
 } from "../../utils/soundManager";
 import { useAuthStore } from "../../store/authStore";
+import { useGameStore } from "../../store/gameStore";
 import { gameService, GalaxyWorld } from "../../services/gameService";
 import { useBackgroundMusic } from "../../hooks/useBackgroundMusic";
 
@@ -2652,7 +2653,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
         // Se chegar perto da barreira, muda direção suavemente
         if (distanceFromCenter > barrierLimit) {
-          // Calcula direção de volta para o centro com variação aleatória
+          // Calcula direção de volta para o centro com variaç��o aleatória
           const angleToCenter = Math.atan2(50 - newY, 50 - newX);
           bounceDirection = angleToCenter + (Math.random() - 0.5) * 1.0;
 
