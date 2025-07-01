@@ -148,6 +148,7 @@ const wrap = (value: number, min: number, max: number): number => {
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const { user } = useAuthStore();
+  const { setCurrentScreen } = useGameStore();
   const isAdmin = user?.username === "Vitoca";
 
   // Background music for galactic navigation
@@ -2653,7 +2654,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
         // Se chegar perto da barreira, muda direção suavemente
         if (distanceFromCenter > barrierLimit) {
-          // Calcula direção de volta para o centro com variaç��o aleatória
+          // Calcula direção de volta para o centro com variação aleatória
           const angleToCenter = Math.atan2(50 - newY, 50 - newX);
           bounceDirection = angleToCenter + (Math.random() - 0.5) * 1.0;
 
