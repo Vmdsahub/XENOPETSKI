@@ -2869,7 +2869,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       x: point.x,
       y: point.y,
     });
-    const maxInteractionDistance = 8; // Same as nearestWorldDistance threshold used elsewhere
+    const maxInteractionDistance = 15; // Increased from 8 for testing
 
     console.log(
       `🚀 Ship position: (${shipPosition.x.toFixed(2)}, ${shipPosition.y.toFixed(2)})`,
