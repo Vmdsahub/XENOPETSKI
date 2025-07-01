@@ -404,7 +404,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "≄",
       "≅",
       "≆",
-      "≇",
+      "���",
       "≈",
       "≉",
       "≊",
@@ -3659,13 +3659,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       {/* Landing Confirmation Modal */}
       <AnimatePresence>
-        {landingModal.show && landingModal.point && (
+        {confirmModal.show && confirmModal.point && (
           <motion.div
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleLandingCancel}
+            onClick={handleCancel}
           >
             <motion.div
               className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
