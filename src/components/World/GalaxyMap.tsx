@@ -3710,29 +3710,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Detail View */}
-      <AnimatePresence>
-        {showDetailView && selectedPointForDetail && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <DetailView
-              pointData={{
-                id: selectedPointForDetail.id.toString(),
-                name: selectedPointForDetail.label,
-                description: `Explore o fascinante mundo de ${selectedPointForDetail.label}`,
-                type: selectedPointForDetail.type,
-                image: selectedPointForDetail.image,
-              }}
-              onBack={handleBackFromDetail}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
