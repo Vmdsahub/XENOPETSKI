@@ -21,6 +21,10 @@ interface GameStore extends GameState {
   setCurrentScreen: (screen: string) => void;
   setViewedUserId: (userId: string | null) => void;
 
+  // Selected world for detail view
+  selectedWorld: any | null;
+  setSelectedWorld: (world: any | null) => void;
+
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
