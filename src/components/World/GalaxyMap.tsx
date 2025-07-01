@@ -3303,9 +3303,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
-              onClick={(e) => handlePointClick(e, point)}
-              onMouseDown={(e) => handlePointMouseDown(e, point)}
-              onTouchStart={(e) => handlePointTouchStart(e, point)}
+              onClick={(e) => handlePointInteraction(e, point)}
+              onMouseDown={(e) =>
+                isAdmin ? handlePointMouseDown(e, point) : undefined
+              }
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
               animate={{
