@@ -266,14 +266,62 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   // Estados para a nave navegante
   const [showShipModal, setShowShipModal] = useState(false);
+  const [typewriterText1, setTypewriterText1] = useState("");
+  const [typewriterText2, setTypewriterText2] = useState("");
+  const [showTypewriter2, setShowTypewriter2] = useState(false);
+
+  // Textos completos do diálogo
+  const fullText1 =
+    '"Olá, viajante! Sou o Capitão Zyx. Navego por estas rotas comerciais há décadas, transportando recursos entre os planetas do sistema."';
+  const fullText2 =
+    '"Precisa de alguma coisa? Tenho suprimentos frescos de todas as dimensões!"';
+
+  // Efeito typewriter
+  useEffect(() => {
+    if (showShipModal) {
+      // Reset dos textos quando modal abre
+      setTypewriterText1("");
+      setTypewriterText2("");
+      setShowTypewriter2(false);
+
+      // Primeira frase
+      let index1 = 0;
+      const timer1 = setInterval(() => {
+        if (index1 < fullText1.length) {
+          setTypewriterText1(fullText1.slice(0, index1 + 1));
+          index1++;
+        } else {
+          clearInterval(timer1);
+          // Pausa antes da segunda frase
+          setTimeout(() => {
+            setShowTypewriter2(true);
+            // Segunda frase
+            let index2 = 0;
+            const timer2 = setInterval(() => {
+              if (index2 < fullText2.length) {
+                setTypewriterText2(fullText2.slice(0, index2 + 1));
+                index2++;
+              } else {
+                clearInterval(timer2);
+              }
+            }, 50); // 50ms por caractere para segunda frase
+          }, 800); // Pausa de 800ms entre frases
+        }
+      }, 30); // 30ms por caractere para primeira frase
+
+      return () => {
+        clearInterval(timer1);
+      };
+    }
+  }, [showShipModal]);
   const [wanderingShip, setWanderingShip] = useState({
     x: 50, // posição relativa na barreira
     y: 45,
     velocityX: 0, // velocidade atual em X
     velocityY: 0, // velocidade atual em Y
     rotation: 0,
-    baseSpeed: 0.2, // velocidade 4x mais rápida
-    maxSpeed: 0.4, // velocidade máxima 4x mais rápida
+    baseSpeed: 0.15, // velocidade reduzida para movimento mais suave
+    maxSpeed: 0.3, // velocidade máxima reduzida
     direction: Math.random() * Math.PI * 2, // direção atual em radianos
     targetDirection: Math.random() * Math.PI * 2, // direção alvo
     directionChangeTimer: 0,
@@ -286,6 +334,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     nearestWorldDistance: 100,
     hasRecentlyPaused: false,
     pauseCooldown: 0,
+    // Sistema de comportamento inteligente
+    behavior: "free", // "free", "approaching", "orbiting", "leaving"
+    behaviorTimer: 0,
+    nextBehaviorChange: 1800 + Math.random() * 1200, // 30-50 segundos
+    targetPlanet: null,
+    orbitRadius: 15,
+    orbitAngle: 0,
+    orbitSpeed: 0.02,
+    approachDistance: 18,
   });
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -317,6 +374,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   // Canvas ref para estrelas
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const parallaxCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
 
   // Refs para auto-piloto
@@ -417,6 +475,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       ),
       foreground: Array.from({ length: 300 }, (_, i) =>
         createStar(i + 3000, "fg"),
+      ),
+      parallax: Array.from({ length: 150 }, (_, i) =>
+        createStar(i + 4000, "fg"),
       ),
     };
   }, []);
@@ -636,6 +697,125 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
+  // Renderização das estrelas parallax (acima do jogador)
+  const renderParallaxStars = useCallback(() => {
+    const canvas = parallaxCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const currentMapX = mapX.get();
+    const currentMapY = mapY.get();
+    const parallaxSpeed = 2.5; // Parallax muito mais forte
+    const cameraX = -currentMapX * parallaxSpeed;
+    const cameraY = -currentMapY * parallaxSpeed;
+
+    // Função hash para gerar posições consistentes
+    const hash = (x: number, y: number, layer: number) => {
+      let h = 1779033703 ^ layer;
+      h = Math.imul(h ^ Math.floor(x), 3432918353);
+      h = (h << 13) | (h >>> 19);
+      h = Math.imul(h ^ Math.floor(y), 461845907);
+      h = (h << 13) | (h >>> 19);
+      return (h >>> 0) / 4294967296;
+    };
+
+    // Gera mais estrelas, mas ainda espaçadas
+    const margin = 100;
+    const startX = Math.floor((cameraX - margin) / 120) * 120; // Células um pouco menores = mais estrelas
+    const endX = Math.ceil((cameraX + canvas.width + margin) / 120) * 120;
+    const startY = Math.floor((cameraY - margin) / 120) * 120;
+    const endY = Math.ceil((cameraY + canvas.height + margin) / 120) * 120;
+
+    const time = Date.now() * 0.001; // Para animação de piscar
+
+    for (let gx = startX; gx < endX; gx += 120) {
+      for (let gy = startY; gy < endY; gy += 120) {
+        const cellHash = hash(gx, gy, 5);
+
+        // Máximo 1 estrela por célula, chance de 75%
+        if (cellHash > 0.25) {
+          const starHash = hash(gx + 137, gy + 241, 5);
+          const starHash2 = hash(gx + 173, gy + 197, 6);
+
+          const localX = starHash * 120;
+          const localY = starHash2 * 120;
+
+          const worldX = gx + localX;
+          const worldY = gy + localY;
+
+          const screenX = worldX - cameraX;
+          const screenY = worldY - cameraY;
+
+          if (
+            screenX >= -10 &&
+            screenX <= canvas.width + 10 &&
+            screenY >= -10 &&
+            screenY <= canvas.height + 10
+          ) {
+            const opacityHash = hash(worldX * 1.7, worldY * 1.9, 5);
+            const colorHash = hash(worldX * 2.1, worldY * 2.3, 5);
+            const blinkHash = hash(worldX * 3.1, worldY * 4.3, 5);
+            const floatHash = hash(worldX * 2.7, worldY * 3.1, 5);
+            const floatHash2 = hash(worldX * 4.1, worldY * 2.9, 5);
+
+            // Pontinhos pequenos: 0.8px a 1.5px
+            const size = 0.8 + opacityHash * 0.7;
+
+            // Animação de piscar baseada no hash único de cada estrela
+            const blinkSpeed = 1.5 + blinkHash * 2; // Velocidades diferentes
+            const blinkOffset = blinkHash * Math.PI * 2; // Fases diferentes
+            const blinkFactor =
+              0.3 + 0.7 * (1 + Math.sin(time * blinkSpeed + blinkOffset)) * 0.5;
+
+            // Movimento de flutuação como poeira cósmica
+            const floatSpeedX = 0.8 + floatHash * 1.2; // Velocidades mais rápidas para X
+            const floatSpeedY = 0.6 + floatHash2 * 1.0; // Velocidades mais rápidas para Y
+            const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
+            const floatOffsetY = floatHash2 * Math.PI * 2;
+
+            // Movimento mais visível de flutuação (3-8 pixels de amplitude)
+            const floatAmplitudeX = 3.0 + floatHash * 5.0;
+            const floatAmplitudeY = 2.5 + floatHash2 * 5.5;
+
+            const floatX =
+              Math.sin(time * floatSpeedX + floatOffsetX) * floatAmplitudeX;
+            const floatY =
+              Math.cos(time * floatSpeedY + floatOffsetY) * floatAmplitudeY;
+
+            // Posição final com flutuação
+            const finalX = screenX + floatX;
+            const finalY = screenY + floatY;
+
+            // Opacidade base baixa com piscar
+            const baseOpacity = 0.4 + opacityHash * 0.3;
+            const finalOpacity = baseOpacity * blinkFactor;
+
+            // Só algumas estrelas coloridas (20%)
+            const isColorful = colorHash > 0.8;
+            const colors = ["#60a5fa", "#fbbf24", "#ffffff"];
+            const color = isColorful
+              ? colors[Math.floor(colorHash * colors.length)]
+              : "#ffffff";
+
+            ctx.globalAlpha = finalOpacity;
+            ctx.fillStyle = color;
+
+            // Apenas pontinhos simples, sem gradientes
+            ctx.beginPath();
+            ctx.arc(finalX, finalY, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    ctx.globalAlpha = 1;
+  }, [mapX, mapY]);
+
   // Geração dinâmica de estrelas baseada na posição da câmera
   const renderStarsCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -817,6 +997,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     generateLayer(8, 0.08, 1); // Background
     generateLayer(4, 0.25, 2); // Middle
     generateLayer(2, 0.5, 3); // Foreground
+    generateLayer(3, 0.8, 4); // Parallax - camada acima do jogador
 
     // Atualiza e renderiza estrelas cadentes
     updateShootingStars(Date.now());
@@ -829,6 +1010,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   useEffect(() => {
     const animate = () => {
       renderStarsCanvas();
+      renderParallaxStars();
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
@@ -846,14 +1028,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   // Atualiza canvas size quando container muda
   useEffect(() => {
     const canvas = canvasRef.current;
+    const parallaxCanvas = parallaxCanvasRef.current;
     const container = containerRef.current;
 
-    if (!canvas || !container) return;
+    if (!canvas || !parallaxCanvas || !container) return;
 
     const updateCanvasSize = () => {
       const rect = container.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
+      parallaxCanvas.width = rect.width;
+      parallaxCanvas.height = rect.height;
     };
 
     updateCanvasSize();
@@ -864,7 +1049,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sistema de momentum/in��rcia
+  // Sistema de momentum/in���rcia
   useEffect(() => {
     velocityRef.current = velocity;
   }, [velocity]);
@@ -1047,7 +1232,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      // Converte coordenadas do mouse para posição relativa ao canvas
+      // Converte coordenadas do mouse para posi��ão relativa ao canvas
       const relativeMouseX = mouseX - rect.left;
       const relativeMouseY = mouseY - rect.top;
 
@@ -2168,63 +2353,130 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           hasRecentlyPaused = false;
         }
 
-        // Sistema de mudança suave de direção
+        // Sistema de comportamento inteligente
+        let behavior = prev.behavior;
+        let behaviorTimer = prev.behaviorTimer + 1;
+        let nextBehaviorChange = prev.nextBehaviorChange;
+        let targetPlanet = prev.targetPlanet;
+        let orbitAngle = prev.orbitAngle;
         let newDirection = prev.direction;
         let newTargetDirection = prev.targetDirection;
-        let newDirectionChangeTimer = prev.directionChangeTimer + 1;
-        let newNextDirectionChange = prev.nextDirectionChange;
+        let currentSpeed = prev.baseSpeed;
 
-        // Hora de mudar direção?
-        if (newDirectionChangeTimer >= newNextDirectionChange) {
-          newTargetDirection = Math.random() * Math.PI * 2;
-          newDirectionChangeTimer = 0;
-          newNextDirectionChange = 300 + Math.random() * 600; // 5-15 segundos
+        // Verifica se deve mudar comportamento
+        if (behaviorTimer >= nextBehaviorChange) {
+          if (behavior === "free" && points && points.length > 0) {
+            // Escolhe um planeta aleatório para orbitar
+            targetPlanet = points[Math.floor(Math.random() * points.length)];
+            behavior = "approaching";
+            behaviorTimer = 0;
+            nextBehaviorChange = 9999; // Não muda até completar a sequência
+          } else if (behavior === "orbiting") {
+            behavior = "leaving";
+            behaviorTimer = 0;
+            nextBehaviorChange = 300 + Math.random() * 300; // 5-10 segundos saindo
+          } else if (behavior === "leaving") {
+            behavior = "free";
+            targetPlanet = null;
+            behaviorTimer = 0;
+            nextBehaviorChange = 1200 + Math.random() * 1800; // 20-50 segundos livre
+          }
         }
 
-        // Interpola suavemente para a nova direção
-        let directionDiff = newTargetDirection - newDirection;
-        if (directionDiff > Math.PI) directionDiff -= Math.PI * 2;
-        if (directionDiff < -Math.PI) directionDiff += Math.PI * 2;
-        newDirection += directionDiff * 0.01; // Interpolação muito suave
+        let newVelocityX = 0;
+        let newVelocityY = 0;
 
-        // Velocidade variável baseada em ondas suaves
-        const time = Date.now() * 0.001;
-        const speedMultiplier =
-          0.7 + 0.6 * Math.sin(time * 0.5) * Math.sin(time * 0.3);
-        const currentSpeed = prev.baseSpeed * speedMultiplier;
+        if (behavior === "approaching" && targetPlanet) {
+          // Movimento direcionado para o planeta
+          const dx = targetPlanet.x - prev.x;
+          const dy = targetPlanet.y - prev.y;
+          const distanceToPlanet = Math.sqrt(dx * dx + dy * dy);
 
-        // Calcula nova velocidade baseada na direção
-        const newVelocityX = Math.cos(newDirection) * currentSpeed;
-        const newVelocityY = Math.sin(newDirection) * currentSpeed;
+          if (distanceToPlanet <= prev.approachDistance) {
+            behavior = "orbiting";
+            behaviorTimer = 0;
+            nextBehaviorChange = 1800 + Math.random() * 1200; // 30-50 segundos orbitando
+            orbitAngle = Math.atan2(dy, dx);
+          } else {
+            newDirection = Math.atan2(dy, dx);
+            currentSpeed = prev.baseSpeed * 1.5; // Mais rápido ao se aproximar
+            newVelocityX = Math.cos(newDirection) * currentSpeed;
+            newVelocityY = Math.sin(newDirection) * currentSpeed;
+          }
+        } else if (behavior === "orbiting" && targetPlanet) {
+          // Movimento orbital ao redor do planeta
+          orbitAngle += prev.orbitSpeed;
+          const orbitX =
+            targetPlanet.x + Math.cos(orbitAngle) * prev.orbitRadius;
+          const orbitY =
+            targetPlanet.y + Math.sin(orbitAngle) * prev.orbitRadius;
+
+          // Move suavemente para a posição orbital
+          const dx = orbitX - prev.x;
+          const dy = orbitY - prev.y;
+          newVelocityX = dx * 0.1;
+          newVelocityY = dy * 0.1;
+
+          // Direção tangencial à órbita
+          newDirection = orbitAngle + Math.PI / 2;
+        } else if (behavior === "leaving" && targetPlanet) {
+          // Movimento se afastando do planeta
+          const dx = prev.x - targetPlanet.x;
+          const dy = prev.y - targetPlanet.y;
+          newDirection = Math.atan2(dy, dx) + (Math.random() - 0.5) * 1.0;
+          currentSpeed = prev.baseSpeed * 1.2;
+          newVelocityX = Math.cos(newDirection) * currentSpeed;
+          newVelocityY = Math.sin(newDirection) * currentSpeed;
+        } else {
+          // Comportamento livre - movimento aleatório suave
+          let newDirectionChangeTimer = prev.directionChangeTimer + 1;
+          let newNextDirectionChange = prev.nextDirectionChange;
+
+          if (newDirectionChangeTimer >= newNextDirectionChange) {
+            newTargetDirection = Math.random() * Math.PI * 2;
+            newDirectionChangeTimer = 0;
+            newNextDirectionChange = 300 + Math.random() * 600;
+          }
+
+          // Interpola suavemente para a nova direção
+          let directionDiff = newTargetDirection - newDirection;
+          if (directionDiff > Math.PI) directionDiff -= Math.PI * 2;
+          if (directionDiff < -Math.PI) directionDiff += Math.PI * 2;
+          newDirection += directionDiff * 0.01;
+
+          // Velocidade variável
+          const time = Date.now() * 0.001;
+          const speedMultiplier =
+            0.7 + 0.6 * Math.sin(time * 0.5) * Math.sin(time * 0.3);
+          currentSpeed = prev.baseSpeed * speedMultiplier;
+
+          newVelocityX = Math.cos(newDirection) * currentSpeed;
+          newVelocityY = Math.sin(newDirection) * currentSpeed;
+        }
 
         // Aplica movimento suave com interpolação
         const newX = prev.x + newVelocityX;
         const newY = prev.y + newVelocityY;
 
-        // Verifica limites da barreira circular (raio máximo de ~35%)
+        // Mantém nave dentro da barreira tracejada (35% do centro)
+        const barrierLimit = 32; // Ligeiramente menor que 35% para ficar bem dentro da barreira
         const distanceFromCenter = Math.sqrt(
           (newX - 50) * (newX - 50) + (newY - 50) * (newY - 50),
         );
+
         let finalX = newX;
         let finalY = newY;
         let bounceDirection = newDirection;
 
-        if (distanceFromCenter > 35) {
-          // Reflexão suave sem teleporte - só muda direção
-          const angleToCenter = Math.atan2(50 - prev.y, 50 - prev.x);
-          bounceDirection =
-            angleToCenter + Math.PI + (Math.random() - 0.5) * 0.8;
+        // Se chegar perto da barreira, muda direção suavemente
+        if (distanceFromCenter > barrierLimit) {
+          // Calcula direção de volta para o centro com variação aleatória
+          const angleToCenter = Math.atan2(50 - newY, 50 - newX);
+          bounceDirection = angleToCenter + (Math.random() - 0.5) * 1.0;
 
-          // Mantém posição atual (não teleporta) e só ajusta se necessário
-          if (distanceFromCenter > 36) {
-            // Só reposiciona se realmente saiu muito do limite
-            finalX = 50 + Math.cos(angleToCenter) * 35;
-            finalY = 50 + Math.sin(angleToCenter) * 35;
-          } else {
-            // Usa posição anterior para evitar teleporte
-            finalX = prev.x;
-            finalY = prev.y;
-          }
+          // Mantém na posi��ão atual para evitar teleporte
+          finalX = prev.x;
+          finalY = prev.y;
         }
 
         // Calcula rotação baseada na direção do movimento
@@ -2236,10 +2488,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           y: finalY,
           velocityX: newVelocityX,
           velocityY: newVelocityY,
-          direction: distanceFromCenter > 35 ? bounceDirection : newDirection,
+          direction:
+            distanceFromCenter > barrierLimit ? bounceDirection : newDirection,
           targetDirection: newTargetDirection,
-          directionChangeTimer: newDirectionChangeTimer,
-          nextDirectionChange: newNextDirectionChange,
+          directionChangeTimer: prev.directionChangeTimer + 1,
+          nextDirectionChange: prev.nextDirectionChange,
           rotation: newRotation,
           isMoving: true,
           isPaused: false,
@@ -2248,6 +2501,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           pauseCooldown,
           distanceToPlayer,
           nearestWorldDistance,
+          behavior,
+          behaviorTimer,
+          nextBehaviorChange,
+          targetPlanet,
+          orbitAngle,
         };
       });
     };
@@ -2558,7 +2816,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         </motion.div>
       )}
 
-      {/* Notificação de Colis��o - Centralizada no topo do mapa */}
+      {/* Notificaç��o de Colis��o - Centralizada no topo do mapa */}
       {collisionNotification.show && (
         <div className="absolute top-4 left-0 right-0 z-50 flex justify-center">
           <motion.div
@@ -2569,7 +2827,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             transition={{ duration: 0.2 }}
           >
             <p className="text-xs font-mono text-white/60 leading-tight text-center">
-              ALTO: nave não credenciada
+              ALTO: nave n��o credenciada
               <br />
               para cruzar barreira
             </p>
@@ -2678,8 +2936,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
           {/* Nave mercante navegante dentro da barreira */}
           <motion.div
-            className="absolute cursor-pointer z-20"
+            className="absolute cursor-pointer"
             style={{
+              zIndex: 100,
               left: `${wanderingShip.x}%`,
               top: `${wanderingShip.y}%`,
               transform: `translate(-50%, -50%)`,
@@ -2923,6 +3182,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         />
       </div>
 
+      {/* Canvas para estrelas parallax acima do jogador */}
+      <canvas
+        ref={parallaxCanvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 25 }}
+      />
+
       {/* Modal da Nave Navegante */}
       <AnimatePresence>
         {showShipModal && (
@@ -2961,21 +3227,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </svg>
                 </button>
 
-                {/* Header com gradiente */}
-                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-t-3xl p-6 text-center border-b border-gray-100">
-                  <motion.img
+                {/* Header sem gradiente */}
+                <div className="bg-white rounded-t-3xl p-6 text-center border-b border-gray-100">
+                  <img
                     src="https://cdn.builder.io/api/v1/image/assets%2Fcd7f7270636644acbedf48e0ef62abd0%2F9b01dc80171f480d8fb5a342061dde24?format=webp&width=800"
                     alt="Nave Mercante"
                     className="w-32 h-32 sm:w-48 sm:h-48 mx-auto mb-4"
-                    animate={{
-                      y: [0, -3, 0, 3, 0],
-                      rotate: [0, 1, 0, -1, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
                   />
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                     Capitão Zyx
@@ -3005,15 +3262,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3">
-                            "Olá, viajante! Sou o Capitão Zyx. Navego por estas
-                            rotas comerciais há décadas, transportando recursos
-                            entre os planetas do sistema."
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem]">
+                            {typewriterText1}
+                            {typewriterText1.length < fullText1.length && (
+                              <span className="animate-pulse">|</span>
+                            )}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            "Precisa de alguma coisa? Tenho suprimentos frescos
-                            de todas as dimensões!"
-                          </p>
+                          {showTypewriter2 && (
+                            <p className="text-sm text-gray-600 min-h-[2rem]">
+                              {typewriterText2}
+                              {typewriterText2.length < fullText2.length && (
+                                <span className="animate-pulse">|</span>
+                              )}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
