@@ -3343,7 +3343,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
-              onClick={(e) => handlePointInteraction(e, point)}
+              onClick={(e) => {
+                console.log(
+                  `🖱️ CLICK DETECTED on ${point.label} at z-index: ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`,
+                );
+                handlePointInteraction(e, point);
+              }}
               {...(isAdmin && {
                 onMouseDown: (e) => handlePointMouseDown(e, point),
               })}
