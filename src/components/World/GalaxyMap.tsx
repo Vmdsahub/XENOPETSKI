@@ -3346,15 +3346,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               <div className="relative group">
                 {/* Click zone indicator - 30px radius circle (always visible) */}
                 {true && (
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
                     <div
-                      className="border-2 border-blue-400/60 rounded-full opacity-70 transition-opacity duration-300 hover:opacity-100"
+                      className="border-4 border-red-500 rounded-full opacity-100 bg-red-500/20"
                       style={{
                         width: "60px",
                         height: "60px",
                       }}
                     >
-                      <div className="w-full h-full border-2 border-blue-400/40 rounded-full animate-pulse"></div>
+                      <div className="w-full h-full border-2 border-red-400 rounded-full animate-pulse bg-red-400/30"></div>
                     </div>
                   </div>
                 )}
