@@ -1001,7 +1001,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               layer + i + 1000,
             );
 
-            // Posição dentro da célula (completamente aleatória)
+            // Posição dentro da célula (completamente aleat��ria)
             const localX = starHash * 50;
             const localY = starHash2 * 50;
 
@@ -3382,45 +3382,37 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem] relative">
-                            <span className="relative">
-                              {typewriterText1}
-                              {alienText1 &&
-                                typewriterText1.length < fullText1.length && (
-                                  <span
-                                    className="absolute top-0 left-0 alien-text font-mono tracking-wider"
-                                    style={{
-                                      textShadow:
-                                        "0 0 15px rgba(96, 165, 250, 0.8), 0 0 30px rgba(167, 139, 250, 0.6)",
-                                      fontFamily: "monospace",
-                                      letterSpacing: "3px",
-                                      fontSize: "1.1em",
-                                    }}
-                                  >
-                                    {alienText1}
-                                  </span>
-                                )}
-                            </span>
+                            {typewriterText1}
+                            {alienText1 && (
+                              <span
+                                className="absolute -top-1 -right-2 alien-text font-mono text-xs opacity-80"
+                                style={{
+                                  textShadow:
+                                    "0 0 10px rgba(96, 165, 250, 0.8)",
+                                  fontSize: "0.7em",
+                                  transform: "rotate(-10deg)",
+                                }}
+                              >
+                                {alienText1}
+                              </span>
+                            )}
                           </p>
                           {showTypewriter2 && (
                             <p className="text-sm text-gray-600 min-h-[2rem] relative">
-                              <span className="relative">
-                                {typewriterText2}
-                                {alienText2 &&
-                                  typewriterText2.length < fullText2.length && (
-                                    <span
-                                      className="absolute top-0 left-0 alien-text font-mono tracking-wider"
-                                      style={{
-                                        textShadow:
-                                          "0 0 15px rgba(96, 165, 250, 0.8), 0 0 30px rgba(167, 139, 250, 0.6)",
-                                        fontFamily: "monospace",
-                                        letterSpacing: "3px",
-                                        fontSize: "1.1em",
-                                      }}
-                                    >
-                                      {alienText2}
-                                    </span>
-                                  )}
-                              </span>
+                              {typewriterText2}
+                              {alienText2 && (
+                                <span
+                                  className="absolute -top-1 -right-2 alien-text font-mono text-xs opacity-80"
+                                  style={{
+                                    textShadow:
+                                      "0 0 10px rgba(96, 165, 250, 0.8)",
+                                    fontSize: "0.7em",
+                                    transform: "rotate(-10deg)",
+                                  }}
+                                >
+                                  {alienText2}
+                                </span>
+                              )}
                             </p>
                           )}
                         </div>
