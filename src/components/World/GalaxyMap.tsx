@@ -1547,7 +1547,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola���ão
+  // Sistema de momentum mais suave usando interpola����ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -3366,20 +3366,34 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - 50px radius circle (always visible) */}
-                {!isAdmin && (
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
-                    <div
-                      className="border-3 border-blue-400/70 rounded-full opacity-80 bg-blue-400/10 transition-opacity duration-300 hover:opacity-100"
-                      style={{
-                        width: "100px",
-                        height: "100px",
-                      }}
-                    >
-                      <div className="w-full h-full border-2 border-blue-400/50 rounded-full animate-pulse"></div>
-                    </div>
-                  </div>
-                )}
+                {/* Click zone indicator - 50px radius circle with proximity-based styling */}
+                {!isAdmin &&
+                  (() => {
+                    const isNearby = isShipNearWorld(point);
+                    return (
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+                        <div
+                          className={`border-3 rounded-full transition-all duration-300 ${
+                            isNearby
+                              ? "border-green-400/90 bg-green-400/20 opacity-100 shadow-lg shadow-green-400/30"
+                              : "border-gray-400/50 bg-gray-400/10 opacity-60"
+                          }`}
+                          style={{
+                            width: "100px",
+                            height: "100px",
+                          }}
+                        >
+                          <div
+                            className={`w-full h-full border-2 rounded-full ${
+                              isNearby
+                                ? "border-green-400/70 animate-pulse"
+                                : "border-gray-400/40"
+                            }`}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                 {/* Imagem do planeta/estação */}
                 <div
