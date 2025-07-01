@@ -724,14 +724,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               0.3 + 0.7 * (1 + Math.sin(time * blinkSpeed + blinkOffset)) * 0.5;
 
             // Movimento de flutuação como poeira cósmica
-            const floatSpeedX = 0.3 + floatHash * 0.5; // Velocidades diferentes para X
-            const floatSpeedY = 0.2 + floatHash2 * 0.4; // Velocidades diferentes para Y
+            const floatSpeedX = 0.8 + floatHash * 1.2; // Velocidades mais rápidas para X
+            const floatSpeedY = 0.6 + floatHash2 * 1.0; // Velocidades mais rápidas para Y
             const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
             const floatOffsetY = floatHash2 * Math.PI * 2;
 
-            // Movimento sutil de flutuação (1-3 pixels de amplitude)
-            const floatAmplitudeX = 1.5 + floatHash * 1.5;
-            const floatAmplitudeY = 1.2 + floatHash2 * 1.8;
+            // Movimento mais visível de flutuação (3-8 pixels de amplitude)
+            const floatAmplitudeX = 3.0 + floatHash * 5.0;
+            const floatAmplitudeY = 2.5 + floatHash2 * 5.5;
 
             const floatX =
               Math.sin(time * floatSpeedX + floatOffsetX) * floatAmplitudeX;
@@ -1184,7 +1184,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      // Converte coordenadas do mouse para posição relativa ao canvas
+      // Converte coordenadas do mouse para posi��ão relativa ao canvas
       const relativeMouseX = mouseX - rect.left;
       const relativeMouseY = mouseY - rect.top;
 
@@ -2779,7 +2779,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             transition={{ duration: 0.2 }}
           >
             <p className="text-xs font-mono text-white/60 leading-tight text-center">
-              ALTO: nave não credenciada
+              ALTO: nave n��o credenciada
               <br />
               para cruzar barreira
             </p>
