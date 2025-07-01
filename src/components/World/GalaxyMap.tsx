@@ -3387,7 +3387,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                       `🎯 Rendering circle for ${point.label}, isNearby: ${isNearby}`,
                     );
                     return (
-                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
                         <div
                           className={`border-3 rounded-full transition-all duration-300 ${
                             isNearby
