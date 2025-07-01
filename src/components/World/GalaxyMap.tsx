@@ -2870,6 +2870,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   const handleConfirm = () => {
     if (confirmModal.point) {
+      // Set selected world data
+      setSelectedWorld({
+        id: confirmModal.point.id.toString(),
+        name: confirmModal.point.label,
+        description: `Explore o fascinante mundo de ${confirmModal.point.label}`,
+        type: confirmModal.point.type,
+        image: confirmModal.point.image,
+      });
+
       // Navigate to world detail screen
       setCurrentScreen("worldDetail");
       setConfirmModal({ show: false, point: null });
