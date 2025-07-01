@@ -3372,7 +3372,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 {/* Click zone indicator - 30px radius circle */}
                 <div className="absolute inset-0 pointer-events-none">
                   <div
-                    className="absolute border-2 border-blue-400/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className={`absolute border-2 rounded-full transition-all duration-300 ${
+                      hoveredPointInRadius === point.id
+                        ? "border-green-400/80 opacity-100 scale-110"
+                        : "border-blue-400/30 opacity-0 group-hover:opacity-60"
+                    }`}
                     style={{
                       width: "60px",
                       height: "60px",
@@ -3381,7 +3385,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                       transform: "translate(-50%, -50%)",
                     }}
                   >
-                    <div className="w-full h-full border-2 border-blue-400/60 rounded-full animate-pulse"></div>
+                    <div
+                      className={`w-full h-full border-2 rounded-full ${
+                        hoveredPointInRadius === point.id
+                          ? "border-green-400/60 animate-pulse"
+                          : "border-blue-400/60 animate-pulse"
+                      }`}
+                    ></div>
                   </div>
                 </div>
 
