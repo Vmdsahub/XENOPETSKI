@@ -3296,9 +3296,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     : rotatingPoint === point.id
                       ? "cursor-alias"
                       : "cursor-grab hover:cursor-grab active:cursor-grabbing"
-                  : hoveredPointInRadius === point.id
-                    ? "cursor-pointer"
-                    : "cursor-default"
+                  : "cursor-pointer"
               } ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`}
               style={{
                 left: `${point.x}%`,
