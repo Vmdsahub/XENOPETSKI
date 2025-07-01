@@ -3404,7 +3404,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                       ? "scale-110 brightness-110"
                       : resizingPoint === point.id
                         ? "brightness-125"
-                        : "hover:scale-105 hover:brightness-110"
+                        : hoveredPointInRadius === point.id
+                          ? "scale-105 brightness-125"
+                          : "hover:scale-105 hover:brightness-110"
                   }`}
                   style={{
                     transform: `scale(${point.scale || 1}) rotate(${point.rotation || 0}deg)`,
