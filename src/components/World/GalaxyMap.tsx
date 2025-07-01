@@ -1043,7 +1043,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Gera estrelas dinamicamente baseado na região visível
     const generateLayer = (density: number, speed: number, layer: number) => {
-      // Calcula posi��ão da c��mera com parallax
+      // Calcula posi��ão da câmera com parallax
       const cameraX = -currentMapX * speed;
       const cameraY = -currentMapY * speed;
 
@@ -1326,7 +1326,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
-        const repelForce = 15; // For��a da repulsão
+        const repelForce = 15; // For���a da repulsão
 
         // Para o movimento atual imediatamente
         setVelocity({ x: 0, y: 0 });
@@ -2334,7 +2334,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       setShipPosition({ x: newX, y: newY });
 
-      // Só atualiza mapa visual se movimento �� permitido
+      // Só atualiza mapa visual se movimento é permitido
       if (allowMovement) {
         let newMapX = mapX.get() + deltaX;
         let newMapY = mapY.get() + deltaY;
@@ -3395,37 +3395,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - matches the actual clickable area (192px = w-48) */}
-                {!isAdmin &&
-                  (() => {
-                    const isNearby = isShipNearWorld(point);
-                    console.log(
-                      `🎯 Rendering circle for ${point.label}, isNearby: ${isNearby}`,
-                    );
-                    return (
-                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-                        <div
-                          className={`border-3 rounded-full transition-all duration-300 ${
-                            isNearby
-                              ? "border-green-400/90 bg-green-400/20 opacity-100 shadow-lg shadow-green-400/30"
-                              : "border-gray-400/50 bg-gray-400/10 opacity-60"
-                          }`}
-                          style={{
-                            width: "192px", // Same as w-48 (48*4 = 192px)
-                            height: "192px",
-                          }}
-                        >
-                          <div
-                            className={`w-full h-full border-2 rounded-full ${
-                              isNearby
-                                ? "border-green-400/70 animate-pulse"
-                                : "border-gray-400/40"
-                            }`}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                {/* SIMPLIFIED DEBUG VERSION */}
+                {!isAdmin && (
+                  <div
+                    className="absolute inset-0 pointer-events-none flex items-center justify-center"
+                    style={{ zIndex: -1 }}
+                  >
+                    <div
+                      className="border-2 border-red-500 rounded-full bg-red-500/10"
+                      style={{
+                        width: "192px",
+                        height: "192px",
+                      }}
+                    ></div>
+                  </div>
+                )}
 
                 {/* Imagem do planeta/estação */}
                 <div
