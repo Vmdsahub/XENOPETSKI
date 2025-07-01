@@ -948,7 +948,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             // Pontinhos pequenos: 0.8px a 1.5px
             const size = 0.8 + opacityHash * 0.7;
 
-            // Animação de piscar baseada no hash único de cada estrela
+            // Animação de piscar baseada no hash ��nico de cada estrela
             const blinkSpeed = 1.5 + blinkHash * 2; // Velocidades diferentes
             const blinkOffset = blinkHash * Math.PI * 2; // Fases diferentes
             const blinkFactor =
@@ -1542,7 +1542,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola��ão
+  // Sistema de momentum mais suave usando interpola���ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -3404,10 +3404,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
                 {/* Tooltip melhorado */}
                 <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900 to-black text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none border border-gray-600 shadow-xl">
-                  <div className="font-bold text-cyan-300">{point.label}</div>
-                  <div className="text-gray-300 text-xs capitalize">
-                    {point.type}
-                  </div>
                   {point.scale && point.scale !== 1 && (
                     <div className="text-blue-300 text-xs">
                       Escala: {point.scale.toFixed(1)}x
