@@ -1326,7 +1326,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
-        const repelForce = 15; // For���a da repulsão
+        const repelForce = 15; // For��a da repulsão
 
         // Para o movimento atual imediatamente
         setVelocity({ x: 0, y: 0 });
@@ -2730,7 +2730,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     );
 
     if (shouldPlaySound) {
-      // Calcula volume baseado na distância com curva mais suave
+      // Calcula volume baseado na dist��ncia com curva mais suave
       const normalizedDistance = Math.max(
         0,
         Math.min(1, distance / maxDistance),
@@ -2913,27 +2913,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    console.log("🔍 Starting proximity and click checks...");
-
-    // Regular user: check if click is within the circle (96px radius = half of 192px circle)
-    const clickDistance = getDistanceToPoint(e, point);
-    console.log("📏 Click distance:", clickDistance);
-    if (clickDistance === null || clickDistance > 96) {
-      console.log("❌ Click outside the interaction circle (96px radius)");
-      return;
-    }
-    console.log("✅ Click is within the circle");
-
-    // Most important: check if ship is actually near the world
-    const shipNear = isShipNearWorld(point);
-    console.log(`🔍 Ship near result: ${shipNear}`);
-    if (!shipNear) {
-      console.log("❌ Ship is not close enough to the world");
-      return;
-    }
-    console.log("✅ Ship is close enough to the world");
-
-    console.log("🎉 ALL CHECKS PASSED - showing confirmation modal");
+    // TESTING: Skip all checks and just show modal
+    console.log("🧪 DEBUG MODE: Bypassing all restrictions");
     setConfirmModal({ show: true, point });
   };
 
