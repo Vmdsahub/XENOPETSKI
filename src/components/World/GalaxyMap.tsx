@@ -455,10 +455,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           // Primeiro mostra o caractere alienígena na posição correta
           setTypewriterText1(fullText1.slice(0, index1) + alienChar);
 
-          // Depois de 80ms, substitui pelo caractere real
+          // Depois de 40ms, substitui pelo caractere real
           setTimeout(() => {
             setTypewriterText1(fullText1.slice(0, index1 + 1));
-          }, 80);
+          }, 40);
 
           index1++;
         } else {
@@ -476,19 +476,19 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 // Primeiro mostra o caractere alienígena na posição correta
                 setTypewriterText2(fullText2.slice(0, index2) + alienChar);
 
-                // Depois de 80ms, substitui pelo caractere real
+                // Depois de 40ms, substitui pelo caractere real
                 setTimeout(() => {
                   setTypewriterText2(fullText2.slice(0, index2 + 1));
-                }, 80);
+                }, 40);
 
                 index2++;
               } else {
                 clearInterval(timer2);
               }
-            }, 120); // 120ms por caractere para segunda frase
-          }, 600); // Pausa de 600ms entre frases
+            }, 50); // 50ms por caractere para segunda frase
+          }, 800); // Pausa de 800ms entre frases
         }
-      }, 110); // 110ms por caractere para primeira frase
+      }, 30); // 30ms por caractere para primeira frase
 
       return () => {
         clearInterval(timer1);
@@ -958,7 +958,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
             const floatOffsetY = floatHash2 * Math.PI * 2;
 
-            // Movimento mais visível de flutuaç��o (3-8 pixels de amplitude)
+            // Movimento mais visível de flutuação (3-8 pixels de amplitude)
             const floatAmplitudeX = 3.0 + floatHash * 5.0;
             const floatAmplitudeY = 2.5 + floatHash2 * 5.5;
 
