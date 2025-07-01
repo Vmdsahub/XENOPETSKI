@@ -2816,7 +2816,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         </motion.div>
       )}
 
-      {/* Notificação de Colis��o - Centralizada no topo do mapa */}
+      {/* Notificaç��o de Colis��o - Centralizada no topo do mapa */}
       {collisionNotification.show && (
         <div className="absolute top-4 left-0 right-0 z-50 flex justify-center">
           <motion.div
@@ -3246,7 +3246,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 <div className="p-6">
                   {/* Texto de diálogo */}
                   <div className="mb-6">
-                    <div className="bg-blue-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
+                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <svg
