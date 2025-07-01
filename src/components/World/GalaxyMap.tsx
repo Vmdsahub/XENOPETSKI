@@ -3389,18 +3389,44 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem]">
-                            {typewriterText1}
-                            {typewriterText1.length < fullText1.length && (
-                              <span className="animate-pulse">|</span>
-                            )}
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem] relative">
+                            <span className="relative">
+                              {typewriterText1}
+                              {alienText1 &&
+                                typewriterText1.length < fullText1.length && (
+                                  <span
+                                    className="absolute top-0 left-0 text-blue-400 opacity-60 animate-pulse font-mono tracking-wider"
+                                    style={{
+                                      textShadow:
+                                        "0 0 10px rgba(59, 130, 246, 0.5)",
+                                      fontFamily: "monospace",
+                                      letterSpacing: "2px",
+                                    }}
+                                  >
+                                    {alienText1}
+                                  </span>
+                                )}
+                            </span>
                           </p>
                           {showTypewriter2 && (
-                            <p className="text-sm text-gray-600 min-h-[2rem]">
-                              {typewriterText2}
-                              {typewriterText2.length < fullText2.length && (
-                                <span className="animate-pulse">|</span>
-                              )}
+                            <p className="text-sm text-gray-600 min-h-[2rem] relative">
+                              <span className="relative">
+                                {typewriterText2}
+                                {alienText2 &&
+                                  typewriterText2.length < fullText2.length && (
+                                    <span
+                                      className="absolute top-0 left-0 text-blue-400 opacity-60 animate-pulse font-mono tracking-wider"
+                                      style={{
+                                        textShadow:
+                                          "0 0 10px rgba(59, 130, 246, 0.5)",
+                                        fontFamily: "monospace",
+                                        letterSpacing: "2px",
+                                      }}
+                                    >
+                                      {alienText2}
+                                    </span>
+                                  )}
+                              </span>
                             </p>
                           )}
                         </div>
