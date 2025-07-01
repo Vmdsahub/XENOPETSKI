@@ -1540,7 +1540,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola���ão
+  // Sistema de momentum mais suave usando interpola��ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -3284,7 +3284,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
-              onClick={() => handlePointClick(point)}
+              onClick={(e) => handlePointClick(e, point)}
               onMouseDown={(e) => handlePointMouseDown(e, point)}
               onTouchStart={(e) => handlePointTouchStart(e, point)}
               whileHover={{ scale: 1.04 }}
