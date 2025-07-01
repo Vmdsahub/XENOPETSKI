@@ -455,10 +455,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           // Primeiro mostra o caractere alienígena na posição correta
           setTypewriterText1(fullText1.slice(0, index1) + alienChar);
 
-          // Depois de 120ms, substitui pelo caractere real
+          // Depois de 80ms, substitui pelo caractere real
           setTimeout(() => {
             setTypewriterText1(fullText1.slice(0, index1 + 1));
-          }, 120);
+          }, 80);
 
           index1++;
         } else {
@@ -476,19 +476,19 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 // Primeiro mostra o caractere alienígena na posição correta
                 setTypewriterText2(fullText2.slice(0, index2) + alienChar);
 
-                // Depois de 120ms, substitui pelo caractere real
+                // Depois de 80ms, substitui pelo caractere real
                 setTimeout(() => {
                   setTypewriterText2(fullText2.slice(0, index2 + 1));
-                }, 120);
+                }, 80);
 
                 index2++;
               } else {
                 clearInterval(timer2);
               }
-            }, 180); // 180ms por caractere para segunda frase (mais devagar para ver o efeito)
-          }, 800); // Pausa de 800ms entre frases
+            }, 120); // 120ms por caractere para segunda frase
+          }, 600); // Pausa de 600ms entre frases
         }
-      }, 160); // 160ms por caractere para primeira frase (mais devagar para ver o efeito)
+      }, 110); // 110ms por caractere para primeira frase
 
       return () => {
         clearInterval(timer1);
@@ -763,7 +763,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       // Atualiza estrelas cadentes existentes
       shootingStarsRef.current = shootingStarsRef.current.filter((star) => {
-        // Anima��ão baseada em seno para movimento fluido
+        // Animação baseada em seno para movimento fluido
         const timeDelta = (currentTime - star.startTime) * 0.001; // Converte para segundos
         const sineWave = Math.sin(timeDelta * 3) * 0.3; // Ondulação suave
 
@@ -958,7 +958,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
             const floatOffsetY = floatHash2 * Math.PI * 2;
 
-            // Movimento mais visível de flutuação (3-8 pixels de amplitude)
+            // Movimento mais visível de flutuaç��o (3-8 pixels de amplitude)
             const floatAmplitudeX = 3.0 + floatHash * 5.0;
             const floatAmplitudeY = 2.5 + floatHash2 * 5.5;
 
