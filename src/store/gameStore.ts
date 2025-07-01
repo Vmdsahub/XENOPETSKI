@@ -701,6 +701,9 @@ export const useGameStore = create<GameStore>()(
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
 
+      // Selected world actions
+      setSelectedWorld: (world) => set({ selectedWorld: world }),
+
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>
         set({ selectedEggForHatching: eggData }),
