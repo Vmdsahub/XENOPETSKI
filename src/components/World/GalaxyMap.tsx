@@ -3422,9 +3422,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     </div>
                   )}
 
-                  {/* Tooltip arrow */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                </div>
+
               </div>
             </motion.div>
           ))}
