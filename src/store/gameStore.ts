@@ -660,6 +660,9 @@ export const useGameStore = create<GameStore>()(
       isHatchingInProgress: false,
       hatchingEgg: null,
 
+      // Selected world state
+      selectedWorld: null,
+
       // Core actions
       setUser: (user) => {
         const state = get();
