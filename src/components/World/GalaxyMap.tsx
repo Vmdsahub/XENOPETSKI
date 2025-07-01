@@ -1043,7 +1043,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Gera estrelas dinamicamente baseado na região visível
     const generateLayer = (density: number, speed: number, layer: number) => {
-      // Calcula posi��ão da câmera com parallax
+      // Calcula posi��ão da c��mera com parallax
       const cameraX = -currentMapX * speed;
       const cameraY = -currentMapY * speed;
 
@@ -1323,7 +1323,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repuls�����o
+        // Normaliza a direç���o e aplica força de repuls����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -2334,7 +2334,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
       setShipPosition({ x: newX, y: newY });
 
-      // Só atualiza mapa visual se movimento é permitido
+      // Só atualiza mapa visual se movimento �� permitido
       if (allowMovement) {
         let newMapX = mapX.get() + deltaX;
         let newMapY = mapY.get() + deltaY;
@@ -2763,7 +2763,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           osc1.frequency.setValueAtTime(70, startTime); // Mais grave
           osc2.frequency.setValueAtTime(140, startTime); // Harmônico
 
-          // Volumes iniciais baseados na dist��ncia
+          // Volumes iniciais baseados na distância
           gain1.gain.setValueAtTime(volume * 0.6, startTime);
           gain2.gain.setValueAtTime(volume * 0.4, startTime);
 
@@ -3496,7 +3496,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       <canvas
         ref={parallaxCanvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 25 }}
+        style={{ zIndex: 5 }}
       />
 
       {/* Modal da Nave Navegante */}
