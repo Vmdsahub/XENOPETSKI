@@ -328,7 +328,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "⬩",
       "⬪",
       "⬫",
-      "���",
+      "⬬",
       "⬭",
       "⬮",
       "⬯",
@@ -2474,7 +2474,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const dy = prev.y - centerY;
         const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
 
-        // Debug da posição (apenas ocasionalmente para não spam)
+        // Debug da posi��ão (apenas ocasionalmente para não spam)
         if (Math.random() < 0.01) {
           console.log(
             `📍 Nave em: (${prev.x.toFixed(1)}, ${prev.y.toFixed(1)}), Jogador: (${centerX}, ${centerY}), Distância: ${distanceToPlayer.toFixed(2)}`,
@@ -3402,11 +3402,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </div>
                 )}
 
-                {point.rotation && point.rotation !== 0 && (
-                  <div className="text-purple-300 text-xs">
-                    Rotação: {point.rotation.toFixed(0)}°
-                  </div>
-                )}
                 {isAdmin && (
                   <div className="text-yellow-400 text-xs mt-1">
                     <div>�� Arraste para mover</div>
