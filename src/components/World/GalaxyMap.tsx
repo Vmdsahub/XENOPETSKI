@@ -3395,12 +3395,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                               {alienText1 &&
                                 typewriterText1.length < fullText1.length && (
                                   <span
-                                    className="absolute top-0 left-0 text-blue-400 opacity-60 animate-pulse font-mono tracking-wider"
+                                    className="absolute top-0 left-0 alien-text font-mono tracking-wider"
                                     style={{
                                       textShadow:
-                                        "0 0 10px rgba(59, 130, 246, 0.5)",
+                                        "0 0 15px rgba(96, 165, 250, 0.8), 0 0 30px rgba(167, 139, 250, 0.6)",
                                       fontFamily: "monospace",
-                                      letterSpacing: "2px",
+                                      letterSpacing: "3px",
+                                      fontSize: "1.1em",
                                     }}
                                   >
                                     {alienText1}
@@ -3415,12 +3416,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                                 {alienText2 &&
                                   typewriterText2.length < fullText2.length && (
                                     <span
-                                      className="absolute top-0 left-0 text-blue-400 opacity-60 animate-pulse font-mono tracking-wider"
+                                      className="absolute top-0 left-0 alien-text font-mono tracking-wider"
                                       style={{
                                         textShadow:
-                                          "0 0 10px rgba(59, 130, 246, 0.5)",
+                                          "0 0 15px rgba(96, 165, 250, 0.8), 0 0 30px rgba(167, 139, 250, 0.6)",
                                         fontFamily: "monospace",
-                                        letterSpacing: "2px",
+                                        letterSpacing: "3px",
+                                        fontSize: "1.1em",
                                       }}
                                     >
                                       {alienText2}
