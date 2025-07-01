@@ -1323,7 +1323,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       );
 
       if (distance > 0) {
-        // Normaliza a direç���o e aplica força de repuls����o
+        // Normaliza a direç���o e aplica força de repuls�����o
         const normalizedX = repelDirectionX / distance;
         const normalizedY = repelDirectionY / distance;
         const repelForce = 15; // For��a da repulsão
@@ -2763,7 +2763,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           osc1.frequency.setValueAtTime(70, startTime); // Mais grave
           osc2.frequency.setValueAtTime(140, startTime); // Harmônico
 
-          // Volumes iniciais baseados na distância
+          // Volumes iniciais baseados na dist��ncia
           gain1.gain.setValueAtTime(volume * 0.6, startTime);
           gain2.gain.setValueAtTime(volume * 0.4, startTime);
 
@@ -3240,7 +3240,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           <motion.div
             className="absolute cursor-pointer"
             style={{
-              zIndex: 100,
+              zIndex: 15, // Reduced from 100 to not block world clicks
               left: `${wanderingShip.x}%`,
               top: `${wanderingShip.y}%`,
               transform: `translate(-50%, -50%)`,
