@@ -377,7 +377,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return Array.from({ length }, () => generateAlienChar()).join("");
   };
 
-  // Efeito typewriter com tradução alienígena
+  // Efeito typewriter simples e natural
   useEffect(() => {
     if (showShipModal) {
       // Reset dos textos quando modal abre
@@ -391,18 +391,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       let index1 = 0;
       const timer1 = setInterval(() => {
         if (index1 < fullText1.length) {
-          const currentChar = fullText1[index1];
-          const alienChar = generateAlienChar();
+          setTypewriterText1(fullText1.slice(0, index1 + 1));
 
-          // Primeiro mostra o caractere alienígena
-          setAlienText1(generateAlienText(index1 + 1));
-          setTypewriterText1(fullText1.slice(0, index1) + alienChar);
-
-          // Depois de 150ms, mostra o caractere real
-          setTimeout(() => {
-            setTypewriterText1(fullText1.slice(0, index1 + 1));
-            setAlienText1("");
-          }, 150);
+          // Efeito alienígena sutil apenas para o último caractere
+          if (Math.random() > 0.7) {
+            // 30% de chance de mostrar efeito alienígena
+            setAlienText1(generateAlienChar());
+            setTimeout(() => setAlienText1(""), 100);
+          }
 
           index1++;
         } else {
@@ -414,27 +410,23 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             let index2 = 0;
             const timer2 = setInterval(() => {
               if (index2 < fullText2.length) {
-                const currentChar = fullText2[index2];
-                const alienChar = generateAlienChar();
+                setTypewriterText2(fullText2.slice(0, index2 + 1));
 
-                // Primeiro mostra o caractere alienígena
-                setAlienText2(generateAlienText(index2 + 1));
-                setTypewriterText2(fullText2.slice(0, index2) + alienChar);
-
-                // Depois de 150ms, mostra o caractere real
-                setTimeout(() => {
-                  setTypewriterText2(fullText2.slice(0, index2 + 1));
-                  setAlienText2("");
-                }, 150);
+                // Efeito alienígena sutil apenas para o último caractere
+                if (Math.random() > 0.7) {
+                  // 30% de chance de mostrar efeito alienígena
+                  setAlienText2(generateAlienChar());
+                  setTimeout(() => setAlienText2(""), 100);
+                }
 
                 index2++;
               } else {
                 clearInterval(timer2);
               }
-            }, 80); // 80ms por caractere para segunda frase
-          }, 1000); // Pausa de 1000ms entre frases
+            }, 50); // 50ms por caractere para segunda frase
+          }, 800); // Pausa de 800ms entre frases
         }
-      }, 60); // 60ms por caractere para primeira frase
+      }, 35); // 35ms por caractere para primeira frase
 
       return () => {
         clearInterval(timer1);
