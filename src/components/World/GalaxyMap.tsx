@@ -374,7 +374,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "∢",
       "∣",
       "∤",
-      "∥",
+      "��",
       "∦",
       "∧",
       "∨",
@@ -411,7 +411,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "���",
       "≈",
       "≉",
-      "≊",
+      "��",
       "≋",
       "≌",
       "≍",
@@ -1547,7 +1547,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola���ão
+  // Sistema de momentum mais suave usando interpola����ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -2730,7 +2730,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     );
 
     if (shouldPlaySound) {
-      // Calcula volume baseado na distância com curva mais suave
+      // Calcula volume baseado na dist��ncia com curva mais suave
       const normalizedDistance = Math.max(
         0,
         Math.min(1, distance / maxDistance),
@@ -2862,6 +2862,41 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     );
   };
 
+  // Function to check if ship is near a world (using game coordinates)
+  const isShipNearWorld = (point: Point): boolean => {
+    // Using toroidal distance calculation for accurate positioning
+    const shipDistance = getToroidalDistance(shipPosition, {
+      x: point.x,
+      y: point.y,
+    });
+
+    // Try different distance calculations
+    const simpleDistance = Math.sqrt(
+      Math.pow(shipPosition.x - point.x, 2) +
+        Math.pow(shipPosition.y - point.y, 2),
+    );
+
+    const maxInteractionDistance = 25; // Increased significantly for testing
+
+    console.log(
+      `🚀 Ship position: (${shipPosition.x.toFixed(2)}, ${shipPosition.y.toFixed(2)})`,
+    );
+    console.log(
+      `🌍 World ${point.label} position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
+    );
+    console.log(`📏 Toroidal distance: ${shipDistance.toFixed(2)}`);
+    console.log(`📏 Simple distance: ${simpleDistance.toFixed(2)}`);
+    console.log(`📏 Max distance: ${maxInteractionDistance}`);
+    console.log(
+      `✅ Is near (toroidal): ${shipDistance <= maxInteractionDistance}`,
+    );
+    console.log(
+      `✅ Is near (simple): ${simpleDistance <= maxInteractionDistance}`,
+    );
+
+    return shipDistance <= maxInteractionDistance;
+  };
+
   const handlePointInteraction = (e: React.MouseEvent, point: Point) => {
     e.stopPropagation();
     console.log("🖱️ Point clicked:", point.label, "isAdmin:", isAdmin);
@@ -2878,15 +2913,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Regular user: check if click is within 50px radius (increased from 30px)
-    const distance = getDistanceToPoint(e, point);
-    console.log("📏 Distance:", distance);
-    if (distance === null || distance > 50) {
-      console.log("❌ Click outside radius or distance calculation failed");
-      return;
-    }
-
-    console.log("✅ Showing confirmation modal");
+    // TESTING: Skip all checks and just show modal
+    console.log("🧪 DEBUG MODE: Bypassing all restrictions");
     setConfirmModal({ show: true, point });
   };
 
@@ -3193,7 +3221,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           <motion.div
             className="absolute cursor-pointer"
             style={{
-              zIndex: 100,
+              zIndex: 15, // Reduced from 100 to not block world clicks
               left: `${wanderingShip.x}%`,
               top: `${wanderingShip.y}%`,
               transform: `translate(-50%, -50%)`,
@@ -3312,7 +3340,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
-              onClick={(e) => handlePointInteraction(e, point)}
+              onClick={(e) => {
+                console.log(
+                  `🖱️ CLICK DETECTED on ${point.label} at z-index: ${draggingPoint === point.id || resizingPoint === point.id || rotatingPoint === point.id ? "z-50" : "z-30"}`,
+                );
+                handlePointInteraction(e, point);
+              }}
               {...(isAdmin && {
                 onMouseDown: (e) => handlePointMouseDown(e, point),
               })}
@@ -3343,18 +3376,19 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - 50px radius circle (always visible) */}
+                {/* SIMPLIFIED DEBUG VERSION */}
                 {!isAdmin && (
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+                  <div
+                    className="absolute inset-0 pointer-events-none flex items-center justify-center"
+                    style={{ zIndex: -1 }}
+                  >
                     <div
-                      className="border-3 border-blue-400/70 rounded-full opacity-80 bg-blue-400/10 transition-opacity duration-300 hover:opacity-100"
+                      className="border-2 border-red-500 rounded-full bg-red-500/10"
                       style={{
-                        width: "100px",
-                        height: "100px",
+                        width: "192px",
+                        height: "192px",
                       }}
-                    >
-                      <div className="w-full h-full border-2 border-blue-400/50 rounded-full animate-pulse"></div>
-                    </div>
+                    ></div>
                   </div>
                 )}
 
@@ -3427,7 +3461,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       <canvas
         ref={parallaxCanvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 25 }}
+        style={{ zIndex: 5 }}
       />
 
       {/* Modal da Nave Navegante */}
