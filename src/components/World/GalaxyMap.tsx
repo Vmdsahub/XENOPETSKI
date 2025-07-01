@@ -3677,8 +3677,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto rounded-full mb-4 overflow-hidden">
                   <img
-                    src={landingModal.point.image}
-                    alt={landingModal.point.label}
+                    src={confirmModal.point.image}
+                    alt={confirmModal.point.label}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -3688,7 +3688,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 </h3>
 
                 <p className="text-gray-600 mb-6">
-                  Deseja pousar em <strong>{landingModal.point.label}</strong>?
+                  Deseja pousar em <strong>{confirmModal.point.label}</strong>?
                 </p>
 
                 <div className="flex space-x-3">
