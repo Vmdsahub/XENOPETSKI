@@ -420,7 +420,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "≖",
       "≗",
       "≘",
-      "≙",
+      "���",
       "≚",
       "≛",
       "≜",
@@ -2908,7 +2908,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     }
   };
 
-  const handlePointMouseMove = (e: React.MouseEvent, point: Point) => {
+  const handlePointHoverMove = (e: React.MouseEvent, point: Point) => {
     const clickRadius = 30;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
