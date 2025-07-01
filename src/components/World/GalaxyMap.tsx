@@ -3402,27 +3402,23 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </div>
                 )}
 
-                {/* Tooltip melhorado */}
-                <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900 to-black text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none border border-gray-600 shadow-xl">
-                  {point.scale && point.scale !== 1 && (
-                    <div className="text-blue-300 text-xs">
-                      Escala: {point.scale.toFixed(1)}x
-                    </div>
-                  )}
-                  {point.rotation && point.rotation !== 0 && (
-                    <div className="text-purple-300 text-xs">
-                      Rotação: {point.rotation.toFixed(0)}°
-                    </div>
-                  )}
-                  {isAdmin && (
-                    <div className="text-yellow-400 text-xs mt-1">
-                      <div>�� Arraste para mover</div>
-                      <div>🔧 Ctrl+Arraste para redimensionar</div>
-                      <div>🔄 Alt+Arraste para rotacionar</div>
-                    </div>
-                  )}
-
-
+                {point.scale && point.scale !== 1 && (
+                  <div className="text-blue-300 text-xs">
+                    Escala: {point.scale.toFixed(1)}x
+                  </div>
+                )}
+                {point.rotation && point.rotation !== 0 && (
+                  <div className="text-purple-300 text-xs">
+                    Rotação: {point.rotation.toFixed(0)}°
+                  </div>
+                )}
+                {isAdmin && (
+                  <div className="text-yellow-400 text-xs mt-1">
+                    <div>�� Arraste para mover</div>
+                    <div>🔧 Ctrl+Arraste para redimensionar</div>
+                    <div>🔄 Alt+Arraste para rotacionar</div>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
