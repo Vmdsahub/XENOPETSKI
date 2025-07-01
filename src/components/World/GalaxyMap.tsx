@@ -3271,15 +3271,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3">
-                            "Olá, viajante! Sou o Capitão Zyx. Navego por estas
-                            rotas comerciais há décadas, transportando recursos
-                            entre os planetas do sistema."
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem]">
+                            {typewriterText1}
+                            {typewriterText1.length < fullText1.length && (
+                              <span className="animate-pulse">|</span>
+                            )}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            "Precisa de alguma coisa? Tenho suprimentos frescos
-                            de todas as dimensões!"
-                          </p>
+                          {showTypewriter2 && (
+                            <p className="text-sm text-gray-600 min-h-[2rem]">
+                              {typewriterText2}
+                              {typewriterText2.length < fullText2.length && (
+                                <span className="animate-pulse">|</span>
+                              )}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
