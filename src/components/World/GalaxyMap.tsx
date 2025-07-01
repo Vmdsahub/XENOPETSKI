@@ -1946,7 +1946,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       mapY.set(newMapY);
     }
 
-    // Rotação responsiva com interpolação suave
+    // Rotaç��o responsiva com interpolação suave
     if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 1) {
       setHasMoved(true);
       const newAngle = Math.atan2(-deltaY, -deltaX) * (180 / Math.PI) + 90;
@@ -3337,6 +3337,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               onClick={(e) => handlePointClick(e, point)}
               onMouseDown={(e) => handlePointMouseDown(e, point)}
               onTouchStart={(e) => handlePointTouchStart(e, point)}
+              onMouseEnter={(e) => handlePointMouseEnter(e, point)}
+              onMouseMove={(e) => handlePointMouseMove(e, point)}
+              onMouseLeave={handlePointMouseLeave}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
               animate={{
