@@ -4,17 +4,17 @@ import { DetailView } from "../World/DetailView";
 import { useGameStore } from "../../store/gameStore";
 
 export const WorldDetailScreen: React.FC = () => {
-  const { setCurrentScreen } = useGameStore();
+  const { setCurrentScreen, selectedWorld, setSelectedWorld } = useGameStore();
 
   const handleBack = () => {
+    setSelectedWorld(null); // Clear selected world
     setCurrentScreen("world");
   };
 
-  // For now, using a default world data
-  // Later this could be passed via the game store state
-  const worldData = {
-    id: "selected-world",
-    name: "Mundo Selecionado",
+  // Use selected world data from store, fallback to default
+  const worldData = selectedWorld || {
+    id: "default-world",
+    name: "Mundo Padrão",
     description: "Explore este fascinante mundo e suas maravilhas",
     type: "world",
     image:
