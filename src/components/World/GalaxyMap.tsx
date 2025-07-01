@@ -19,6 +19,7 @@ import {
   stopEngineSound,
 } from "../../utils/soundManager";
 import { useAuthStore } from "../../store/authStore";
+import { useGameStore } from "../../store/gameStore";
 import { gameService, GalaxyWorld } from "../../services/gameService";
 import { useBackgroundMusic } from "../../hooks/useBackgroundMusic";
 
@@ -146,7 +147,13 @@ const wrap = (value: number, min: number, max: number): number => {
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const { user } = useAuthStore();
+  const { setCurrentScreen, setSelectedWorld } = useGameStore();
   const isAdmin = user?.username === "Vitoca";
+
+  // Debug log
+  useEffect(() => {
+    console.log("🔍 Debug - User:", user?.username, "isAdmin:", isAdmin);
+  }, [user, isAdmin]);
 
   // Background music for galactic navigation
   const { play: playMusic, pause: pauseMusic } = useBackgroundMusic();
@@ -339,12 +346,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "∆",
       "∇",
       "∈",
-      "∉",
+      "��",
       "∊",
       "∋",
       "∌",
       "∍",
-      "∎",
+      "���",
       "∏",
       "∐",
       "∑",
@@ -401,7 +408,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "≄",
       "≅",
       "≆",
-      "≇",
+      "���",
       "≈",
       "≉",
       "≊",
@@ -430,7 +437,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return alienChars[Math.floor(Math.random() * alienChars.length)];
   };
 
-  // Função para gerar texto alienígena baseado no comprimento
+  // Fun��ão para gerar texto alienígena baseado no comprimento
   const generateAlienText = (length: number) => {
     return Array.from({ length }, () => generateAlienChar()).join("");
   };
@@ -546,7 +553,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const targetRotation = useRef(0);
   const lastRotationUpdate = useRef(0);
 
-  // Estados para momentum/inércia
+  // Estados para momentum/in��rcia
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [isDecelerating, setIsDecelerating] = useState(false);
   const velocityRef = useRef({ x: 0, y: 0 });
@@ -946,7 +953,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             // Pontinhos pequenos: 0.8px a 1.5px
             const size = 0.8 + opacityHash * 0.7;
 
-            // Animação de piscar baseada no hash único de cada estrela
+            // Animação de piscar baseada no hash ��nico de cada estrela
             const blinkSpeed = 1.5 + blinkHash * 2; // Velocidades diferentes
             const blinkOffset = blinkHash * Math.PI * 2; // Fases diferentes
             const blinkFactor =
@@ -967,7 +974,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const floatY =
               Math.cos(time * floatSpeedY + floatOffsetY) * floatAmplitudeY;
 
-            // Posição final com flutuação
+            // Posição final com flutuaç��o
             const finalX = screenX + floatX;
             const finalY = screenY + floatY;
 
@@ -1036,7 +1043,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Gera estrelas dinamicamente baseado na região visível
     const generateLayer = (density: number, speed: number, layer: number) => {
-      // Calcula posição da câmera com parallax
+      // Calcula posi��ão da câmera com parallax
       const cameraX = -currentMapX * speed;
       const cameraY = -currentMapY * speed;
 
@@ -1351,7 +1358,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [mapX, mapY],
   );
 
-  // Função para mostrar notificação de colisão local
+  // Função para mostrar notifica��ão de colisão local
   const showCollisionNotification = useCallback(() => {
     const notificationId = Date.now();
     setCollisionNotification({ show: true, id: notificationId });
@@ -1403,7 +1410,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [],
   );
 
-  // Função para atualizar dire��ão do auto-piloto baseada na posição do mouse
+  // Função para atualizar dire����ão do auto-piloto baseada na posição do mouse
   const updateAutoPilotDirection = useCallback(
     (mouseX: number, mouseY: number) => {
       const canvas = canvasRef.current;
@@ -1540,7 +1547,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola��ão
+  // Sistema de momentum mais suave usando interpola���ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -1945,7 +1952,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       mapY.set(newMapY);
     }
 
-    // Rotação responsiva com interpolação suave
+    // Rotaç��o responsiva com interpolação suave
     if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 1) {
       setHasMoved(true);
       const newAngle = Math.atan2(-deltaY, -deltaX) * (180 / Math.PI) + 90;
@@ -2472,7 +2479,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const dy = prev.y - centerY;
         const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
 
-        // Debug da posição (apenas ocasionalmente para não spam)
+        // Debug da posi��ão (apenas ocasionalmente para não spam)
         if (Math.random() < 0.01) {
           console.log(
             `📍 Nave em: (${prev.x.toFixed(1)}, ${prev.y.toFixed(1)}), Jogador: (${centerX}, ${centerY}), Distância: ${distanceToPlayer.toFixed(2)}`,
@@ -2551,7 +2558,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             targetPlanet = points[Math.floor(Math.random() * points.length)];
             behavior = "approaching";
             behaviorTimer = 0;
-            nextBehaviorChange = 9999; // Não muda até completar a sequência
+            nextBehaviorChange = 9999; // Não muda até completar a sequ��ncia
           } else if (behavior === "orbiting") {
             behavior = "leaving";
             behaviorTimer = 0;
@@ -2831,10 +2838,77 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, []);
 
-  const handlePointClick = (point: Point) => {
-    if (!isAdmin || draggingPoint !== null) return;
-    console.log(`Clicou no ${point.label}`, point);
-    // Aqui você pode adicionar a lógica para abrir detalhes do ponto
+  // State for confirmation modal
+  const [confirmModal, setConfirmModal] = useState<{
+    show: boolean;
+    point: Point | null;
+  }>({ show: false, point: null });
+
+  // Utility function to calculate distance from mouse to point center
+  const getDistanceToPoint = (
+    e: React.MouseEvent,
+    point: Point,
+  ): number | null => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    return Math.sqrt(
+      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
+    );
+  };
+
+  const handlePointInteraction = (e: React.MouseEvent, point: Point) => {
+    e.stopPropagation();
+    console.log("🖱️ Point clicked:", point.label, "isAdmin:", isAdmin);
+
+    if (isAdmin) {
+      // Admin: only allow click if not currently dragging/resizing/rotating
+      if (
+        draggingPoint !== null ||
+        resizingPoint !== null ||
+        rotatingPoint !== null
+      )
+        return;
+      console.log(`Admin clicked on ${point.label}`, point);
+      return;
+    }
+
+    // Regular user: check if click is within 50px radius (increased from 30px)
+    const distance = getDistanceToPoint(e, point);
+    console.log("📏 Distance:", distance);
+    if (distance === null || distance > 50) {
+      console.log("❌ Click outside radius or distance calculation failed");
+      return;
+    }
+
+    console.log("✅ Showing confirmation modal");
+    setConfirmModal({ show: true, point });
+  };
+
+  const handleConfirm = () => {
+    if (confirmModal.point) {
+      // Set selected world data
+      setSelectedWorld({
+        id: confirmModal.point.id.toString(),
+        name: confirmModal.point.label,
+        description: `Explore o fascinante mundo de ${confirmModal.point.label}`,
+        type: confirmModal.point.type,
+        image: confirmModal.point.image,
+      });
+
+      // Navigate to world detail screen
+      setCurrentScreen("worldDetail");
+      setConfirmModal({ show: false, point: null });
+    }
+  };
+
+  const handleCancel = () => {
+    setConfirmModal({ show: false, point: null });
   };
 
   // Point drag handlers
@@ -3095,7 +3169,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             zIndex: 5,
           }}
         >
-          {/* Animação de rotaç��o continua */}
+          {/* Animação de rotaç����o continua */}
           <motion.div
             className="w-full h-full rounded-full border-2 border-dashed"
             style={{
@@ -3238,11 +3312,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 top: `${point.y}%`,
                 pointerEvents: "auto",
               }}
-              onClick={() => handlePointClick(point)}
-              onMouseDown={(e) => handlePointMouseDown(e, point)}
-              onTouchStart={(e) => handlePointTouchStart(e, point)}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.95 }}
+              onClick={(e) => handlePointInteraction(e, point)}
+              {...(isAdmin && {
+                onMouseDown: (e) => handlePointMouseDown(e, point),
+              })}
               animate={{
                 y: [0, -5 - point.id * 0.8, 0, 3.5 + point.id * 0.5, 0],
                 x: [0, 2 + point.id * 0.4, 0, -2.5 - point.id * 0.3, 0],
@@ -3270,6 +3343,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
+                {/* Click zone indicator - 50px radius circle (always visible) */}
+                {!isAdmin && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+                    <div
+                      className="border-3 border-blue-400/70 rounded-full opacity-80 bg-blue-400/10 transition-opacity duration-300 hover:opacity-100"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                      }}
+                    >
+                      <div className="w-full h-full border-2 border-blue-400/50 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Imagem do planeta/estação */}
                 <div
                   className={`w-48 h-48 transition-all duration-300 relative ${
@@ -3320,34 +3408,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     <div className="absolute inset-0 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
                   </div>
                 )}
-
-                {/* Tooltip melhorado */}
-                <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900 to-black text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none border border-gray-600 shadow-xl">
-                  <div className="font-bold text-cyan-300">{point.label}</div>
-                  <div className="text-gray-300 text-xs capitalize">
-                    {point.type}
-                  </div>
-                  {point.scale && point.scale !== 1 && (
-                    <div className="text-blue-300 text-xs">
-                      Escala: {point.scale.toFixed(1)}x
-                    </div>
-                  )}
-                  {point.rotation && point.rotation !== 0 && (
-                    <div className="text-purple-300 text-xs">
-                      Rotação: {point.rotation.toFixed(0)}°
-                    </div>
-                  )}
-                  {isAdmin && (
-                    <div className="text-yellow-400 text-xs mt-1">
-                      <div>�� Arraste para mover</div>
-                      <div>🔧 Ctrl+Arraste para redimensionar</div>
-                      <div>🔄 Alt+Arraste para rotacionar</div>
-                    </div>
-                  )}
-
-                  {/* Tooltip arrow */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                </div>
               </div>
             </motion.div>
           ))}
@@ -3536,6 +3596,60 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         X: {mapX.get().toFixed(1)} Y: {mapY.get().toFixed(1)}
         {isAutoPilot && <span className="ml-4 text-blue-300">[AUTO]</span>}
       </div>
+
+      {/* Landing Confirmation Modal */}
+      <AnimatePresence>
+        {confirmModal.show && confirmModal.point && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCancel}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full mb-4 overflow-hidden">
+                  <img
+                    src={confirmModal.point.image}
+                    alt={confirmModal.point.label}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Pousar no Planeta
+                </h3>
+
+                <p className="text-gray-600 mb-6">
+                  Deseja pousar em <strong>{confirmModal.point.label}</strong>?
+                </p>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleCancel}
+                    className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleConfirm}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Sim, Pousar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

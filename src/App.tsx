@@ -1,43 +1,46 @@
-import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AuthScreen } from './components/Auth/AuthScreen';
-import { TopBar } from './components/Layout/TopBar';
-import { BottomNavigation } from './components/Layout/BottomNavigation';
-import { PetScreen } from './components/Screens/PetScreen';
-import { WorldScreen } from './components/Screens/WorldScreen';
-import { StoreScreen } from './components/Store/StoreScreen';
-import { InventoryScreen } from './components/Screens/InventoryScreen';
-import { ProfileScreen } from './components/Screens/ProfileScreen';
-import { OtherUserInventoryScreen } from './components/Screens/OtherUserInventoryScreen';
-import { OtherUserAchievementsScreen } from './components/Screens/OtherUserAchievementsScreen';
-import { OtherUserCollectiblesScreen } from './components/Screens/OtherUserCollectiblesScreen';
-import { AdminPanel } from './components/Admin/AdminPanel';
-import { useAuthStore } from './store/authStore';
-import { useGameStore } from './store/gameStore';
-import { preloadAllSounds } from './utils/soundManager';
+import React, { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AuthScreen } from "./components/Auth/AuthScreen";
+import { TopBar } from "./components/Layout/TopBar";
+import { BottomNavigation } from "./components/Layout/BottomNavigation";
+import { PetScreen } from "./components/Screens/PetScreen";
+import { WorldScreen } from "./components/Screens/WorldScreen";
+import { WorldDetailScreen } from "./components/Screens/WorldDetailScreen";
+import { StoreScreen } from "./components/Store/StoreScreen";
+import { InventoryScreen } from "./components/Screens/InventoryScreen";
+import { ProfileScreen } from "./components/Screens/ProfileScreen";
+import { OtherUserInventoryScreen } from "./components/Screens/OtherUserInventoryScreen";
+import { OtherUserAchievementsScreen } from "./components/Screens/OtherUserAchievementsScreen";
+import { OtherUserCollectiblesScreen } from "./components/Screens/OtherUserCollectiblesScreen";
+import { AdminPanel } from "./components/Admin/AdminPanel";
+import { useAuthStore } from "./store/authStore";
+import { useGameStore } from "./store/gameStore";
+import { preloadAllSounds } from "./utils/soundManager";
 
 // Componente para pré-carregar recursos de áudio
 const AudioPreloader: React.FC = () => {
   useEffect(() => {
     // Pré-carrega todos os sons do jogo usando o SoundManager
     preloadAllSounds()
-      .then(() => console.log('🔊 Todos os sons foram pré-carregados com sucesso!'))
-      .catch(error => console.error('❌ Erro ao pré-carregar sons:', error));
+      .then(() =>
+        console.log("🔊 Todos os sons foram pré-carregados com sucesso!"),
+      )
+      .catch((error) => console.error("❌ Erro ao pré-carregar sons:", error));
   }, []);
-  
+
   return null; // Componente não renderiza nada
 };
 
 function App() {
   const { isAuthenticated, user: authUser, initializeAuth } = useAuthStore();
-  const { 
-    currentScreen, 
-    user: gameUser, 
-    setUser, 
-    initializeNewUser, 
+  const {
+    currentScreen,
+    user: gameUser,
+    setUser,
+    initializeNewUser,
     loadUserData,
     subscribeToRealtimeUpdates,
-    unsubscribeFromRealtimeUpdates
+    unsubscribeFromRealtimeUpdates,
   } = useGameStore();
 
   // Initialize authentication on app start
@@ -46,7 +49,7 @@ function App() {
       try {
         await initializeAuth();
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error("Auth initialization error:", error);
       }
     };
     init();
@@ -66,9 +69,9 @@ function App() {
         daysPlayed: authUser.daysPlayed,
         totalXenocoins: authUser.totalXenocoins,
         createdAt: authUser.createdAt,
-        lastLogin: authUser.lastLogin
+        lastLogin: authUser.lastLogin,
       };
-      
+
       // Always update the user data and sync
       if (!gameUser || gameUser.id !== authUser.id) {
         // New user or different user
@@ -82,7 +85,12 @@ function App() {
       // User logged out, clear game data
       setUser(null);
     }
-  }, [isAuthenticated, authUser?.id, authUser?.accountScore, authUser?.daysPlayed]);
+  }, [
+    isAuthenticated,
+    authUser?.id,
+    authUser?.accountScore,
+    authUser?.daysPlayed,
+  ]);
 
   // Cleanup subscriptions on unmount
   useEffect(() => {
@@ -100,23 +108,25 @@ function App() {
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'pet':
+      case "pet":
         return <PetScreen />;
-      case 'world':
+      case "world":
         return <WorldScreen />;
-      case 'store':
+      case "worldDetail":
+        return <WorldDetailScreen />;
+      case "store":
         return <StoreScreen />;
-      case 'inventory':
+      case "inventory":
         return <InventoryScreen />;
-      case 'profile':
+      case "profile":
         return <ProfileScreen />;
-      case 'admin':
+      case "admin":
         return gameUser?.isAdmin ? <AdminPanel /> : <ProfileScreen />;
-      case 'otherUserInventory':
+      case "otherUserInventory":
         return <OtherUserInventoryScreen />;
-      case 'otherUserAchievements':
+      case "otherUserAchievements":
         return <OtherUserAchievementsScreen />;
-      case 'otherUserCollectibles':
+      case "otherUserCollectibles":
         return <OtherUserCollectiblesScreen />;
       default:
         return <PetScreen />;
@@ -126,22 +136,22 @@ function App() {
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
     in: { opacity: 1, y: 0 },
-    out: { opacity: 0, y: -20 }
+    out: { opacity: 0, y: -20 },
   };
 
   const pageTransition = {
     type: "tween",
     ease: "anticipate",
-    duration: 0.4
+    duration: 0.4,
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       {/* Componente de pré-carregamento de áudios */}
       <AudioPreloader />
-      
+
       <TopBar />
-      
+
       <main className="pt-20 pb-24 px-4 min-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
@@ -156,7 +166,7 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </main>
-      
+
       <BottomNavigation />
     </div>
   );
