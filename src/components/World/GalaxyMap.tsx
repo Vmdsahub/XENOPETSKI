@@ -2859,6 +2859,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   const handlePointInteraction = (e: React.MouseEvent, point: Point) => {
     e.stopPropagation();
+    console.log("🖱️ Point clicked:", point.label, "isAdmin:", isAdmin);
 
     if (isAdmin) {
       // Admin: only allow click if not currently dragging/resizing/rotating
@@ -2874,8 +2875,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Regular user: check if click is within 30px radius
     const distance = getDistanceToPoint(e, point);
-    if (distance === null || distance > 30) return;
+    console.log("📏 Distance:", distance);
+    if (distance === null || distance > 30) {
+      console.log("❌ Click outside radius or distance calculation failed");
+      return;
+    }
 
+    console.log("✅ Showing confirmation modal");
     // Show confirmation modal
     setConfirmModal({ show: true, point });
   };
