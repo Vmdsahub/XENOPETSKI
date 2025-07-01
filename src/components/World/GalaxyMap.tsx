@@ -2582,7 +2582,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             orbitAngle = Math.atan2(dy, dx);
           } else {
             newDirection = Math.atan2(dy, dx);
-            currentSpeed = prev.baseSpeed * 1.5; // Mais rápido ao se aproximar
+            currentSpeed = prev.baseSpeed * 1.5; // Mais r��pido ao se aproximar
             newVelocityX = Math.cos(newDirection) * currentSpeed;
             newVelocityY = Math.sin(newDirection) * currentSpeed;
           }
@@ -3331,8 +3331,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               onClick={(e) => handlePointClick(e, point)}
               onMouseDown={(e) => handlePointMouseDown(e, point)}
               onTouchStart={(e) => handlePointTouchStart(e, point)}
-              onMouseMove={(e) => handlePointHover(e, point)}
-              onMouseLeave={handlePointMouseLeave}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
               animate={{
