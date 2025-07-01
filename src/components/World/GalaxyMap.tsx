@@ -711,6 +711,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const opacityHash = hash(worldX * 1.7, worldY * 1.9, 5);
             const colorHash = hash(worldX * 2.1, worldY * 2.3, 5);
             const blinkHash = hash(worldX * 3.1, worldY * 4.3, 5);
+            const floatHash = hash(worldX * 2.7, worldY * 3.1, 5);
+            const floatHash2 = hash(worldX * 4.1, worldY * 2.9, 5);
 
             // Pontinhos pequenos: 0.8px a 1.5px
             const size = 0.8 + opacityHash * 0.7;
@@ -720,6 +722,25 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const blinkOffset = blinkHash * Math.PI * 2; // Fases diferentes
             const blinkFactor =
               0.3 + 0.7 * (1 + Math.sin(time * blinkSpeed + blinkOffset)) * 0.5;
+
+            // Movimento de flutuação como poeira cósmica
+            const floatSpeedX = 0.3 + floatHash * 0.5; // Velocidades diferentes para X
+            const floatSpeedY = 0.2 + floatHash2 * 0.4; // Velocidades diferentes para Y
+            const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
+            const floatOffsetY = floatHash2 * Math.PI * 2;
+
+            // Movimento sutil de flutuação (1-3 pixels de amplitude)
+            const floatAmplitudeX = 1.5 + floatHash * 1.5;
+            const floatAmplitudeY = 1.2 + floatHash2 * 1.8;
+
+            const floatX =
+              Math.sin(time * floatSpeedX + floatOffsetX) * floatAmplitudeX;
+            const floatY =
+              Math.cos(time * floatSpeedY + floatOffsetY) * floatAmplitudeY;
+
+            // Posição final com flutuação
+            const finalX = screenX + floatX;
+            const finalY = screenY + floatY;
 
             // Opacidade base baixa com piscar
             const baseOpacity = 0.4 + opacityHash * 0.3;
@@ -737,7 +758,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
             // Apenas pontinhos simples, sem gradientes
             ctx.beginPath();
-            ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
+            ctx.arc(finalX, finalY, size, 0, Math.PI * 2);
             ctx.fill();
           }
         }
