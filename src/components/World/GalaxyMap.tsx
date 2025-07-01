@@ -2913,6 +2913,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
+    console.log("🔍 Starting proximity and click checks...");
+
     // Regular user: check if click is within the circle (96px radius = half of 192px circle)
     const clickDistance = getDistanceToPoint(e, point);
     console.log("📏 Click distance:", clickDistance);
@@ -2920,16 +2922,18 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       console.log("❌ Click outside the interaction circle (96px radius)");
       return;
     }
+    console.log("✅ Click is within the circle");
 
     // Most important: check if ship is actually near the world
-    if (!isShipNearWorld(point)) {
+    const shipNear = isShipNearWorld(point);
+    console.log(`🔍 Ship near result: ${shipNear}`);
+    if (!shipNear) {
       console.log("❌ Ship is not close enough to the world");
       return;
     }
+    console.log("✅ Ship is close enough to the world");
 
-    console.log(
-      "✅ Ship is near world and click is in circle - showing confirmation modal",
-    );
+    console.log("🎉 ALL CHECKS PASSED - showing confirmation modal");
     setConfirmModal({ show: true, point });
   };
 
