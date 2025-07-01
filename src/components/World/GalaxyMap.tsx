@@ -322,7 +322,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "⬤",
       "⬥",
       "⬦",
-      "⬧",
+      "���",
       "⬨",
       "⬩",
       "⬪",
@@ -1339,7 +1339,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           ease: "easeOut",
         });
 
-        // Atualiza posição da nave correspondentemente
+        // Atualiza posi��ão da nave correspondentemente
         const repelShipX = (normalizedX * repelForce) / 12;
         const repelShipY = (normalizedY * repelForce) / 12;
 
@@ -2842,6 +2842,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [showDetailView, setShowDetailView] = useState(false);
   const [selectedPointForDetail, setSelectedPointForDetail] =
     useState<Point | null>(null);
+
+  // State for tracking hover within click radius
+  const [hoveredPointInRadius, setHoveredPointInRadius] = useState<
+    string | number | null
+  >(null);
 
   const handlePointClick = (e: React.MouseEvent, point: Point) => {
     // Calculate click radius (30px)
