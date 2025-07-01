@@ -3227,21 +3227,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </svg>
                 </button>
 
-                {/* Header com gradiente */}
-                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-t-3xl p-6 text-center border-b border-gray-100">
-                  <motion.img
+                {/* Header sem gradiente */}
+                <div className="bg-white rounded-t-3xl p-6 text-center border-b border-gray-100">
+                  <img
                     src="https://cdn.builder.io/api/v1/image/assets%2Fcd7f7270636644acbedf48e0ef62abd0%2F9b01dc80171f480d8fb5a342061dde24?format=webp&width=800"
                     alt="Nave Mercante"
                     className="w-32 h-32 sm:w-48 sm:h-48 mx-auto mb-4"
-                    animate={{
-                      y: [0, -3, 0, 3, 0],
-                      rotate: [0, 1, 0, -1, 0],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
                   />
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                     Capitão Zyx
