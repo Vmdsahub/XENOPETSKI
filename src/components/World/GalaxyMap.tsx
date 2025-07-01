@@ -2833,11 +2833,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, []);
 
-  // State for tracking hover within click radius
-  const [hoveredPointInRadius, setHoveredPointInRadius] = useState<
-    string | number | null
-  >(null);
-
   // State for confirmation modal
   const [confirmModal, setConfirmModal] = useState<{
     show: boolean;
