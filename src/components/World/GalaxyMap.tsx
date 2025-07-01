@@ -2582,7 +2582,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             orbitAngle = Math.atan2(dy, dx);
           } else {
             newDirection = Math.atan2(dy, dx);
-            currentSpeed = prev.baseSpeed * 1.5; // Mais r��pido ao se aproximar
+            currentSpeed = prev.baseSpeed * 1.5; // Mais rápido ao se aproximar
             newVelocityX = Math.cos(newDirection) * currentSpeed;
             newVelocityY = Math.sin(newDirection) * currentSpeed;
           }
@@ -2905,24 +2905,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   const handleCancel = () => {
     setConfirmModal({ show: false, point: null });
-  };
-
-  const handlePointHover = (e: React.MouseEvent, point: Point) => {
-    // Skip hover effects for admin users completely
-    if (isAdmin) return;
-
-    const distance = getDistanceToPoint(e, point);
-    if (distance === null) return;
-
-    if (distance <= 30) {
-      setHoveredPointInRadius(point.id);
-    } else {
-      setHoveredPointInRadius(null);
-    }
-  };
-
-  const handlePointMouseLeave = () => {
-    setHoveredPointInRadius(null);
   };
 
   // Point drag handlers
