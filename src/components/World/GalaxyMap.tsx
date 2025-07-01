@@ -3583,6 +3583,83 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         X: {mapX.get().toFixed(1)} Y: {mapY.get().toFixed(1)}
         {isAutoPilot && <span className="ml-4 text-blue-300">[AUTO]</span>}
       </div>
+
+      {/* Landing Confirmation Modal */}
+      <AnimatePresence>
+        {landingModal.show && landingModal.point && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleLandingCancel}
+          >
+            <motion.div
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full mb-4 overflow-hidden">
+                  <img
+                    src={landingModal.point.image}
+                    alt={landingModal.point.label}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Pousar no Planeta
+                </h3>
+
+                <p className="text-gray-600 mb-6">
+                  Deseja pousar em <strong>{landingModal.point.label}</strong>?
+                </p>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleLandingCancel}
+                    className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleLandingConfirm}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Sim, Pousar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Detail View */}
+      <AnimatePresence>
+        {showDetailView && selectedPointForDetail && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <DetailView
+              pointData={{
+                id: selectedPointForDetail.id.toString(),
+                name: selectedPointForDetail.label,
+                description: `Explore o fascinante mundo de ${selectedPointForDetail.label}`,
+                type: selectedPointForDetail.type,
+                image: selectedPointForDetail.image,
+              }}
+              onBack={handleBackFromDetail}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
