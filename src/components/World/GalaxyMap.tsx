@@ -901,7 +901,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const cameraX = -currentMapX * parallaxSpeed;
     const cameraY = -currentMapY * parallaxSpeed;
 
-    // Função hash para gerar posições consistentes
+    // Fun��ão hash para gerar posições consistentes
     const hash = (x: number, y: number, layer: number) => {
       let h = 1779033703 ^ layer;
       h = Math.imul(h ^ Math.floor(x), 3432918353);
@@ -3375,7 +3375,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - 50px radius circle with proximity-based styling */}
+                {/* Click zone indicator - matches the actual clickable area (192px = w-48) */}
                 {!isAdmin &&
                   (() => {
                     const isNearby = isShipNearWorld(point);
@@ -3391,8 +3391,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                               : "border-gray-400/50 bg-gray-400/10 opacity-60"
                           }`}
                           style={{
-                            width: "100px",
-                            height: "100px",
+                            width: "192px", // Same as w-48 (48*4 = 192px)
+                            height: "192px",
                           }}
                         >
                           <div
