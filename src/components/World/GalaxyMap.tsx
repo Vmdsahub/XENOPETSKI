@@ -3306,8 +3306,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               onMouseDown={(e) =>
                 isAdmin ? handlePointMouseDown(e, point) : undefined
               }
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.95 }}
               animate={{
                 y: [0, -5 - point.id * 0.8, 0, 3.5 + point.id * 0.5, 0],
                 x: [0, 2 + point.id * 0.4, 0, -2.5 - point.id * 0.3, 0],
