@@ -3398,13 +3398,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                     <div className="absolute inset-0 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
                   </div>
                 )}
-
-
-                    <div>�� Arraste para mover</div>
-                    <div>🔧 Ctrl+Arraste para redimensionar</div>
-                    <div>🔄 Alt+Arraste para rotacionar</div>
-                  </div>
-                )}
               </div>
             </motion.div>
           ))}
