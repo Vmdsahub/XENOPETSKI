@@ -901,7 +901,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const cameraX = -currentMapX * parallaxSpeed;
     const cameraY = -currentMapY * parallaxSpeed;
 
-    // Fun��ão hash para gerar posições consistentes
+    // Função hash para gerar posições consistentes
     const hash = (x: number, y: number, layer: number) => {
       let h = 1779033703 ^ layer;
       h = Math.imul(h ^ Math.floor(x), 3432918353);
@@ -2901,19 +2901,23 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // TEMPORARILY DISABLED: Regular user restrictions for testing
-    console.log("🧪 TESTING MODE: Skipping all restrictions");
-
-    // Regular user: check if click is within the circle (50px radius)
+    // Regular user: check if click is within the circle (96px radius = half of 192px circle)
     const clickDistance = getDistanceToPoint(e, point);
     console.log("📏 Click distance:", clickDistance);
+    if (clickDistance === null || clickDistance > 96) {
+      console.log("❌ Click outside the interaction circle (96px radius)");
+      return;
+    }
 
     // Most important: check if ship is actually near the world
-    const isNear = isShipNearWorld(point);
-    console.log(`🔍 Ship near check: ${isNear}`);
+    if (!isShipNearWorld(point)) {
+      console.log("❌ Ship is not close enough to the world");
+      return;
+    }
 
-    // TEMPORARILY ALLOW ALL CLICKS FOR TESTING
-    console.log("✅ ALLOWING CLICK FOR TESTING - showing confirmation modal");
+    console.log(
+      "✅ Ship is near world and click is in circle - showing confirmation modal",
+    );
     setConfirmModal({ show: true, point });
   };
 
