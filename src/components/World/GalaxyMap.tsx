@@ -269,6 +269,51 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [typewriterText1, setTypewriterText1] = useState("");
   const [typewriterText2, setTypewriterText2] = useState("");
   const [showTypewriter2, setShowTypewriter2] = useState(false);
+
+  // Textos completos do diálogo
+  const fullText1 =
+    '"Olá, viajante! Sou o Capitão Zyx. Navego por estas rotas comerciais há décadas, transportando recursos entre os planetas do sistema."';
+  const fullText2 =
+    '"Precisa de alguma coisa? Tenho suprimentos frescos de todas as dimensões!"';
+
+  // Efeito typewriter
+  useEffect(() => {
+    if (showShipModal) {
+      // Reset dos textos quando modal abre
+      setTypewriterText1("");
+      setTypewriterText2("");
+      setShowTypewriter2(false);
+
+      // Primeira frase
+      let index1 = 0;
+      const timer1 = setInterval(() => {
+        if (index1 < fullText1.length) {
+          setTypewriterText1(fullText1.slice(0, index1 + 1));
+          index1++;
+        } else {
+          clearInterval(timer1);
+          // Pausa antes da segunda frase
+          setTimeout(() => {
+            setShowTypewriter2(true);
+            // Segunda frase
+            let index2 = 0;
+            const timer2 = setInterval(() => {
+              if (index2 < fullText2.length) {
+                setTypewriterText2(fullText2.slice(0, index2 + 1));
+                index2++;
+              } else {
+                clearInterval(timer2);
+              }
+            }, 50); // 50ms por caractere para segunda frase
+          }, 800); // Pausa de 800ms entre frases
+        }
+      }, 30); // 30ms por caractere para primeira frase
+
+      return () => {
+        clearInterval(timer1);
+      };
+    }
+  }, [showShipModal]);
   const [wanderingShip, setWanderingShip] = useState({
     x: 50, // posição relativa na barreira
     y: 45,
