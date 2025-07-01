@@ -3385,38 +3385,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem] relative">
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem]">
                             {typewriterText1}
-                            {alienText1 && (
-                              <span
-                                className="absolute -top-1 -right-2 alien-text font-mono text-xs opacity-80"
-                                style={{
-                                  textShadow:
-                                    "0 0 10px rgba(96, 165, 250, 0.8)",
-                                  fontSize: "0.7em",
-                                  transform: "rotate(-10deg)",
-                                }}
-                              >
-                                {alienText1}
-                              </span>
-                            )}
                           </p>
                           {showTypewriter2 && (
-                            <p className="text-sm text-gray-600 min-h-[2rem] relative">
+                            <p className="text-sm text-gray-600 min-h-[2rem]">
                               {typewriterText2}
-                              {alienText2 && (
-                                <span
-                                  className="absolute -top-1 -right-2 alien-text font-mono text-xs opacity-80"
-                                  style={{
-                                    textShadow:
-                                      "0 0 10px rgba(96, 165, 250, 0.8)",
-                                    fontSize: "0.7em",
-                                    transform: "rotate(-10deg)",
-                                  }}
-                                >
-                                  {alienText2}
-                                </span>
-                              )}
                             </p>
                           )}
                         </div>
