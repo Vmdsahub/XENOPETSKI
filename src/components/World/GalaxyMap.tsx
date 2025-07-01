@@ -2869,7 +2869,14 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       x: point.x,
       y: point.y,
     });
-    const maxInteractionDistance = 15; // Increased from 8 for testing
+
+    // Try different distance calculations
+    const simpleDistance = Math.sqrt(
+      Math.pow(shipPosition.x - point.x, 2) +
+        Math.pow(shipPosition.y - point.y, 2),
+    );
+
+    const maxInteractionDistance = 25; // Increased significantly for testing
 
     console.log(
       `🚀 Ship position: (${shipPosition.x.toFixed(2)}, ${shipPosition.y.toFixed(2)})`,
@@ -2877,10 +2884,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     console.log(
       `🌍 World ${point.label} position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
     );
+    console.log(`📏 Toroidal distance: ${shipDistance.toFixed(2)}`);
+    console.log(`📏 Simple distance: ${simpleDistance.toFixed(2)}`);
+    console.log(`📏 Max distance: ${maxInteractionDistance}`);
     console.log(
-      `📏 Ship distance to ${point.label}: ${shipDistance.toFixed(2)} (max: ${maxInteractionDistance})`,
+      `✅ Is near (toroidal): ${shipDistance <= maxInteractionDistance}`,
     );
-    console.log(`✅ Is near: ${shipDistance <= maxInteractionDistance}`);
+    console.log(
+      `✅ Is near (simple): ${simpleDistance <= maxInteractionDistance}`,
+    );
 
     return shipDistance <= maxInteractionDistance;
   };
