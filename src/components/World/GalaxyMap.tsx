@@ -795,7 +795,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const opacity = Math.min(1, (star.life / star.maxLife) * 1.2); // Mais luminosas
         const timeDelta = (currentTime - star.startTime) * 0.001;
 
-        // Animaç�����o de tamanho baseada em seno
+        // Animaç����o de tamanho baseada em seno
         const sizeVariation = 1 + Math.sin(timeDelta * 8) * 0.3; // Pulso mais intenso
         const currentSize = star.size * sizeVariation;
 
@@ -1233,7 +1233,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sistema de momentum/in���rcia
+  // Sistema de momentum/in�����rcia
   useEffect(() => {
     velocityRef.current = velocity;
   }, [velocity]);
@@ -2865,25 +2865,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     if (isAdmin && draggingPoint !== null) return;
 
-    // Show landing confirmation modal
-    setLandingModal({ show: true, point });
+    // Show confirmation modal
+    setConfirmModal({ show: true, point });
   };
 
-  const handleLandingConfirm = () => {
-    if (landingModal.point) {
-      setSelectedPointForDetail(landingModal.point);
-      setShowDetailView(true);
-      setLandingModal({ show: false, point: null });
+  const handleConfirm = () => {
+    if (confirmModal.point) {
+      // Navigate to world detail screen
+      setCurrentScreen("worldDetail");
+      setConfirmModal({ show: false, point: null });
     }
   };
 
-  const handleLandingCancel = () => {
-    setLandingModal({ show: false, point: null });
-  };
-
-  const handleBackFromDetail = () => {
-    setShowDetailView(false);
-    setSelectedPointForDetail(null);
+  const handleCancel = () => {
+    setConfirmModal({ show: false, point: null });
   };
 
   const handlePointMouseEnter = (e: React.MouseEvent, point: Point) => {
