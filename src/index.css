@@ -18,6 +18,49 @@
   }
 }
 
+/* Alien text translation effect */
+@keyframes alienTranslate {
+  0% {
+    opacity: 0.8;
+    transform: scale(1.1) rotateX(10deg);
+    filter: hue-rotate(0deg) brightness(1.2);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotateX(5deg);
+    filter: hue-rotate(180deg) brightness(1.5);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1) rotateX(0deg);
+    filter: hue-rotate(360deg) brightness(1);
+  }
+}
+
+.alien-text {
+  animation: alienTranslate 0.15s ease-in-out;
+  background: linear-gradient(45deg, #60a5fa, #a78bfa, #34d399);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation:
+    alienTranslate 0.15s ease-in-out,
+    gradient-shift 0.3s ease-in-out;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 /* Music controls styling */
 .slider,
 .volume-slider {

@@ -269,6 +269,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [typewriterText1, setTypewriterText1] = useState("");
   const [typewriterText2, setTypewriterText2] = useState("");
   const [showTypewriter2, setShowTypewriter2] = useState(false);
+  const [alienText1, setAlienText1] = useState("");
+  const [alienText2, setAlienText2] = useState("");
 
   // Textos completos do diálogo
   const fullText1 =
@@ -276,19 +278,188 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const fullText2 =
     '"Precisa de alguma coisa? Tenho suprimentos frescos de todas as dimensões!"';
 
-  // Efeito typewriter
+  // Função para gerar caracteres alienígenas aleatórios
+  const generateAlienChar = () => {
+    const alienChars = [
+      "⟨",
+      "⟩",
+      "⟪",
+      "⟫",
+      "⟦",
+      "⟧",
+      "⟴",
+      "⟵",
+      "⟶",
+      "⟷",
+      "⟸",
+      "⟹",
+      "⟺",
+      "⟻",
+      "⟼",
+      "⟽",
+      "⟾",
+      "⟿",
+      "⥀",
+      "⥁",
+      "⥂",
+      "⥃",
+      "⥄",
+      "⥅",
+      "⥆",
+      "⥇",
+      "⥈",
+      "⥉",
+      "⥊",
+      "⥋",
+      "◊",
+      "⧫",
+      "⬟",
+      "⬠",
+      "⬡",
+      "⬢",
+      "⬣",
+      "⬤",
+      "⬥",
+      "⬦",
+      "⬧",
+      "⬨",
+      "⬩",
+      "⬪",
+      "⬫",
+      "⬬",
+      "⬭",
+      "⬮",
+      "⬯",
+      "∀",
+      "∁",
+      "∂",
+      "∃",
+      "∄",
+      "∅",
+      "∆",
+      "∇",
+      "∈",
+      "∉",
+      "∊",
+      "∋",
+      "∌",
+      "∍",
+      "∎",
+      "∏",
+      "∐",
+      "∑",
+      "−",
+      "∓",
+      "∔",
+      "∕",
+      "∖",
+      "∗",
+      "∘",
+      "∙",
+      "√",
+      "∛",
+      "∜",
+      "∝",
+      "∞",
+      "∟",
+      "∠",
+      "∡",
+      "∢",
+      "∣",
+      "∤",
+      "∥",
+      "∦",
+      "∧",
+      "∨",
+      "∩",
+      "∪",
+      "∫",
+      "∬",
+      "∭",
+      "∮",
+      "∯",
+      "∰",
+      "∱",
+      "∲",
+      "∳",
+      "∴",
+      "∵",
+      "∶",
+      "∷",
+      "∸",
+      "∹",
+      "∺",
+      "∻",
+      "∼",
+      "∽",
+      "∾",
+      "∿",
+      "≀",
+      "≁",
+      "≂",
+      "≃",
+      "≄",
+      "≅",
+      "≆",
+      "≇",
+      "≈",
+      "≉",
+      "≊",
+      "≋",
+      "≌",
+      "≍",
+      "≎",
+      "≏",
+      "≐",
+      "≑",
+      "≒",
+      "≓",
+      "≔",
+      "≕",
+      "≖",
+      "≗",
+      "≘",
+      "≙",
+      "≚",
+      "≛",
+      "≜",
+      "≝",
+      "≞",
+      "≟",
+    ];
+    return alienChars[Math.floor(Math.random() * alienChars.length)];
+  };
+
+  // Função para gerar texto alienígena baseado no comprimento
+  const generateAlienText = (length: number) => {
+    return Array.from({ length }, () => generateAlienChar()).join("");
+  };
+
+  // Efeito typewriter com tradução alienígena
   useEffect(() => {
     if (showShipModal) {
       // Reset dos textos quando modal abre
       setTypewriterText1("");
       setTypewriterText2("");
+      setAlienText1("");
+      setAlienText2("");
       setShowTypewriter2(false);
 
       // Primeira frase
       let index1 = 0;
       const timer1 = setInterval(() => {
         if (index1 < fullText1.length) {
-          setTypewriterText1(fullText1.slice(0, index1 + 1));
+          const currentChar = fullText1[index1];
+          const alienChar = generateAlienChar();
+
+          // Primeiro mostra o caractere alienígena na posição correta
+          setTypewriterText1(fullText1.slice(0, index1) + alienChar);
+
+          // Depois de 40ms, substitui pelo caractere real
+          setTimeout(() => {
+            setTypewriterText1(fullText1.slice(0, index1 + 1));
+          }, 40);
+
           index1++;
         } else {
           clearInterval(timer1);
@@ -299,7 +470,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             let index2 = 0;
             const timer2 = setInterval(() => {
               if (index2 < fullText2.length) {
-                setTypewriterText2(fullText2.slice(0, index2 + 1));
+                const currentChar = fullText2[index2];
+                const alienChar = generateAlienChar();
+
+                // Primeiro mostra o caractere alienígena na posição correta
+                setTypewriterText2(fullText2.slice(0, index2) + alienChar);
+
+                // Depois de 40ms, substitui pelo caractere real
+                setTimeout(() => {
+                  setTypewriterText2(fullText2.slice(0, index2 + 1));
+                }, 40);
+
                 index2++;
               } else {
                 clearInterval(timer2);
@@ -3264,16 +3445,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                         <div className="flex-1">
                           <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 min-h-[3rem]">
                             {typewriterText1}
-                            {typewriterText1.length < fullText1.length && (
-                              <span className="animate-pulse">|</span>
-                            )}
                           </p>
                           {showTypewriter2 && (
                             <p className="text-sm text-gray-600 min-h-[2rem]">
                               {typewriterText2}
-                              {typewriterText2.length < fullText2.length && (
-                                <span className="animate-pulse">|</span>
-                              )}
                             </p>
                           )}
                         </div>
