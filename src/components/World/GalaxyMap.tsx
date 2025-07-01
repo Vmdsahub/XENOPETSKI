@@ -1233,7 +1233,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sistema de momentum/in�����rcia
+  // Sistema de momentum/in���rcia
   useEffect(() => {
     velocityRef.current = velocity;
   }, [velocity]);
@@ -2881,26 +2881,16 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     setConfirmModal({ show: false, point: null });
   };
 
-  const handlePointMouseEnter = (e: React.MouseEvent, point: Point) => {
-    const clickRadius = 30;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  const handlePointHover = (e: React.MouseEvent, point: Point) => {
+    // Skip if admin is dragging
+    if (
+      isAdmin &&
+      (draggingPoint !== null ||
+        resizingPoint !== null ||
+        rotatingPoint !== null)
+    )
+      return;
 
-    const pointX = (point.x / 100) * rect.width;
-    const pointY = (point.y / 100) * rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const distance = Math.sqrt(
-      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
-    );
-
-    if (distance <= clickRadius) {
-      setHoveredPointInRadius(point.id);
-    }
-  };
-
-  const handlePointHoverMove = (e: React.MouseEvent, point: Point) => {
     const clickRadius = 30;
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
