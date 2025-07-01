@@ -266,6 +266,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   // Estados para a nave navegante
   const [showShipModal, setShowShipModal] = useState(false);
+  const [typewriterText1, setTypewriterText1] = useState("");
+  const [typewriterText2, setTypewriterText2] = useState("");
+  const [showTypewriter2, setShowTypewriter2] = useState(false);
   const [wanderingShip, setWanderingShip] = useState({
     x: 50, // posição relativa na barreira
     y: 45,
