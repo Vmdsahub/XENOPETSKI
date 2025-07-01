@@ -411,7 +411,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "���",
       "≈",
       "≉",
-      "≊",
+      "��",
       "≋",
       "≌",
       "≍",
@@ -2872,8 +2872,16 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     const maxInteractionDistance = 8; // Same as nearestWorldDistance threshold used elsewhere
 
     console.log(
-      `🚀 Ship distance to ${point.label}: ${shipDistance.toFixed(2)} (max: ${maxInteractionDistance})`,
+      `🚀 Ship position: (${shipPosition.x.toFixed(2)}, ${shipPosition.y.toFixed(2)})`,
     );
+    console.log(
+      `🌍 World ${point.label} position: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
+    );
+    console.log(
+      `📏 Ship distance to ${point.label}: ${shipDistance.toFixed(2)} (max: ${maxInteractionDistance})`,
+    );
+    console.log(`✅ Is near: ${shipDistance <= maxInteractionDistance}`);
+
     return shipDistance <= maxInteractionDistance;
   };
 
