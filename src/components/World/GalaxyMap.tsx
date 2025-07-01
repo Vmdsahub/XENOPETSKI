@@ -1540,7 +1540,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, [isAutoPilot, updateAutoPilotDirection]);
 
-  // Sistema de momentum mais suave usando interpola��ão
+  // Sistema de momentum mais suave usando interpola���ão
   useEffect(() => {
     if (
       !isDragging &&
@@ -2831,10 +2831,56 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     };
   }, []);
 
-  const handlePointClick = (point: Point) => {
-    if (!isAdmin || draggingPoint !== null) return;
-    console.log(`Clicou no ${point.label}`, point);
-    // Aqui você pode adicionar a lógica para abrir detalhes do ponto
+  // State for the landing confirmation modal
+  const [landingModal, setLandingModal] = useState<{
+    show: boolean;
+    point: Point | null;
+  }>({ show: false, point: null });
+
+  // State for detail view
+  const [showDetailView, setShowDetailView] = useState(false);
+  const [selectedPointForDetail, setSelectedPointForDetail] =
+    useState<Point | null>(null);
+
+  const handlePointClick = (e: React.MouseEvent, point: Point) => {
+    // Calculate click radius (30px)
+    const clickRadius = 30;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const distance = Math.sqrt(
+      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
+    );
+
+    // Only allow click if within radius
+    if (distance > clickRadius) return;
+
+    if (isAdmin && draggingPoint !== null) return;
+
+    // Show landing confirmation modal
+    setLandingModal({ show: true, point });
+  };
+
+  const handleLandingConfirm = () => {
+    if (landingModal.point) {
+      setSelectedPointForDetail(landingModal.point);
+      setShowDetailView(true);
+      setLandingModal({ show: false, point: null });
+    }
+  };
+
+  const handleLandingCancel = () => {
+    setLandingModal({ show: false, point: null });
+  };
+
+  const handleBackFromDetail = () => {
+    setShowDetailView(false);
+    setSelectedPointForDetail(null);
   };
 
   // Point drag handlers
