@@ -328,7 +328,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "⬩",
       "⬪",
       "⬫",
-      "⬬",
+      "���",
       "⬭",
       "⬮",
       "⬯",
@@ -3402,11 +3402,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </div>
                 )}
 
-                {point.scale && point.scale !== 1 && (
-                  <div className="text-blue-300 text-xs">
-                    Escala: {point.scale.toFixed(1)}x
-                  </div>
-                )}
                 {point.rotation && point.rotation !== 0 && (
                   <div className="text-purple-300 text-xs">
                     Rotação: {point.rotation.toFixed(0)}°
