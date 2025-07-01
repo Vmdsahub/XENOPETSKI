@@ -12,7 +12,6 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { PlayerShip } from "./PlayerShip";
-import { DetailView } from "./DetailView";
 import {
   playBarrierCollisionSound,
   playAutoPilotActivationSound,
@@ -961,7 +960,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const floatOffsetX = floatHash * Math.PI * 2; // Fases diferentes
             const floatOffsetY = floatHash2 * Math.PI * 2;
 
-            // Movimento mais visível de flutuação (3-8 pixels de amplitude)
+            // Movimento mais visível de flutuaç��o (3-8 pixels de amplitude)
             const floatAmplitudeX = 3.0 + floatHash * 5.0;
             const floatAmplitudeY = 2.5 + floatHash2 * 5.5;
 
