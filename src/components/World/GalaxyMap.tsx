@@ -269,6 +269,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const [typewriterText1, setTypewriterText1] = useState("");
   const [typewriterText2, setTypewriterText2] = useState("");
   const [showTypewriter2, setShowTypewriter2] = useState(false);
+  const [alienText1, setAlienText1] = useState("");
+  const [alienText2, setAlienText2] = useState("");
 
   // Textos completos do diálogo
   const fullText1 =
@@ -276,19 +278,132 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const fullText2 =
     '"Precisa de alguma coisa? Tenho suprimentos frescos de todas as dimensões!"';
 
-  // Efeito typewriter
+  // Função para gerar caracteres alienígenas aleatórios
+  const generateAlienChar = () => {
+    const alienChars = [
+      "⟨",
+      "⟩",
+      "⟪",
+      "⟫",
+      "⟦",
+      "⟧",
+      "⟴",
+      "⟵",
+      "⟶",
+      "⟷",
+      "⟸",
+      "⟹",
+      "⟺",
+      "⟻",
+      "⟼",
+      "⟽",
+      "⟾",
+      "⟿",
+      "⥀",
+      "⥁",
+      "⥂",
+      "⥃",
+      "⥄",
+      "⥅",
+      "⥆",
+      "⥇",
+      "⥈",
+      "⥉",
+      "⥊",
+      "⥋",
+      "◊",
+      "⧫",
+      "⬟",
+      "⬠",
+      "⬡",
+      "⬢",
+      "⬣",
+      "⬤",
+      "⬥",
+      "⬦",
+      "⬧",
+      "⬨",
+      "⬩",
+      "⬪",
+      "⬫",
+      "⬬",
+      "⬭",
+      "⬮",
+      "⬯",
+      "⭐",
+      "✦",
+      "✧",
+      "✩",
+      "✪",
+      "✫",
+      "✬",
+      "✭",
+      "✮",
+      "✯",
+      "✰",
+      "✱",
+      "✲",
+      "✳",
+      "✴",
+      "✵",
+      "✶",
+      "✷",
+      "✸",
+      "✹",
+      "✺",
+      "✻",
+      "✼",
+      "✽",
+      "✾",
+      "✿",
+      "❀",
+      "❁",
+      "❂",
+      "❃",
+      "❄",
+      "❅",
+      "❆",
+      "❇",
+      "❈",
+      "❉",
+      "❊",
+      "❋",
+    ];
+    return alienChars[Math.floor(Math.random() * alienChars.length)];
+  };
+
+  // Função para gerar texto alienígena baseado no comprimento
+  const generateAlienText = (length: number) => {
+    return Array.from({ length }, () => generateAlienChar()).join("");
+  };
+
+  // Efeito typewriter com tradução alienígena
   useEffect(() => {
     if (showShipModal) {
       // Reset dos textos quando modal abre
       setTypewriterText1("");
       setTypewriterText2("");
+      setAlienText1("");
+      setAlienText2("");
       setShowTypewriter2(false);
 
       // Primeira frase
       let index1 = 0;
       const timer1 = setInterval(() => {
         if (index1 < fullText1.length) {
-          setTypewriterText1(fullText1.slice(0, index1 + 1));
+          const currentChar = fullText1[index1];
+          const alienChar = generateAlienChar();
+
+          // Primeiro mostra o caractere alienígena
+          setAlienText1(generateAlienText(index1 + 1));
+          setTypewriterText1(fullText1.slice(0, index1) + alienChar);
+
+          // Depois de 150ms, mostra o caractere real
+          setTimeout(() => {
+            setTypewriterText1(fullText1.slice(0, index1 + 1));
+            setAlienText1("");
+          }, 150);
+
           index1++;
         } else {
           clearInterval(timer1);
@@ -299,15 +414,27 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             let index2 = 0;
             const timer2 = setInterval(() => {
               if (index2 < fullText2.length) {
-                setTypewriterText2(fullText2.slice(0, index2 + 1));
+                const currentChar = fullText2[index2];
+                const alienChar = generateAlienChar();
+
+                // Primeiro mostra o caractere alienígena
+                setAlienText2(generateAlienText(index2 + 1));
+                setTypewriterText2(fullText2.slice(0, index2) + alienChar);
+
+                // Depois de 150ms, mostra o caractere real
+                setTimeout(() => {
+                  setTypewriterText2(fullText2.slice(0, index2 + 1));
+                  setAlienText2("");
+                }, 150);
+
                 index2++;
               } else {
                 clearInterval(timer2);
               }
-            }, 50); // 50ms por caractere para segunda frase
-          }, 800); // Pausa de 800ms entre frases
+            }, 80); // 80ms por caractere para segunda frase
+          }, 1000); // Pausa de 1000ms entre frases
         }
-      }, 30); // 30ms por caractere para primeira frase
+      }, 60); // 60ms por caractere para primeira frase
 
       return () => {
         clearInterval(timer1);
