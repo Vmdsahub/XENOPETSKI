@@ -1038,7 +1038,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
     // Gera estrelas dinamicamente baseado na região visível
     const generateLayer = (density: number, speed: number, layer: number) => {
-      // Calcula posição da câmera com parallax
+      // Calcula posi��ão da câmera com parallax
       const cameraX = -currentMapX * speed;
       const cameraY = -currentMapY * speed;
 
@@ -1353,7 +1353,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     [mapX, mapY],
   );
 
-  // Função para mostrar notificação de colisão local
+  // Função para mostrar notifica��ão de colisão local
   const showCollisionNotification = useCallback(() => {
     const notificationId = Date.now();
     setCollisionNotification({ show: true, id: notificationId });
@@ -3303,9 +3303,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 pointerEvents: "auto",
               }}
               onClick={(e) => handlePointInteraction(e, point)}
-              onMouseDown={(e) =>
-                isAdmin ? handlePointMouseDown(e, point) : undefined
-              }
+              {...(isAdmin && {
+                onMouseDown: (e) => handlePointMouseDown(e, point),
+              })}
               animate={{
                 y: [0, -5 - point.id * 0.8, 0, 3.5 + point.id * 0.5, 0],
                 x: [0, 2 + point.id * 0.4, 0, -2.5 - point.id * 0.3, 0],
