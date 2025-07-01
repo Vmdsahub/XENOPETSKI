@@ -346,7 +346,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "∋",
       "∌",
       "∍",
-      "∎",
+      "���",
       "∏",
       "∐",
       "∑",
@@ -2857,28 +2857,27 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     );
   };
 
-  const handlePointClick = (e: React.MouseEvent, point: Point) => {
-    // Only process non-admin clicks or admin clicks when not dragging
-    if (
-      isAdmin &&
-      (draggingPoint !== null ||
-        resizingPoint !== null ||
-        rotatingPoint !== null)
-    )
-      return;
+  const handlePointInteraction = (e: React.MouseEvent, point: Point) => {
+    e.stopPropagation();
 
-    // Check if click is within radius (only for non-admin users)
-    if (!isAdmin) {
-      const distance = getDistanceToPoint(e, point);
-      if (distance === null || distance > 30) return;
-    }
-
-    // For admin: regular click behavior, for users: show confirmation modal
     if (isAdmin) {
+      // Admin: only allow click if not currently dragging/resizing/rotating
+      if (
+        draggingPoint !== null ||
+        resizingPoint !== null ||
+        rotatingPoint !== null
+      )
+        return;
       console.log(`Admin clicked on ${point.label}`, point);
-    } else {
-      setConfirmModal({ show: true, point });
+      return;
     }
+
+    // Regular user: check if click is within 30px radius
+    const distance = getDistanceToPoint(e, point);
+    if (distance === null || distance > 30) return;
+
+    // Show confirmation modal
+    setConfirmModal({ show: true, point });
   };
 
   const handleConfirm = () => {
