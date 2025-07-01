@@ -150,6 +150,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const { setCurrentScreen, setSelectedWorld } = useGameStore();
   const isAdmin = user?.username === "Vitoca";
 
+  // Debug log
+  useEffect(() => {
+    console.log("🔍 Debug - User:", user?.username, "isAdmin:", isAdmin);
+  }, [user, isAdmin]);
+
   // Background music for galactic navigation
   const { play: playMusic, pause: pauseMusic } = useBackgroundMusic();
 
