@@ -3404,14 +3404,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </div>
                 )}
 
-                {/* Clickable indicator tooltip */}
-                {hoveredPointInRadius === point.id && (
-                  <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-100 transition-all duration-300 pointer-events-none border border-green-400 shadow-xl animate-pulse">
-                    <div className="font-bold">🚀 Clique para pousar</div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-green-600"></div>
-                  </div>
-                )}
-
                 {/* Tooltip melhorado */}
                 <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900 to-black text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none border border-gray-600 shadow-xl">
                   <div className="font-bold text-cyan-300">{point.label}</div>
