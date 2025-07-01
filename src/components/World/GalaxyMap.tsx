@@ -553,7 +553,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const targetRotation = useRef(0);
   const lastRotationUpdate = useRef(0);
 
-  // Estados para momentum/inércia
+  // Estados para momentum/in��rcia
   const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [isDecelerating, setIsDecelerating] = useState(false);
   const velocityRef = useRef({ x: 0, y: 0 });
@@ -3343,17 +3343,17 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - 30px radius circle (always visible) */}
-                {true && (
+                {/* Click zone indicator - 50px radius circle (always visible) */}
+                {!isAdmin && (
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
                     <div
-                      className="border-4 border-red-500 rounded-full opacity-100 bg-red-500/20"
+                      className="border-3 border-blue-400/70 rounded-full opacity-80 bg-blue-400/10 transition-opacity duration-300 hover:opacity-100"
                       style={{
-                        width: "60px",
-                        height: "60px",
+                        width: "100px",
+                        height: "100px",
                       }}
                     >
-                      <div className="w-full h-full border-2 border-red-400 rounded-full animate-pulse bg-red-400/30"></div>
+                      <div className="w-full h-full border-2 border-blue-400/50 rounded-full animate-pulse"></div>
                     </div>
                   </div>
                 )}
