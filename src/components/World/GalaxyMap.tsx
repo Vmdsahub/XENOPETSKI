@@ -1237,7 +1237,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sistema de momentum/in���rcia
+  // Sistema de momentum/in����rcia
   useEffect(() => {
     velocityRef.current = velocity;
   }, [velocity]);
@@ -1935,7 +1935,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       setShipPosition({ x: newX, y: newY });
     }
 
-    // Só atualiza mapa visual se movimento é permitido
+    // S�� atualiza mapa visual se movimento é permitido
     if (allowMovement) {
       // Atualiza mapa visual com wrap
       let newMapX = mapX.get() + deltaX;
@@ -2866,28 +2866,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     e.stopPropagation();
     console.log("🖱️ Point clicked:", point.label, "isAdmin:", isAdmin);
 
-    if (isAdmin) {
-      // Admin: only allow click if not currently dragging/resizing/rotating
-      if (
-        draggingPoint !== null ||
-        resizingPoint !== null ||
-        rotatingPoint !== null
-      )
-        return;
-      console.log(`Admin clicked on ${point.label}`, point);
-      return;
-    }
-
-    // Regular user: check if click is within 30px radius
-    const distance = getDistanceToPoint(e, point);
-    console.log("📏 Distance:", distance);
-    if (distance === null || distance > 30) {
-      console.log("❌ Click outside radius or distance calculation failed");
-      return;
-    }
-
-    console.log("✅ Showing confirmation modal");
-    // Show confirmation modal
+    // For debug: always show modal regardless of distance
+    console.log("✅ Showing confirmation modal (debug mode)");
     setConfirmModal({ show: true, point });
   };
 
