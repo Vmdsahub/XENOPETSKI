@@ -969,7 +969,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             const floatY =
               Math.cos(time * floatSpeedY + floatOffsetY) * floatAmplitudeY;
 
-            // Posição final com flutuação
+            // Posição final com flutuaç��o
             const finalX = screenX + floatX;
             const finalY = screenY + floatY;
 
@@ -2844,28 +2844,46 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     point: Point | null;
   }>({ show: false, point: null });
 
-  const handlePointClick = (e: React.MouseEvent, point: Point) => {
-    // Calculate click radius (30px)
-    const clickRadius = 30;
+  // Utility function to calculate distance from mouse to point center
+  const getDistanceToPoint = (
+    e: React.MouseEvent,
+    point: Point,
+  ): number | null => {
     const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    if (!rect) return null;
 
     const pointX = (point.x / 100) * rect.width;
     const pointY = (point.y / 100) * rect.height;
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const distance = Math.sqrt(
+    return Math.sqrt(
       Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
     );
+  };
 
-    // Only allow click if within radius
-    if (distance > clickRadius) return;
+  const handlePointClick = (e: React.MouseEvent, point: Point) => {
+    // Only process non-admin clicks or admin clicks when not dragging
+    if (
+      isAdmin &&
+      (draggingPoint !== null ||
+        resizingPoint !== null ||
+        rotatingPoint !== null)
+    )
+      return;
 
-    if (isAdmin && draggingPoint !== null) return;
+    // Check if click is within radius (only for non-admin users)
+    if (!isAdmin) {
+      const distance = getDistanceToPoint(e, point);
+      if (distance === null || distance > 30) return;
+    }
 
-    // Show confirmation modal
-    setConfirmModal({ show: true, point });
+    // For admin: regular click behavior, for users: show confirmation modal
+    if (isAdmin) {
+      console.log(`Admin clicked on ${point.label}`, point);
+    } else {
+      setConfirmModal({ show: true, point });
+    }
   };
 
   const handleConfirm = () => {
