@@ -437,7 +437,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return alienChars[Math.floor(Math.random() * alienChars.length)];
   };
 
-  // Função para gerar texto alienígena baseado no comprimento
+  // Fun��ão para gerar texto alienígena baseado no comprimento
   const generateAlienText = (length: number) => {
     return Array.from({ length }, () => generateAlienChar()).join("");
   };
@@ -3345,7 +3345,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             >
               <div className="relative group">
                 {/* Click zone indicator - 30px radius circle (always visible) */}
-                {!isAdmin && (
+                {true && (
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div
                       className="border-2 border-blue-400/60 rounded-full opacity-70 transition-opacity duration-300 hover:opacity-100"
