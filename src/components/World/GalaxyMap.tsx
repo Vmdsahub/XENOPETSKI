@@ -420,7 +420,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "≖",
       "≗",
       "≘",
-      "���",
+      "≙",
       "≚",
       "≛",
       "≜",
@@ -3338,7 +3338,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               onMouseDown={(e) => handlePointMouseDown(e, point)}
               onTouchStart={(e) => handlePointTouchStart(e, point)}
               onMouseEnter={(e) => handlePointMouseEnter(e, point)}
-              onMouseMove={(e) => handlePointMouseMove(e, point)}
+              onMouseMove={(e) => handlePointHoverMove(e, point)}
               onMouseLeave={handlePointMouseLeave}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
