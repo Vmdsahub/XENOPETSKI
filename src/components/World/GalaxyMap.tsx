@@ -377,7 +377,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return Array.from({ length }, () => generateAlienChar()).join("");
   };
 
-  // Efeito typewriter simples e natural
+  // Efeito typewriter com tradução alienígena
   useEffect(() => {
     if (showShipModal) {
       // Reset dos textos quando modal abre
@@ -391,14 +391,16 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       let index1 = 0;
       const timer1 = setInterval(() => {
         if (index1 < fullText1.length) {
-          setTypewriterText1(fullText1.slice(0, index1 + 1));
+          const currentChar = fullText1[index1];
+          const alienChar = generateAlienChar();
 
-          // Efeito alienígena sutil apenas para o último caractere
-          if (Math.random() > 0.7) {
-            // 30% de chance de mostrar efeito alienígena
-            setAlienText1(generateAlienChar());
-            setTimeout(() => setAlienText1(""), 100);
-          }
+          // Primeiro mostra o caractere alienígena na posição correta
+          setTypewriterText1(fullText1.slice(0, index1) + alienChar);
+
+          // Depois de 120ms, substitui pelo caractere real
+          setTimeout(() => {
+            setTypewriterText1(fullText1.slice(0, index1 + 1));
+          }, 120);
 
           index1++;
         } else {
@@ -410,23 +412,25 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             let index2 = 0;
             const timer2 = setInterval(() => {
               if (index2 < fullText2.length) {
-                setTypewriterText2(fullText2.slice(0, index2 + 1));
+                const currentChar = fullText2[index2];
+                const alienChar = generateAlienChar();
 
-                // Efeito alienígena sutil apenas para o último caractere
-                if (Math.random() > 0.7) {
-                  // 30% de chance de mostrar efeito alienígena
-                  setAlienText2(generateAlienChar());
-                  setTimeout(() => setAlienText2(""), 100);
-                }
+                // Primeiro mostra o caractere alienígena na posição correta
+                setTypewriterText2(fullText2.slice(0, index2) + alienChar);
+
+                // Depois de 120ms, substitui pelo caractere real
+                setTimeout(() => {
+                  setTypewriterText2(fullText2.slice(0, index2 + 1));
+                }, 120);
 
                 index2++;
               } else {
                 clearInterval(timer2);
               }
-            }, 50); // 50ms por caractere para segunda frase
+            }, 180); // 180ms por caractere para segunda frase (mais devagar para ver o efeito)
           }, 800); // Pausa de 800ms entre frases
         }
-      }, 35); // 35ms por caractere para primeira frase
+      }, 160); // 160ms por caractere para primeira frase (mais devagar para ver o efeito)
 
       return () => {
         clearInterval(timer1);
@@ -1001,7 +1005,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               layer + i + 1000,
             );
 
-            // Posição dentro da célula (completamente aleat��ria)
+            // Posição dentro da célula (completamente aleatória)
             const localX = starHash * 50;
             const localY = starHash2 * 50;
 
