@@ -2553,7 +2553,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             targetPlanet = points[Math.floor(Math.random() * points.length)];
             behavior = "approaching";
             behaviorTimer = 0;
-            nextBehaviorChange = 9999; // Não muda até completar a sequência
+            nextBehaviorChange = 9999; // Não muda até completar a sequ��ncia
           } else if (behavior === "orbiting") {
             behavior = "leaving";
             behaviorTimer = 0;
@@ -2908,29 +2908,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   };
 
   const handlePointHover = (e: React.MouseEvent, point: Point) => {
-    // Skip if admin is dragging
-    if (
-      isAdmin &&
-      (draggingPoint !== null ||
-        resizingPoint !== null ||
-        rotatingPoint !== null)
-    )
-      return;
+    // Skip hover effects for admin users completely
+    if (isAdmin) return;
 
-    const clickRadius = 30;
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const distance = getDistanceToPoint(e, point);
+    if (distance === null) return;
 
-    const pointX = (point.x / 100) * rect.width;
-    const pointY = (point.y / 100) * rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const distance = Math.sqrt(
-      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
-    );
-
-    if (distance <= clickRadius) {
+    if (distance <= 30) {
       setHoveredPointInRadius(point.id);
     } else {
       setHoveredPointInRadius(null);
