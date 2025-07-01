@@ -112,6 +112,8 @@ function App() {
         return <PetScreen />;
       case "world":
         return <WorldScreen />;
+      case "worldDetail":
+        return <WorldDetailScreen />;
       case "store":
         return <StoreScreen />;
       case "inventory":
