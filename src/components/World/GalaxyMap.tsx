@@ -2474,7 +2474,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           const angleToCenter = Math.atan2(50 - newY, 50 - newX);
           bounceDirection = angleToCenter + (Math.random() - 0.5) * 1.0;
 
-          // Mantém na posição atual para evitar teleporte
+          // Mantém na posi��ão atual para evitar teleporte
           finalX = prev.x;
           finalY = prev.y;
         }
@@ -3246,7 +3246,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 <div className="p-6">
                   {/* Texto de diálogo */}
                   <div className="mb-6">
-                    <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200">
+                    <div className="bg-blue-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <svg
