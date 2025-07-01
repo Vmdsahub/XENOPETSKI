@@ -12,6 +12,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { PlayerShip } from "./PlayerShip";
+import { DetailView } from "./DetailView";
 import {
   playBarrierCollisionSound,
   playAutoPilotActivationSound,
