@@ -3378,6 +3378,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 {!isAdmin &&
                   (() => {
                     const isNearby = isShipNearWorld(point);
+                    console.log(
+                      `🎯 Rendering circle for ${point.label}, isNearby: ${isNearby}`,
+                    );
                     return (
                       <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
                         <div
