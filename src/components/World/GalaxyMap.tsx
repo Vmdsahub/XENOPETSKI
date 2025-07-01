@@ -374,7 +374,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "∢",
       "∣",
       "∤",
-      "∥",
+      "��",
       "∦",
       "∧",
       "∨",
@@ -2862,6 +2862,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     );
   };
 
+  // Function to check if ship is near a world (using game coordinates)
+  const isShipNearWorld = (point: Point): boolean => {
+    // Using toroidal distance calculation for accurate positioning
+    const shipDistance = getToroidalDistance(shipPosition, {
+      x: point.x,
+      y: point.y,
+    });
+    const maxInteractionDistance = 8; // Same as nearestWorldDistance threshold used elsewhere
+
+    console.log(
+      `🚀 Ship distance to ${point.label}: ${shipDistance.toFixed(2)} (max: ${maxInteractionDistance})`,
+    );
+    return shipDistance <= maxInteractionDistance;
+  };
+
   const handlePointInteraction = (e: React.MouseEvent, point: Point) => {
     e.stopPropagation();
     console.log("🖱️ Point clicked:", point.label, "isAdmin:", isAdmin);
@@ -2878,15 +2893,23 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
-    // Regular user: check if click is within 50px radius (increased from 30px)
-    const distance = getDistanceToPoint(e, point);
-    console.log("📏 Distance:", distance);
-    if (distance === null || distance > 50) {
-      console.log("❌ Click outside radius or distance calculation failed");
+    // Regular user: check if click is within the circle (50px radius)
+    const clickDistance = getDistanceToPoint(e, point);
+    console.log("📏 Click distance:", clickDistance);
+    if (clickDistance === null || clickDistance > 50) {
+      console.log("❌ Click outside the interaction circle");
       return;
     }
 
-    console.log("✅ Showing confirmation modal");
+    // Most important: check if ship is actually near the world
+    if (!isShipNearWorld(point)) {
+      console.log("❌ Ship is not close enough to the world");
+      return;
+    }
+
+    console.log(
+      "✅ Ship is near world and click is in circle - showing confirmation modal",
+    );
     setConfirmModal({ show: true, point });
   };
 
