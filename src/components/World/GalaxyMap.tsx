@@ -3333,23 +3333,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               }}
             >
               <div className="relative group">
-                {/* Click zone indicator - 30px radius circle */}
-                <div className="absolute inset-0 pointer-events-none">
-                  {!isAdmin && (
+                {/* Click zone indicator - 30px radius circle (always visible) */}
+                {!isAdmin && (
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div
-                      className="absolute border-2 border-blue-400/30 rounded-full opacity-0 group-hover:opacity-60 transition-opacity duration-300"
+                      className="border-2 border-blue-400/60 rounded-full opacity-70 transition-opacity duration-300 hover:opacity-100"
                       style={{
                         width: "60px",
                         height: "60px",
-                        left: "50%",
-                        top: "50%",
-                        transform: "translate(-50%, -50%)",
                       }}
                     >
-                      <div className="w-full h-full border-2 border-blue-400/60 rounded-full animate-pulse"></div>
+                      <div className="w-full h-full border-2 border-blue-400/40 rounded-full animate-pulse"></div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Imagem do planeta/estação */}
                 <div
