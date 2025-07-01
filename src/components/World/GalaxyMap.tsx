@@ -322,7 +322,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       "⬤",
       "⬥",
       "⬦",
-      "���",
+      "⬧",
       "⬨",
       "⬩",
       "⬪",
@@ -1339,7 +1339,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           ease: "easeOut",
         });
 
-        // Atualiza posi��ão da nave correspondentemente
+        // Atualiza posição da nave correspondentemente
         const repelShipX = (normalizedX * repelForce) / 12;
         const repelShipY = (normalizedY * repelForce) / 12;
 
@@ -2887,6 +2887,50 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const handleBackFromDetail = () => {
     setShowDetailView(false);
     setSelectedPointForDetail(null);
+  };
+
+  const handlePointMouseEnter = (e: React.MouseEvent, point: Point) => {
+    const clickRadius = 30;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const distance = Math.sqrt(
+      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
+    );
+
+    if (distance <= clickRadius) {
+      setHoveredPointInRadius(point.id);
+    }
+  };
+
+  const handlePointMouseMove = (e: React.MouseEvent, point: Point) => {
+    const clickRadius = 30;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const pointX = (point.x / 100) * rect.width;
+    const pointY = (point.y / 100) * rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const distance = Math.sqrt(
+      Math.pow(mouseX - pointX, 2) + Math.pow(mouseY - pointY, 2),
+    );
+
+    if (distance <= clickRadius) {
+      setHoveredPointInRadius(point.id);
+    } else {
+      setHoveredPointInRadius(null);
+    }
+  };
+
+  const handlePointMouseLeave = () => {
+    setHoveredPointInRadius(null);
   };
 
   // Point drag handlers
