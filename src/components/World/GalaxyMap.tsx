@@ -2901,23 +2901,19 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       return;
     }
 
+    // TEMPORARILY DISABLED: Regular user restrictions for testing
+    console.log("🧪 TESTING MODE: Skipping all restrictions");
+
     // Regular user: check if click is within the circle (50px radius)
     const clickDistance = getDistanceToPoint(e, point);
     console.log("📏 Click distance:", clickDistance);
-    if (clickDistance === null || clickDistance > 50) {
-      console.log("❌ Click outside the interaction circle");
-      return;
-    }
 
     // Most important: check if ship is actually near the world
-    if (!isShipNearWorld(point)) {
-      console.log("❌ Ship is not close enough to the world");
-      return;
-    }
+    const isNear = isShipNearWorld(point);
+    console.log(`🔍 Ship near check: ${isNear}`);
 
-    console.log(
-      "✅ Ship is near world and click is in circle - showing confirmation modal",
-    );
+    // TEMPORARILY ALLOW ALL CLICKS FOR TESTING
+    console.log("✅ ALLOWING CLICK FOR TESTING - showing confirmation modal");
     setConfirmModal({ show: true, point });
   };
 
