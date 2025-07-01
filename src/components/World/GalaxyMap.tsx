@@ -3173,7 +3173,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             zIndex: 5,
           }}
         >
-          {/* Animação de rotaç��o continua */}
+          {/* Animação de rotaç����o continua */}
           <motion.div
             className="w-full h-full rounded-full border-2 border-dashed"
             style={{
@@ -3693,13 +3693,13 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
                 <div className="flex space-x-3">
                   <button
-                    onClick={handleLandingCancel}
+                    onClick={handleCancel}
                     className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
                   >
                     Cancelar
                   </button>
                   <button
-                    onClick={handleLandingConfirm}
+                    onClick={handleConfirm}
                     className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     Sim, Pousar
