@@ -3399,8 +3399,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   </div>
                 )}
 
-                {isAdmin && (
-                  <div className="text-yellow-400 text-xs mt-1">
+
                     <div>�� Arraste para mover</div>
                     <div>🔧 Ctrl+Arraste para redimensionar</div>
                     <div>🔄 Alt+Arraste para rotacionar</div>
