@@ -1597,8 +1597,37 @@ export const SpaceMap: React.FC = () => {
             />
           </div>
 
-          <p className="text-xs text-gray-500">
-            Arraste o mundo para reposicionar
+          <div className="flex space-x-2 mt-3">
+            <button
+              onClick={() => {
+                setIsDragging(true);
+                setDragOffset({ x: 0, y: 0 });
+              }}
+              className={`flex-1 px-2 py-1 text-xs rounded ${
+                isDragging
+                  ? "bg-red-100 text-red-700 border border-red-300"
+                  : "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200"
+              }`}
+              disabled={isDragging}
+            >
+              {isDragging ? "Arrastando..." : "Mover Mundo"}
+            </button>
+
+            {isDragging && (
+              <button
+                onClick={() => {
+                  setIsDragging(false);
+                  setDragOffset({ x: 0, y: 0 });
+                }}
+                className="flex-1 px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200"
+              >
+                Confirmar
+              </button>
+            )}
+          </div>
+
+          <p className="text-xs text-gray-500 mt-2">
+            ESC para cancelar • Clique fora para desselecionar
           </p>
         </div>
       )}
