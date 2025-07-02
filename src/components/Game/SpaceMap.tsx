@@ -81,6 +81,7 @@ export const SpaceMap: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
+  const hasMouseMoved = useRef(false);
   const starsRef = useRef<Star[]>([]);
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
