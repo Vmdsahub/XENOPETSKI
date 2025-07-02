@@ -1155,6 +1155,11 @@ export const SpaceMap: React.FC = () => {
       ctx.restore();
       ctx.globalAlpha = 1;
 
+      // Render radar pulses
+      radarPulsesRef.current.forEach((pulse) => {
+        drawRadarPulse(ctx, pulse, shipScreenX, shipScreenY);
+      });
+
       gameLoopRef.current = requestAnimationFrame(gameLoop);
     };
 
