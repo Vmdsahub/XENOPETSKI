@@ -54,7 +54,6 @@ interface ShootingStar {
 
 interface RadarPulse {
   planetId: string;
-  angle: number;
   radius: number;
   maxRadius: number;
   life: number;
@@ -293,26 +292,18 @@ export const SpaceMap: React.FC = () => {
   );
 
   // Create radar pulse towards planet
-  const createRadarPulse = useCallback(
-    (planet: Planet, shipX: number, shipY: number) => {
-      const dx = getWrappedDistance(planet.x, shipX);
-      const dy = getWrappedDistance(planet.y, shipY);
-      const angle = Math.atan2(dy, dx);
+  const createRadarPulse = useCallback((planet: Planet) => {
+    const newPulse: RadarPulse = {
+      planetId: planet.id,
+      radius: 8, // Raio inicial original
+      maxRadius: 40, // Expansão menor
+      life: 160, // Vida mais longa para compensar expansão lenta
+      maxLife: 160,
+      opacity: 1.2, // Opacidade muito alta para verde ser mais visível
+    };
 
-      const newPulse: RadarPulse = {
-        planetId: planet.id,
-        angle,
-        radius: 8, // Raio inicial original
-        maxRadius: 40, // Expansão menor
-        life: 160, // Vida mais longa para compensar expansão lenta
-        maxLife: 160,
-        opacity: 1.2, // Opacidade muito alta para verde ser mais visível
-      };
-
-      radarPulsesRef.current.push(newPulse);
-    },
-    [getWrappedDistance],
-  );
+    radarPulsesRef.current.push(newPulse);
+  }, []);
 
   // Helper function to draw directional radar pulse
   const drawRadarPulse = useCallback(
@@ -321,7 +312,18 @@ export const SpaceMap: React.FC = () => {
       pulse: RadarPulse,
       shipScreenX: number,
       shipScreenY: number,
+      currentShipX: number,
+      currentShipY: number,
     ) => {
+      // Buscar o planeta correspondente a este pulse
+      const planet = planetsRef.current.find((p) => p.id === pulse.planetId);
+      if (!planet) return;
+
+      // Calcular ângulo dinamicamente baseado na posição atual da nave
+      const dx = getWrappedDistance(planet.x, currentShipX);
+      const dy = getWrappedDistance(planet.y, currentShipY);
+      const dynamicAngle = Math.atan2(dy, dx);
+
       const fadeRatio = pulse.life / pulse.maxLife;
       const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
 
@@ -347,8 +349,8 @@ export const SpaceMap: React.FC = () => {
 
       // Arco original
       const arcWidth = Math.PI / 3; // 60 graus original
-      const startAngle = pulse.angle - arcWidth / 2;
-      const endAngle = pulse.angle + arcWidth / 2;
+      const startAngle = dynamicAngle - arcWidth / 2;
+      const endAngle = dynamicAngle + arcWidth / 2;
 
       // Linha principal mais fina
       ctx.globalAlpha = currentOpacity;
@@ -371,7 +373,7 @@ export const SpaceMap: React.FC = () => {
 
       ctx.restore();
     },
-    [],
+    [getWrappedDistance],
   );
 
   // Helper function to draw pure light points
@@ -923,11 +925,7 @@ export const SpaceMap: React.FC = () => {
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
           if (currentTime - lastPulseTime >= 1200) {
             // 1.2 seconds = 1200ms for slower spacing
-            createRadarPulse(
-              planet,
-              currentShipState.ship.x,
-              currentShipState.ship.y,
-            );
+            createRadarPulse(planet);
             lastRadarPulseTime.current.set(planet.id, currentTime);
           }
         } else {
@@ -1226,7 +1224,14 @@ export const SpaceMap: React.FC = () => {
 
       // Render radar pulses
       radarPulsesRef.current.forEach((pulse) => {
-        drawRadarPulse(ctx, pulse, shipScreenX, shipScreenY);
+        drawRadarPulse(
+          ctx,
+          pulse,
+          shipScreenX,
+          shipScreenY,
+          gameState.ship.x,
+          gameState.ship.y,
+        );
       });
 
       gameLoopRef.current = requestAnimationFrame(gameLoop);
