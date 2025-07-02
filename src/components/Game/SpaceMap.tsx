@@ -1276,13 +1276,23 @@ export const SpaceMap: React.FC = () => {
             shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
           );
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
+          const isSelected = isWorldEditMode && selectedWorldId === planet.id;
 
           // Render interaction circle
           ctx.save();
-          ctx.globalAlpha = isInRange ? 0.4 : 0.15;
-          ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
-          ctx.lineWidth = isInRange ? 3 : 1;
-          ctx.setLineDash(isInRange ? [] : [5, 5]);
+          if (isWorldEditMode) {
+            // Edit mode styling
+            ctx.globalAlpha = isSelected ? 0.8 : 0.3;
+            ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
+            ctx.lineWidth = isSelected ? 4 : 2;
+            ctx.setLineDash(isSelected ? [] : [8, 8]);
+          } else {
+            // Normal mode styling
+            ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+            ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+            ctx.lineWidth = isInRange ? 3 : 1;
+            ctx.setLineDash(isInRange ? [] : [5, 5]);
+          }
           ctx.beginPath();
           ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
           ctx.stroke();
