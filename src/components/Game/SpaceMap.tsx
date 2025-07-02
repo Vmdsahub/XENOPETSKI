@@ -1724,6 +1724,8 @@ export const SpaceMap: React.FC = () => {
           </div>
 
           <p className="text-xs text-gray-500 mt-2">
+            ✅ Alterações salvas automaticamente
+            <br />
             ESC para cancelar • Clique fora para desselecionar
           </p>
         </div>
