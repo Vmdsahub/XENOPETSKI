@@ -543,6 +543,7 @@ export const SpaceMap: React.FC = () => {
         size: 35,
         color: colors[i],
         name: `Planet ${i + 1}`,
+        interactionRadius: 80, // Zona de interação ao redor do planeta
       });
     }
 
