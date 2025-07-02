@@ -659,27 +659,27 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Only respond to mouse if it's inside the window
-        if (mouseInWindow) {
-          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Always respond to mouse, but handle differently when outside window
+        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-          const distance = Math.sqrt(dx * dx + dy * dy);
+        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-          newState.ship.angle = Math.atan2(dy, dx);
+        newState.ship.angle = Math.atan2(dy, dx);
 
-          if (distance > 10) {
-            const speedMultiplier = Math.min(distance / 300, 1);
-            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
-          }
+        if (mouseInWindow && distance > 10) {
+          const speedMultiplier = Math.min(distance / 300, 1);
+          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
         }
 
-        newState.ship.vx *= FRICTION;
-        newState.ship.vy *= FRICTION;
+        // Apply less friction when mouse is outside window to maintain momentum
+        const currentFriction = mouseInWindow ? FRICTION : 0.995;
+        newState.ship.vx *= currentFriction;
+        newState.ship.vy *= currentFriction;
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
