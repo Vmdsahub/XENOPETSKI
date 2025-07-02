@@ -106,27 +106,23 @@ function App() {
   }
 
   const renderScreen = () => {
-    switch (currentScreen) {
-      case "pet":
-        return <PetScreen />;
-
-      case "store":
-        return <StoreScreen />;
-      case "inventory":
-        return <InventoryScreen />;
-      case "profile":
-        return <ProfileScreen />;
-      case "admin":
-        return gameUser?.isAdmin ? <AdminPanel /> : <ProfileScreen />;
-      case "otherUserInventory":
-        return <OtherUserInventoryScreen />;
-      case "otherUserAchievements":
-        return <OtherUserAchievementsScreen />;
-      case "otherUserCollectibles":
-        return <OtherUserCollectiblesScreen />;
-      default:
-        return <PetScreen />;
-    }
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[80vh] flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">
+              Container Principal
+            </h1>
+            <p className="text-lg text-gray-600">
+              Navegue pelas abas no menu inferior
+            </p>
+            <div className="mt-8 text-sm text-gray-500">
+              Aba atual: <span className="font-semibold">{currentScreen}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const pageVariants = {
