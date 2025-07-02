@@ -297,11 +297,11 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 8, // Smaller starting radius
-        maxRadius: 35, // Much smaller max radius
-        life: 90, // Longer life for smoother animation
-        maxLife: 90,
-        opacity: 0.8, // Slightly more transparent
+        radius: 12, // Larger starting radius for better visibility
+        maxRadius: 60, // Much larger max radius for more prominent signal
+        life: 120, // Longer life for more visible animation
+        maxLife: 120,
+        opacity: 1.0, // Full opacity for maximum visibility
       };
 
       radarPulsesRef.current.push(newPulse);
@@ -320,13 +320,13 @@ export const SpaceMap: React.FC = () => {
       const fadeRatio = pulse.life / pulse.maxLife;
       const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
 
-      // Smooth fade out as it expands
+      // Enhanced fade out with minimum visibility
       const currentOpacity =
-        pulse.opacity * fadeRatio * (0.3 + expandRatio * 0.7);
+        pulse.opacity * Math.max(fadeRatio * (0.4 + expandRatio * 0.6), 0.3);
 
       ctx.save();
 
-      // Create gradient for more modern look
+      // Enhanced gradient with brighter colors
       const gradient = ctx.createRadialGradient(
         shipScreenX,
         shipScreenY,
@@ -335,19 +335,20 @@ export const SpaceMap: React.FC = () => {
         shipScreenY,
         pulse.radius,
       );
-      gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity * 0.8})`); // Cyan center
-      gradient.addColorStop(0.7, `rgba(0, 200, 255, ${currentOpacity * 0.6})`); // Blue-cyan
-      gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.2})`); // Blue edge
+      gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity})`); // Bright cyan center
+      gradient.addColorStop(0.5, `rgba(0, 255, 128, ${currentOpacity * 0.9})`); // Green-cyan mix
+      gradient.addColorStop(0.8, `rgba(0, 200, 255, ${currentOpacity * 0.7})`); // Blue-cyan
+      gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.4})`); // Blue edge
 
-      // Draw refined arc with smaller width for more elegant look
-      const arcWidth = Math.PI / 3; // 60 degrees for more focused beam
+      // Enhanced arc with larger width for better visibility
+      const arcWidth = Math.PI / 2.5; // 72 degrees for wider, more visible beam
       const startAngle = pulse.angle - arcWidth / 2;
       const endAngle = pulse.angle + arcWidth / 2;
 
-      // Main pulse arc with gradient
+      // Main outer pulse arc with thicker line
       ctx.globalAlpha = currentOpacity;
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 3; // Thinner line for more refined look
+      ctx.lineWidth = 5; // Thicker line for better visibility
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
@@ -355,13 +356,38 @@ export const SpaceMap: React.FC = () => {
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
-      // Add subtle inner glow
-      ctx.globalAlpha = currentOpacity * 0.6;
-      ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity * 0.8})`;
-      ctx.lineWidth = 1;
+      // Add bright inner glow
+      ctx.globalAlpha = currentOpacity * 0.8;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
+
+      // Add pulsing center dot for better visibility
+      ctx.globalAlpha = currentOpacity * 1.2;
+      ctx.fillStyle = `rgba(0, 255, 255, ${currentOpacity})`;
+      ctx.beginPath();
+      ctx.arc(shipScreenX, shipScreenY, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Add directional arrow/pointer effect
+      const arrowDistance = pulse.radius + 8;
+      const arrowX = shipScreenX + Math.cos(pulse.angle) * arrowDistance;
+      const arrowY = shipScreenY + Math.sin(pulse.angle) * arrowDistance;
+
+      ctx.globalAlpha = currentOpacity * 0.9;
+      ctx.fillStyle = `rgba(255, 255, 0, ${currentOpacity})`;
+      ctx.save();
+      ctx.translate(arrowX, arrowY);
+      ctx.rotate(pulse.angle);
+      ctx.beginPath();
+      ctx.moveTo(6, 0);
+      ctx.lineTo(-3, -4);
+      ctx.lineTo(-3, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
 
       ctx.restore();
     },
@@ -918,7 +944,7 @@ export const SpaceMap: React.FC = () => {
       radarPulsesRef.current = radarPulsesRef.current
         .map((pulse) => ({
           ...pulse,
-          radius: pulse.radius + 0.6, // Much slower expansion for smooth animation
+          radius: pulse.radius + 0.8, // Slightly faster expansion for more dynamic effect
           life: pulse.life - 1,
         }))
         .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
