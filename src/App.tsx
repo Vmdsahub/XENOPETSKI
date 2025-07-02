@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthScreen } from "./components/Auth/AuthScreen";
 
+import { TopBar } from "./components/Layout/TopBar";
 import { BottomNavigation } from "./components/Layout/BottomNavigation";
 
 import { useAuthStore } from "./store/authStore";
