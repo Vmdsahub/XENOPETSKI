@@ -894,10 +894,10 @@ export const SpaceMap: React.FC = () => {
         if (shipToPlanetDistance <= planet.interactionRadius) {
           currentPlanetsInRange.add(planet.id);
 
-          // Create radar pulse every 300ms for perfect 3-wave spacing
+          // Create radar pulse every 600ms for smoother, more spaced waves
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
-          if (currentTime - lastPulseTime >= 300) {
-            // 0.3 second = 300ms for 3 visible waves
+          if (currentTime - lastPulseTime >= 600) {
+            // 0.6 second = 600ms for smoother spacing
             createRadarPulse(
               planet,
               currentShipState.ship.x,
