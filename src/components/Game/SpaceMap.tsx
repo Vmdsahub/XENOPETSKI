@@ -870,10 +870,16 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(async () => {
-          await gameService.updateWorldPosition(selectedWorldId, {
-            x: worldX,
-            y: worldY,
-          });
+          try {
+            await gameService.updateWorldPosition(selectedWorldId, {
+              x: worldX,
+              y: worldY,
+            });
+            // Reload planets from database to ensure consistency
+            await loadWorldPositions();
+          } catch (error) {
+            console.error("Failed to update world position:", error);
+          }
         }, 200);
       }
 
@@ -994,10 +1000,16 @@ export const SpaceMap: React.FC = () => {
       // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
-        await gameService.updateWorldPosition(selectedWorldId, {
-          x: planet.x,
-          y: planet.y,
-        });
+        try {
+          await gameService.updateWorldPosition(selectedWorldId, {
+            x: planet.x,
+            y: planet.y,
+          });
+          // Reload planets from database to ensure consistency
+          await loadWorldPositions();
+        } catch (error) {
+          console.error("Failed to update world position on mouse up:", error);
+        }
       }
 
       setIsDragging(false);
@@ -1630,9 +1642,15 @@ export const SpaceMap: React.FC = () => {
 
                 // Save to database
                 if (selectedWorldId) {
-                  await gameService.updateWorldPosition(selectedWorldId, {
-                    size: newSize,
-                  });
+                  try {
+                    await gameService.updateWorldPosition(selectedWorldId, {
+                      size: newSize,
+                    });
+                    // Reload planets from database to ensure consistency
+                    await loadWorldPositions();
+                  } catch (error) {
+                    console.error("Failed to update world size:", error);
+                  }
                 }
               }}
               className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
@@ -1672,9 +1690,15 @@ export const SpaceMap: React.FC = () => {
 
                 // Save to database
                 if (selectedWorldId) {
-                  await gameService.updateWorldPosition(selectedWorldId, {
-                    rotation: newRotation,
-                  });
+                  try {
+                    await gameService.updateWorldPosition(selectedWorldId, {
+                      rotation: newRotation,
+                    });
+                    // Reload planets from database to ensure consistency
+                    await loadWorldPositions();
+                  } catch (error) {
+                    console.error("Failed to update world rotation:", error);
+                  }
                 }
               }}
               className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
@@ -1706,10 +1730,16 @@ export const SpaceMap: React.FC = () => {
                       (p) => p.id === selectedWorldId,
                     );
                     if (planet) {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        x: planet.x,
-                        y: planet.y,
-                      });
+                      try {
+                        await gameService.updateWorldPosition(selectedWorldId, {
+                          x: planet.x,
+                          y: planet.y,
+                        });
+                        // Reload planets from database to ensure consistency
+                        await loadWorldPositions();
+                      } catch (error) {
+                        console.error("Failed to reset world position:", error);
+                      }
                     }
                   }
 
