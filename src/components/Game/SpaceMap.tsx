@@ -73,6 +73,11 @@ export const SpaceMap: React.FC = () => {
       x: CENTER_X,
       y: CENTER_Y + 200,
     },
+    warpTransition: {
+      active: false,
+      progress: 0,
+      direction: { x: 0, y: 0 },
+    },
   });
 
   // Initialize game objects once
