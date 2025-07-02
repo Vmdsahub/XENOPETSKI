@@ -325,29 +325,24 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw 3 simple expanding wave arcs like sonar
-      for (let i = 0; i < 3; i++) {
-        const baseRadius = 20 + i * 18; // Fixed spacing between waves
-        const arcRadius = pulse.radius + baseRadius;
-        const lineWidth = 6;
-        const arcOpacity = currentOpacity * (0.8 - i * 0.2); // Decreasing opacity
+      // Draw single expanding wave arc
+      const fadeRatio = pulse.life / pulse.maxLife;
+      const arcRadius = pulse.radius;
+      const lineWidth = 6;
+      const arcOpacity = currentOpacity * fadeRatio;
 
-        if (arcRadius <= pulse.maxRadius + 30) {
-          // Allow longer visibility
-          ctx.globalAlpha = arcOpacity;
-          ctx.lineWidth = lineWidth;
-          ctx.lineCap = "round";
+      ctx.globalAlpha = arcOpacity;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "round";
 
-          // Draw wide curved arcs like sonar signal
-          const arcWidth = Math.PI / 2; // 90 degrees for good curve
-          const startAngle = pulse.angle - arcWidth / 2;
-          const endAngle = pulse.angle + arcWidth / 2;
+      // Draw wide curved arc like sonar signal
+      const arcWidth = Math.PI / 2; // 90 degrees for good curve
+      const startAngle = pulse.angle - arcWidth / 2;
+      const endAngle = pulse.angle + arcWidth / 2;
 
-          ctx.beginPath();
-          ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
-          ctx.stroke();
-        }
-      }
+      ctx.beginPath();
+      ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+      ctx.stroke();
 
       ctx.restore();
     },
