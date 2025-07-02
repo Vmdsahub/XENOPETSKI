@@ -724,6 +724,7 @@ export const useGameStore = create<GameStore>()(
       setActivePet: (pet) => set({ activePet: pet }),
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
+      setCurrentPlanet: (planet) => set({ currentPlanet: planet }),
 
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>
