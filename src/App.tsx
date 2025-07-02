@@ -139,6 +139,8 @@ function App() {
         return <OtherUserAchievementsScreen />;
       case "otherUserCollectibles":
         return <OtherUserCollectiblesScreen />;
+      case "planet":
+        return <PlanetScreen />;
       default:
         return <PetScreen />;
     }
