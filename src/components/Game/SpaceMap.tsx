@@ -327,17 +327,17 @@ export const SpaceMap: React.FC = () => {
 
       // Draw 3 expanding wave arcs like WiFi/sonar signal
       for (let i = 0; i < 3; i++) {
-        const arcRadius = pulse.radius + i * 12;
-        const lineWidth = 4; // Thicker lines like in image
-        const arcOpacity = currentOpacity * (1 - i * 0.3);
+        const arcRadius = pulse.radius + i * 15; // Better spacing between waves
+        const lineWidth = 5; // Even thicker lines
+        const arcOpacity = currentOpacity * Math.pow(1 - i * 0.25, 2); // Smoother fade
 
-        if (arcRadius <= pulse.maxRadius) {
+        if (arcRadius <= pulse.maxRadius && arcRadius >= pulse.radius) {
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
           ctx.lineCap = "round";
 
-          // Draw curved arcs like sonar/WiFi signal (wider and more curved)
-          const arcWidth = Math.PI / 3; // 60 degrees total width (even wider)
+          // Draw curved arcs like sonar/WiFi signal
+          const arcWidth = Math.PI / 2.5; // About 72 degrees for nice curve
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
@@ -442,7 +442,7 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: 0, // Movimento será calculado via seno/cosseno
+          x: 0, // Movimento ser�� calculado via seno/cosseno
           y: 0,
         },
         pulse: Math.random() * 100,
