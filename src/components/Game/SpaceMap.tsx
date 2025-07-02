@@ -39,6 +39,11 @@ interface GameState {
     x: number;
     y: number;
   };
+  warpTransition: {
+    active: boolean;
+    progress: number;
+    direction: { x: number; y: number };
+  };
 }
 
 const WORLD_SIZE = 10000;
