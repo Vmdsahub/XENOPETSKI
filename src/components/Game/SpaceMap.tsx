@@ -25,6 +25,7 @@ interface Planet {
   size: number;
   color: string;
   name: string;
+  interactionRadius: number;
 }
 
 interface Projectile {
