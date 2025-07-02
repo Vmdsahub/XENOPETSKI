@@ -1259,6 +1259,12 @@ export const SpaceMap: React.FC = () => {
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
+      <PlanetLandingModal
+        isOpen={showLandingModal}
+        planet={selectedPlanet}
+        onConfirm={handleLandingConfirm}
+        onCancel={handleLandingCancel}
+      />
       <canvas
         ref={canvasRef}
         className="w-full h-full"
