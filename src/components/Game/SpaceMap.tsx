@@ -326,10 +326,9 @@ export const SpaceMap: React.FC = () => {
       ctx.fillStyle = "#00ff0015";
 
       // Draw single expanding wave arc
-      const fadeRatio = pulse.life / pulse.maxLife;
       const arcRadius = pulse.radius;
       const lineWidth = 6;
-      const arcOpacity = currentOpacity * fadeRatio;
+      const arcOpacity = currentOpacity;
 
       ctx.globalAlpha = arcOpacity;
       ctx.lineWidth = lineWidth;
