@@ -293,6 +293,7 @@ export const SpaceMap: React.FC = () => {
             star.twinkle += star.speed;
             const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
 
+            ctx.save();
             ctx.globalAlpha = alpha;
             ctx.beginPath();
             ctx.arc(
@@ -303,6 +304,7 @@ export const SpaceMap: React.FC = () => {
               Math.PI * 2,
             );
             ctx.fill();
+            ctx.restore();
           }
         }
       });
