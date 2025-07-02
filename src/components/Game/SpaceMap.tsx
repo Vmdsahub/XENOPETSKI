@@ -301,7 +301,7 @@ export const SpaceMap: React.FC = () => {
         maxRadius: 40, // Expansão menor
         life: 90, // Vida original
         maxLife: 90,
-        opacity: 0.9, // Opacidade alta mas não total
+        opacity: 1.2, // Opacidade muito alta para verde ser mais visível
       };
 
       radarPulsesRef.current.push(newPulse);
@@ -326,7 +326,7 @@ export const SpaceMap: React.FC = () => {
 
       ctx.save();
 
-      // Gradiente verde 3D
+      // Gradiente verde 3D mais vibrante
       const gradient = ctx.createRadialGradient(
         shipScreenX,
         shipScreenY,
@@ -335,10 +335,10 @@ export const SpaceMap: React.FC = () => {
         shipScreenY,
         pulse.radius,
       );
-      gradient.addColorStop(0, `rgba(50, 255, 50, ${currentOpacity})`); // Verde claro centro
-      gradient.addColorStop(0.5, `rgba(0, 220, 0, ${currentOpacity * 0.8})`); // Verde médio
-      gradient.addColorStop(0.8, `rgba(0, 180, 0, ${currentOpacity * 0.6})`); // Verde escuro
-      gradient.addColorStop(1, `rgba(0, 120, 0, ${currentOpacity * 0.3})`); // Verde muito escuro
+      gradient.addColorStop(0, `rgba(150, 255, 150, ${currentOpacity})`); // Verde muito claro centro
+      gradient.addColorStop(0.4, `rgba(50, 255, 50, ${currentOpacity})`); // Verde claro
+      gradient.addColorStop(0.7, `rgba(0, 255, 0, ${currentOpacity * 0.9})`); // Verde puro vibrante
+      gradient.addColorStop(1, `rgba(0, 200, 0, ${currentOpacity * 0.6})`); // Verde médio
 
       // Arco original
       const arcWidth = Math.PI / 3; // 60 graus original
@@ -356,10 +356,10 @@ export const SpaceMap: React.FC = () => {
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
-      // Brilho interno verde para efeito 3D
-      ctx.globalAlpha = currentOpacity * 0.7;
-      ctx.strokeStyle = `rgba(150, 255, 150, ${currentOpacity * 0.8})`;
-      ctx.lineWidth = 1;
+      // Brilho interno verde mais forte para efeito 3D
+      ctx.globalAlpha = currentOpacity;
+      ctx.strokeStyle = `rgba(200, 255, 200, ${currentOpacity})`;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
