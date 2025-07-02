@@ -13,6 +13,7 @@ import { OtherUserInventoryScreen } from "./components/Screens/OtherUserInventor
 import { OtherUserAchievementsScreen } from "./components/Screens/OtherUserAchievementsScreen";
 import { OtherUserCollectiblesScreen } from "./components/Screens/OtherUserCollectiblesScreen";
 import { AdminPanel } from "./components/Admin/AdminPanel";
+import { SpaceMap } from "./components/Game/SpaceMap";
 import { useAuthStore } from "./store/authStore";
 import { useGameStore } from "./store/gameStore";
 import { preloadAllSounds } from "./utils/soundManager";
