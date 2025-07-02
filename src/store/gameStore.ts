@@ -1690,6 +1690,16 @@ export const useGameStore = create<GameStore>()(
         // In a real app, this would clean up real-time subscriptions
         console.log("Unsubscribing from real-time updates");
       },
+
+      // Ship state management
+      updateShipState: (shipState) => {
+        set({ shipState });
+      },
+
+      getShipState: () => {
+        const state = get();
+        return state.shipState;
+      },
     }),
     {
       name: "xenopets-game-store",
