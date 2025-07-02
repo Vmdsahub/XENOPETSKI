@@ -162,13 +162,7 @@ function App() {
 
       <TopBar />
 
-      <main
-        className={
-          currentScreen === "world"
-            ? "pt-20 pb-24 min-h-screen"
-            : "pt-20 pb-24 px-4 min-h-screen"
-        }
-      >
+      <main className="pt-20 pb-24 px-4 min-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentScreen}
@@ -177,7 +171,6 @@ function App() {
             exit="out"
             variants={pageVariants}
             transition={pageTransition}
-            className={currentScreen === "world" ? "h-full" : ""}
           >
             {renderScreen()}
           </motion.div>
