@@ -343,8 +343,8 @@ export const SpaceMap: React.FC = () => {
         },
         pulse: Math.random() * 100,
         floatAmplitude: {
-          x: Math.random() * 2 + 0.3, // Movimento muito sutil para poeira cósmica
-          y: Math.random() * 2 + 0.3,
+          x: Math.random() * 1.5 + 0.3, // Movimento muito sutil para poeira cósmica
+          y: Math.random() * 1.5 + 0.3,
         },
         floatPhase: {
           x: Math.random() * Math.PI * 2,
