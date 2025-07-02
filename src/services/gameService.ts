@@ -12,20 +12,6 @@ import {
   Collectible,
 } from "../types/game";
 
-export interface GalaxyWorld {
-  id: string;
-  name: string;
-  imageUrl: string;
-  x: number;
-  y: number;
-  scale: number;
-  orderIndex: number;
-  isActive: boolean;
-  unlockRequirement: any;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export class GameService {
   private static instance: GameService;
   private subscriptions: { [key: string]: any } = {};
