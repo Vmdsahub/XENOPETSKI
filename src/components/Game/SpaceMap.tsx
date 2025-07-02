@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
+import { useGameStore } from "../../store/gameStore";
+import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 
 interface Star {
   x: number;
@@ -49,6 +51,16 @@ interface ShootingStar {
   tailLength: number;
 }
 
+interface RadarPulse {
+  planetId: string;
+  angle: number;
+  radius: number;
+  maxRadius: number;
+  life: number;
+  maxLife: number;
+  opacity: number;
+}
+
 interface GameState {
   ship: {
     x: number;
@@ -74,28 +86,68 @@ const BARRIER_RADIUS = 600;
 const RENDER_BUFFER = 200;
 
 export const SpaceMap: React.FC = () => {
+  const { getShipState } = useGameStore();
+  const { saveShipState, forceSaveShipState } = useShipStatePersistence();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
+  const hasMouseMoved = useRef(false);
   const starsRef = useRef<Star[]>([]);
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
   const shootingStarsRef = useRef<ShootingStar[]>([]);
+  const radarPulsesRef = useRef<RadarPulse[]>([]);
   const lastShootingStarTime = useRef(0);
+  const lastRadarCheckRef = useRef<Set<string>>(new Set());
+  const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
 
-  const [gameState, setGameState] = useState<GameState>({
-    ship: {
-      x: CENTER_X,
-      y: CENTER_Y + 200,
-      angle: 0,
-      vx: 0,
-      vy: 0,
-    },
-    camera: {
-      x: CENTER_X,
-      y: CENTER_Y + 200,
-    },
-  });
+  // Initialize state from store or use defaults
+  const getInitialGameState = useCallback((): GameState => {
+    const savedState = getShipState();
+    if (savedState) {
+      return {
+        ship: {
+          x: savedState.x,
+          y: savedState.y,
+          angle: 0, // Reset angle to neutral position
+          vx: 0, // Reset velocity to stop movement
+          vy: 0, // Reset velocity to stop movement
+        },
+        camera: {
+          x: savedState.cameraX,
+          y: savedState.cameraY,
+        },
+      };
+    }
+    return {
+      ship: {
+        x: CENTER_X,
+        y: CENTER_Y + 200,
+        angle: 0,
+        vx: 0,
+        vy: 0,
+      },
+      camera: {
+        x: CENTER_X,
+        y: CENTER_Y + 200,
+      },
+    };
+  }, [getShipState]);
+
+  const [gameState, setGameState] = useState<GameState>(getInitialGameState);
+
+  // Reset velocities on component mount to ensure ship starts stationary
+  useEffect(() => {
+    setGameState((prevState) => ({
+      ...prevState,
+      ship: {
+        ...prevState.ship,
+        vx: 0,
+        vy: 0,
+        angle: 0,
+      },
+    }));
+  }, []); // Empty dependency array ensures this runs only on mount
 
   // FPS tracking
   const [fps, setFps] = useState(0);
@@ -229,6 +281,67 @@ export const SpaceMap: React.FC = () => {
         Math.PI * 2,
       );
       ctx.fill();
+
+      ctx.restore();
+    },
+    [],
+  );
+
+  // Create radar pulse towards planet
+  const createRadarPulse = useCallback(
+    (planet: Planet, shipX: number, shipY: number) => {
+      const dx = getWrappedDistance(planet.x, shipX);
+      const dy = getWrappedDistance(planet.y, shipY);
+      const angle = Math.atan2(dy, dx);
+
+      const newPulse: RadarPulse = {
+        planetId: planet.id,
+        angle,
+        radius: 15,
+        maxRadius: 70, // Longer range to see all 3 waves
+        life: 60, // Longer life to maintain 3 visible waves
+        maxLife: 60,
+        opacity: 1.0,
+      };
+
+      radarPulsesRef.current.push(newPulse);
+    },
+    [getWrappedDistance],
+  );
+
+  // Helper function to draw directional radar pulse
+  const drawRadarPulse = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      pulse: RadarPulse,
+      shipScreenX: number,
+      shipScreenY: number,
+    ) => {
+      const fadeRatio = pulse.life / pulse.maxLife;
+      const currentOpacity = pulse.opacity * fadeRatio;
+
+      ctx.save();
+      ctx.globalAlpha = currentOpacity;
+      ctx.strokeStyle = "#00ff00";
+      ctx.fillStyle = "#00ff0015";
+
+      // Draw single expanding wave arc
+      const arcRadius = pulse.radius;
+      const lineWidth = 6;
+      const arcOpacity = currentOpacity;
+
+      ctx.globalAlpha = arcOpacity;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "round";
+
+      // Draw wide curved arc like sonar signal
+      const arcWidth = Math.PI / 2; // 90 degrees for good curve
+      const startAngle = pulse.angle - arcWidth / 2;
+      const endAngle = pulse.angle + arcWidth / 2;
+
+      ctx.beginPath();
+      ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+      ctx.stroke();
 
       ctx.restore();
     },
@@ -561,6 +674,7 @@ export const SpaceMap: React.FC = () => {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+      hasMouseMoved.current = true;
     },
     [],
   );
@@ -568,6 +682,7 @@ export const SpaceMap: React.FC = () => {
   // Handle mouse leaving canvas
   const handleMouseLeave = useCallback(() => {
     setMouseInWindow(false);
+    hasMouseMoved.current = false; // Reset mouse movement flag
   }, []);
 
   // Handle mouse entering canvas
@@ -656,21 +771,23 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Always respond to mouse, but handle differently when outside window
-        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Only respond to mouse if it has actually moved
+        if (hasMouseMoved.current) {
+          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        newState.ship.angle = Math.atan2(dy, dx);
+          newState.ship.angle = Math.atan2(dy, dx);
 
-        if (mouseInWindow && distance > 10) {
-          const speedMultiplier = Math.min(distance / 300, 1);
-          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          if (mouseInWindow && distance > 10) {
+            const speedMultiplier = Math.min(distance / 300, 1);
+            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          }
         }
 
         // Apply less friction when mouse is outside window to maintain momentum
@@ -695,6 +812,66 @@ export const SpaceMap: React.FC = () => {
 
         return newState;
       });
+
+      // Save to store for persistence (throttled) - moved outside setState
+      saveShipState({
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        angle: gameState.ship.angle,
+        vx: gameState.ship.vx,
+        vy: gameState.ship.vy,
+        cameraX: gameState.camera.x,
+        cameraY: gameState.camera.y,
+      });
+
+      // Check for planets in range and create radar pulses
+      const currentShipState = gameState;
+      const currentPlanetsInRange = new Set<string>();
+
+      planetsRef.current.forEach((planet) => {
+        const shipToPlanetX = getWrappedDistance(
+          planet.x,
+          currentShipState.ship.x,
+        );
+        const shipToPlanetY = getWrappedDistance(
+          planet.y,
+          currentShipState.ship.y,
+        );
+        const shipToPlanetDistance = Math.sqrt(
+          shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+        );
+
+        if (shipToPlanetDistance <= planet.interactionRadius) {
+          currentPlanetsInRange.add(planet.id);
+
+          // Create radar pulse every 300ms for perfect 3-wave spacing
+          const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
+          if (currentTime - lastPulseTime >= 300) {
+            // 0.3 second = 300ms for 3 visible waves
+            createRadarPulse(
+              planet,
+              currentShipState.ship.x,
+              currentShipState.ship.y,
+            );
+            lastRadarPulseTime.current.set(planet.id, currentTime);
+          }
+        } else {
+          // Remove pulse timing when out of range
+          lastRadarPulseTime.current.delete(planet.id);
+        }
+      });
+
+      // Update the tracking set
+      lastRadarCheckRef.current = currentPlanetsInRange;
+
+      // Update radar pulses
+      radarPulsesRef.current = radarPulsesRef.current
+        .map((pulse) => ({
+          ...pulse,
+          radius: pulse.radius + 1.2, // Slower expansion for better spacing
+          life: pulse.life - 1,
+        }))
+        .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
 
       // Update stars with floating motion
       const stars = starsRef.current;
@@ -972,6 +1149,11 @@ export const SpaceMap: React.FC = () => {
       ctx.restore();
       ctx.globalAlpha = 1;
 
+      // Render radar pulses
+      radarPulsesRef.current.forEach((pulse) => {
+        drawRadarPulse(ctx, pulse, shipScreenX, shipScreenY);
+      });
+
       gameLoopRef.current = requestAnimationFrame(gameLoop);
     };
 
@@ -981,8 +1163,27 @@ export const SpaceMap: React.FC = () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
+      // Force save final state when component unmounts
+      forceSaveShipState({
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        angle: gameState.ship.angle,
+        vx: gameState.ship.vx,
+        vy: gameState.ship.vy,
+        cameraX: gameState.camera.x,
+        cameraY: gameState.camera.y,
+      });
     };
-  }, [gameState, getWrappedDistance, normalizeCoord, drawPureLightStar]);
+  }, [
+    gameState,
+    getWrappedDistance,
+    normalizeCoord,
+    drawPureLightStar,
+    saveShipState,
+    forceSaveShipState,
+    createRadarPulse,
+    drawRadarPulse,
+  ]);
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">

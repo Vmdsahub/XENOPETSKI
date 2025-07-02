@@ -206,6 +206,15 @@ export interface GameState {
   quests: Quest[];
   redeemCodes: RedeemCode[];
   viewedUserId: string | null;
+  shipState?: {
+    x: number;
+    y: number;
+    angle: number;
+    vx: number;
+    vy: number;
+    cameraX: number;
+    cameraY: number;
+  };
 }
 
 export interface Notification {

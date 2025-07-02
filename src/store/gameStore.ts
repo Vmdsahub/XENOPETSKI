@@ -108,6 +108,26 @@ interface GameStore extends GameState {
   canClaimWeeklyReward: () => boolean;
   claimWeeklyReward: () => void;
 
+  // Ship state management
+  updateShipState: (shipState: {
+    x: number;
+    y: number;
+    angle: number;
+    vx: number;
+    vy: number;
+    cameraX: number;
+    cameraY: number;
+  }) => void;
+  getShipState: () => {
+    x: number;
+    y: number;
+    angle: number;
+    vx: number;
+    vy: number;
+    cameraX: number;
+    cameraY: number;
+  } | null;
+
   // Data loading and synchronization
   initializeNewUser: (userData: User) => void;
   loadUserData: (userId: string) => Promise<void>;
@@ -650,6 +670,7 @@ export const useGameStore = create<GameStore>()(
         },
       ],
       viewedUserId: null,
+      shipState: null,
 
       // Egg selection and hatching state
       selectedEggForHatching: null,
@@ -1669,6 +1690,16 @@ export const useGameStore = create<GameStore>()(
         // In a real app, this would clean up real-time subscriptions
         console.log("Unsubscribing from real-time updates");
       },
+
+      // Ship state management
+      updateShipState: (shipState) => {
+        set({ shipState });
+      },
+
+      getShipState: () => {
+        const state = get();
+        return state.shipState;
+      },
     }),
     {
       name: "xenopets-game-store",
@@ -1688,6 +1719,7 @@ export const useGameStore = create<GameStore>()(
         selectedEggForHatching: state.selectedEggForHatching,
         isHatchingInProgress: state.isHatchingInProgress,
         hatchingEgg: state.hatchingEgg,
+        shipState: state.shipState,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
