@@ -97,7 +97,11 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     x: CENTER_X,
     y: CENTER_Y,
   });
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mousePosition, setMousePosition] = useState({
+    x: containerSize.width / 2,
+    y: containerSize.height / 2,
+  });
+  const [isMouseInside, setIsMouseInside] = useState(false);
   const [projectiles, setProjectiles] = useState<
     Array<{
       id: string;
@@ -116,6 +120,9 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   // Ship rotation based on mouse
   const rotation = useMotionValue(0);
+
+  // Animation frame for continuous movement
+  const animationFrameRef = useRef<number>();
 
   // Generate stars once
   const [starLayers] = useState(() =>
@@ -151,36 +158,77 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     cameraY.set(-(playerPosition.y - containerSize.height / 2));
   }, [playerPosition, containerSize, cameraX, cameraY]);
 
-  // Handle mouse movement
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-
-      setMousePosition({ x: mouseX, y: mouseY });
-
-      // Calculate world position
-      const worldX = mouseX - cameraX.get();
-      const worldY = mouseY - cameraY.get();
-
-      // Calculate rotation
-      const dx = worldX - playerPosition.x;
-      const dy = worldY - playerPosition.y;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      rotation.set(angle);
-
-      // Move player toward mouse (smooth movement)
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance > 5) {
-        const speed = 0.05;
-        const newX = wrapCoordinate(playerPosition.x + dx * speed, MAP_SIZE);
-        const newY = wrapCoordinate(playerPosition.y + dy * speed, MAP_SIZE);
-        setPlayerPosition({ x: newX, y: newY });
+  // Start continuous movement when mouse enters and position is tracked
+  useEffect(() => {
+    if (isMouseInside) {
+      animationFrameRef.current = requestAnimationFrame(moveShip);
+    }
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
       }
-    },
-    [playerPosition, cameraX, cameraY, rotation],
-  );
+    };
+  }, [isMouseInside, moveShip]);
+
+  // Continuous movement loop
+  const moveShip = useCallback(() => {
+    if (!isMouseInside) return;
+
+    // Calculate screen center where ship appears
+    const shipScreenX = containerSize.width / 2;
+    const shipScreenY = containerSize.height / 2;
+
+    // Calculate distance from mouse to ship on screen
+    const dx = mousePosition.x - shipScreenX;
+    const dy = mousePosition.y - shipScreenY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Dead zone - if mouse is too close to ship, don't move
+    const deadZone = 30;
+    if (distance < deadZone) return;
+
+    // Calculate rotation
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    rotation.set(angle);
+
+    // Calculate speed based on distance (further = faster)
+    const maxDistance = 300; // Max distance for full speed
+    const maxSpeed = 4; // Max speed in pixels per frame
+    const speedMultiplier = Math.min(distance / maxDistance, 1);
+    const speed = speedMultiplier * maxSpeed;
+
+    // Move ship in world coordinates
+    const moveX = (dx / distance) * speed;
+    const moveY = (dy / distance) * speed;
+
+    setPlayerPosition((prev) => ({
+      x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
+      y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
+    }));
+
+    animationFrameRef.current = requestAnimationFrame(moveShip);
+  }, [mousePosition, isMouseInside, containerSize, rotation]);
+
+  // Handle mouse movement (only track position)
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    setMousePosition({ x: mouseX, y: mouseY });
+  }, []);
+
+  // Handle mouse enter/leave
+  const handleMouseEnter = useCallback(() => {
+    setIsMouseInside(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsMouseInside(false);
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  }, []);
 
   // Handle shooting
   const handleShoot = useCallback(
@@ -231,6 +279,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       ref={containerRef}
       className="relative w-full h-96 bg-black overflow-hidden rounded-2xl cursor-crosshair"
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onMouseDown={handleShoot}
     >
       {/* Star layers */}
