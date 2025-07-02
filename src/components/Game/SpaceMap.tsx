@@ -332,6 +332,28 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
+      // Render barrier circle
+      const barrierWrappedDeltaX = getWrappedDistance(
+        CENTER_X,
+        gameState.camera.x,
+      );
+      const barrierWrappedDeltaY = getWrappedDistance(
+        CENTER_Y,
+        gameState.camera.y,
+      );
+      const barrierScreenX = centerX + barrierWrappedDeltaX;
+      const barrierScreenY = centerY + barrierWrappedDeltaY;
+
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = "#00ffff";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      ctx.arc(barrierScreenX, barrierScreenY, BARRIER_RADIUS, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
       // Render planets
       planetsRef.current.forEach((planet) => {
         const wrappedDeltaX = getWrappedDistance(planet.x, gameState.camera.x);
