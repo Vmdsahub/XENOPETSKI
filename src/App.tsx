@@ -4,8 +4,7 @@ import { AuthScreen } from "./components/Auth/AuthScreen";
 import { TopBar } from "./components/Layout/TopBar";
 import { BottomNavigation } from "./components/Layout/BottomNavigation";
 import { PetScreen } from "./components/Screens/PetScreen";
-import { WorldScreen } from "./components/Screens/WorldScreen";
-import { WorldDetailScreen } from "./components/Screens/WorldDetailScreen";
+
 import { StoreScreen } from "./components/Store/StoreScreen";
 import { InventoryScreen } from "./components/Screens/InventoryScreen";
 import { ProfileScreen } from "./components/Screens/ProfileScreen";
