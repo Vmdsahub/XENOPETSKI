@@ -355,8 +355,6 @@ export const SpaceMap: React.FC = () => {
       // Render projectiles
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#ffff00";
-      ctx.shadowColor = "#ffff00";
-      ctx.shadowBlur = 8;
       projectilesRef.current.forEach((proj) => {
         const screenX = centerX + (proj.x - gameState.camera.x);
         const screenY = centerY + (proj.y - gameState.camera.y);
@@ -365,7 +363,6 @@ export const SpaceMap: React.FC = () => {
         ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
         ctx.fill();
       });
-      ctx.shadowBlur = 0;
 
       // Render ship
       const shipScreenX = centerX + (gameState.ship.x - gameState.camera.x);
