@@ -107,56 +107,43 @@ function App() {
   }
 
   const renderScreen = () => {
-    const getScreenContent = () => {
-      switch (currentScreen) {
-        case "pet":
-          return {
-            title: "Pet",
-            content: "Área do seu Pet - Em desenvolvimento",
-          };
-        case "world":
-          return {
-            title: "Mundo",
-            content: "Área dos Mundos - Em desenvolvimento",
-          };
-        case "inventory":
-          return {
-            title: "Inventário",
-            content: "Seus itens e equipamentos - Em desenvolvimento",
-          };
-        case "profile":
-          return {
-            title: "Perfil",
-            content: "Seu perfil e conquistas - Em desenvolvimento",
-          };
-        case "admin":
-          return {
-            title: "Admin",
-            content: "Painel administrativo - Em desenvolvimento",
-          };
-        default:
-          return {
-            title: "Pet",
-            content: "Área do seu Pet - Em desenvolvimento",
-          };
-      }
-    };
-
-    const { title, content } = getScreenContent();
-
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[80vh] flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
-            <p className="text-lg text-gray-600 mb-8">{content}</p>
-            <div className="mt-8 text-sm text-gray-500">
-              Aba atual: <span className="font-semibold">{currentScreen}</span>
+    switch (currentScreen) {
+      case "pet":
+        return <PetScreen />;
+      case "world":
+        return (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[80vh] flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-gray-800 mb-4">Mundo</h1>
+                <p className="text-lg text-gray-600 mb-8">
+                  Área dos Mundos - Pronto para desenvolvimento
+                </p>
+                <div className="mt-8 text-sm text-gray-500">
+                  Aba atual:{" "}
+                  <span className="font-semibold">{currentScreen}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
+        );
+      case "store":
+        return <StoreScreen />;
+      case "inventory":
+        return <InventoryScreen />;
+      case "profile":
+        return <ProfileScreen />;
+      case "admin":
+        return gameUser?.isAdmin ? <AdminPanel /> : <ProfileScreen />;
+      case "otherUserInventory":
+        return <OtherUserInventoryScreen />;
+      case "otherUserAchievements":
+        return <OtherUserAchievementsScreen />;
+      case "otherUserCollectibles":
+        return <OtherUserCollectiblesScreen />;
+      default:
+        return <PetScreen />;
+    }
   };
 
   const pageVariants = {
