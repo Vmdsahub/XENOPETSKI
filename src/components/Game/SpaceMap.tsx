@@ -707,9 +707,12 @@ export const SpaceMap: React.FC = () => {
 
   // Handle mouse leaving canvas
   const handleMouseLeave = useCallback(() => {
-    setMouseInWindow(false);
-    hasMouseMoved.current = false; // Reset mouse movement flag
-  }, []);
+    // Don't change mouse state if modal is open
+    if (!showLandingModal) {
+      setMouseInWindow(false);
+      hasMouseMoved.current = false; // Reset mouse movement flag
+    }
+  }, [showLandingModal]);
 
   // Handle mouse entering canvas
   const handleMouseEnter = useCallback(() => {
