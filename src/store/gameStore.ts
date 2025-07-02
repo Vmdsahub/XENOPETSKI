@@ -1719,6 +1719,7 @@ export const useGameStore = create<GameStore>()(
         selectedEggForHatching: state.selectedEggForHatching,
         isHatchingInProgress: state.isHatchingInProgress,
         hatchingEgg: state.hatchingEgg,
+        shipState: state.shipState,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
