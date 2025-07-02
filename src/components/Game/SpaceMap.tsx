@@ -35,6 +35,19 @@ interface Projectile {
   life: number;
 }
 
+interface ShootingStar {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  opacity: number;
+  color: string;
+  tailLength: number;
+}
+
 interface GameState {
   ship: {
     x: number;
