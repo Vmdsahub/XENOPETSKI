@@ -396,14 +396,20 @@ export const SpaceMap: React.FC = () => {
 
       // Barrier removed for truly seamless infinite world experience
 
-      // Render planets with seamless wrapping
-      const renderPlanet = (
-        planet: Planet,
-        offsetX: number = 0,
-        offsetY: number = 0,
-      ) => {
-        const screenX = centerX + (planet.x - gameState.camera.x) + offsetX;
-        const screenY = centerY + (planet.y - gameState.camera.y) + offsetY;
+      // Render planets with seamless wrapping using shortest distance
+      const getWrappedDistance = (coord: number, cameraCoord: number) => {
+        let delta = coord - cameraCoord;
+        if (delta > WORLD_SIZE / 2) delta -= WORLD_SIZE;
+        else if (delta < -WORLD_SIZE / 2) delta += WORLD_SIZE;
+        return delta;
+      };
+
+      planetsRef.current.forEach((planet) => {
+        const wrappedDeltaX = getWrappedDistance(planet.x, gameState.camera.x);
+        const wrappedDeltaY = getWrappedDistance(planet.y, gameState.camera.y);
+
+        const screenX = centerX + wrappedDeltaX;
+        const screenY = centerY + wrappedDeltaY;
 
         if (
           screenX > -100 &&
@@ -433,56 +439,6 @@ export const SpaceMap: React.FC = () => {
 
           // Reset alpha
           ctx.globalAlpha = 1;
-        }
-      };
-
-      planetsRef.current.forEach((planet) => {
-        // Render main planet
-        renderPlanet(planet);
-
-        // Render wrapped duplicates near edges for seamless transitions
-        const EDGE_THRESHOLD = canvas.width;
-
-        // Check if we need to render duplicates for horizontal wrapping
-        if (planet.x - gameState.camera.x < EDGE_THRESHOLD) {
-          renderPlanet(planet, WORLD_SIZE, 0); // Right side duplicate
-        }
-        if (planet.x - gameState.camera.x > -EDGE_THRESHOLD) {
-          renderPlanet(planet, -WORLD_SIZE, 0); // Left side duplicate
-        }
-
-        // Check if we need to render duplicates for vertical wrapping
-        if (planet.y - gameState.camera.y < EDGE_THRESHOLD) {
-          renderPlanet(planet, 0, WORLD_SIZE); // Bottom duplicate
-        }
-        if (planet.y - gameState.camera.y > -EDGE_THRESHOLD) {
-          renderPlanet(planet, 0, -WORLD_SIZE); // Top duplicate
-        }
-
-        // Corner duplicates for diagonal wrapping
-        if (
-          planet.x - gameState.camera.x < EDGE_THRESHOLD &&
-          planet.y - gameState.camera.y < EDGE_THRESHOLD
-        ) {
-          renderPlanet(planet, WORLD_SIZE, WORLD_SIZE);
-        }
-        if (
-          planet.x - gameState.camera.x > -EDGE_THRESHOLD &&
-          planet.y - gameState.camera.y < EDGE_THRESHOLD
-        ) {
-          renderPlanet(planet, -WORLD_SIZE, WORLD_SIZE);
-        }
-        if (
-          planet.x - gameState.camera.x < EDGE_THRESHOLD &&
-          planet.y - gameState.camera.y > -EDGE_THRESHOLD
-        ) {
-          renderPlanet(planet, WORLD_SIZE, -WORLD_SIZE);
-        }
-        if (
-          planet.x - gameState.camera.x > -EDGE_THRESHOLD &&
-          planet.y - gameState.camera.y > -EDGE_THRESHOLD
-        ) {
-          renderPlanet(planet, -WORLD_SIZE, -WORLD_SIZE);
         }
       });
 
