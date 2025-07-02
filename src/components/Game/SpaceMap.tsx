@@ -775,6 +775,21 @@ export const SpaceMap: React.FC = () => {
     [gameState, getWrappedDistance],
   );
 
+  // Modal handlers
+  const handleLandingConfirm = useCallback(() => {
+    if (selectedPlanet) {
+      setCurrentPlanet(selectedPlanet);
+      setCurrentScreen("planet");
+    }
+    setShowLandingModal(false);
+    setSelectedPlanet(null);
+  }, [selectedPlanet, setCurrentPlanet, setCurrentScreen]);
+
+  const handleLandingCancel = useCallback(() => {
+    setShowLandingModal(false);
+    setSelectedPlanet(null);
+  }, []);
+
   // Optimized game loop with pre-rendering considerations
   useEffect(() => {
     const canvas = canvasRef.current;
