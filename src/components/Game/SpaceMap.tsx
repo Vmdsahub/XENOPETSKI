@@ -308,7 +308,8 @@ export const SpaceMap: React.FC = () => {
       });
 
       // Render barrier
-      ctx.globalAlpha = 0.5;
+      ctx.save();
+      ctx.globalAlpha = 0.6;
       ctx.strokeStyle = "#00ffff";
       ctx.lineWidth = 2;
       ctx.setLineDash([10, 10]);
@@ -321,7 +322,7 @@ export const SpaceMap: React.FC = () => {
         Math.PI * 2,
       );
       ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.restore();
 
       // Render planets
       planetsRef.current.forEach((planet) => {
