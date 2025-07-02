@@ -788,6 +788,9 @@ export const SpaceMap: React.FC = () => {
   const handleLandingCancel = useCallback(() => {
     setShowLandingModal(false);
     setSelectedPlanet(null);
+    // Force reset mouse state to ensure ship responds immediately
+    hasMouseMoved.current = true;
+    setMouseInWindow(true);
   }, []);
 
   // Optimized game loop with pre-rendering considerations
