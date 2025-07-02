@@ -138,53 +138,7 @@ const createMockClient = () => ({
               }),
             then: (callback: any) =>
               callback({
-                data:
-                  table === "profiles"
-                    ? [
-                        {
-                          id: "world-1",
-                          name: "Nexus Prime",
-                          image_url:
-                            "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=1600",
-                          x_position: 20,
-                          y_position: 30,
-                          scale: 1.0,
-                          order_index: 1,
-                          is_active: true,
-                          unlock_requirement: {},
-                          created_at: new Date().toISOString(),
-                          updated_at: new Date().toISOString(),
-                        },
-                        {
-                          id: "world-2",
-                          name: "Terra Nova",
-                          image_url:
-                            "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fea3ec3d920794634bdf7d66a1159511b?format=webp&width=1600",
-                          x_position: 70,
-                          y_position: 20,
-                          scale: 1.0,
-                          order_index: 2,
-                          is_active: true,
-                          unlock_requirement: {},
-                          created_at: new Date().toISOString(),
-                          updated_at: new Date().toISOString(),
-                        },
-                        {
-                          id: "world-2",
-                          name: "Terra Nova",
-                          image_url:
-                            "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=1600",
-                          x_position: 70,
-                          y_position: 20,
-                          scale: 1.0,
-                          order_index: 2,
-                          is_active: true,
-                          unlock_requirement: {},
-                          created_at: new Date().toISOString(),
-                          updated_at: new Date().toISOString(),
-                        },
-                      ]
-                    : [],
+                data: table === "profiles" ? [] : [],
                 error: null,
               }),
           }),
