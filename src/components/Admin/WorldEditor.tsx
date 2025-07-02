@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { RotateCcw, Move, Resize } from "lucide-react";
+import { RotateCcw, Move, Maximize2 } from "lucide-react";
 import { gameService } from "../../services/gameService";
 import { WorldPosition } from "../../types/game";
 
