@@ -988,12 +988,21 @@ export const SpaceMap: React.FC = () => {
   );
 
   // Handle mouse up to stop dragging
-  const handleMouseUp = useCallback(() => {
-    if (isWorldEditMode && isDragging) {
+  const handleMouseUp = useCallback(async () => {
+    if (isWorldEditMode && isDragging && selectedWorldId) {
+      // Get final position and save to database
+      const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
+      if (planet) {
+        await gameService.updateWorldPosition(selectedWorldId, {
+          x: planet.x,
+          y: planet.y,
+        });
+      }
+
       setIsDragging(false);
       setDragOffset({ x: 0, y: 0 });
     }
-  }, [isWorldEditMode, isDragging]);
+  }, [isWorldEditMode, isDragging, selectedWorldId]);
 
   // Handle ESC key to cancel editing
   useEffect(() => {
