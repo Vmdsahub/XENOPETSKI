@@ -299,8 +299,8 @@ export const SpaceMap: React.FC = () => {
         angle,
         radius: 8, // Raio inicial original
         maxRadius: 40, // Expansão menor
-        life: 90, // Vida original
-        maxLife: 90,
+        life: 160, // Vida mais longa para compensar expansão lenta
+        maxLife: 160,
         opacity: 1.2, // Opacidade muito alta para verde ser mais visível
       };
 
@@ -895,10 +895,10 @@ export const SpaceMap: React.FC = () => {
         if (shipToPlanetDistance <= planet.interactionRadius) {
           currentPlanetsInRange.add(planet.id);
 
-          // Create radar pulse every 600ms for smoother, more spaced waves
+          // Create radar pulse every 1200ms for much slower waves
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
-          if (currentTime - lastPulseTime >= 600) {
-            // 0.6 second = 600ms for smoother spacing
+          if (currentTime - lastPulseTime >= 1200) {
+            // 1.2 seconds = 1200ms for slower spacing
             createRadarPulse(
               planet,
               currentShipState.ship.x,
@@ -919,7 +919,7 @@ export const SpaceMap: React.FC = () => {
       radarPulsesRef.current = radarPulsesRef.current
         .map((pulse) => ({
           ...pulse,
-          radius: pulse.radius + 0.8, // Slightly faster expansion for more dynamic effect
+          radius: pulse.radius + 0.4, // Expansão muito mais lenta
           life: pulse.life - 1,
         }))
         .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
