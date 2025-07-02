@@ -93,7 +93,7 @@ export const SpaceMap: React.FC = () => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
 
-  // Helper function to draw a glowing star (no asterisk shapes)
+  // Helper function to draw a glowing star without cross shapes
   const drawGlowingStar = useCallback(
     (
       ctx: CanvasRenderingContext2D,
@@ -102,46 +102,54 @@ export const SpaceMap: React.FC = () => {
       size: number,
       color: string,
       intensity: number,
+      type: "normal" | "bright" | "giant",
     ) => {
-      // Main star core
+      // Convert hex color to rgba for proper alpha handling
+      const hexToRgba = (hex: string, alpha: number) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      };
+
+      // Main star core with soft glow
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
 
-      // Glow effect for larger stars
-      if (size > 0.8) {
+      // Enhanced glow effect for larger/brighter stars
+      if (size > 0.8 || type === "bright" || type === "giant") {
+        const glowRadius = type === "giant" ? size * 4 : size * 2.5;
+        const glowIntensity =
+          type === "giant" ? 0.9 : type === "bright" ? 0.7 : 0.5;
+
         ctx.beginPath();
-        ctx.arc(x, y, size * 2, 0, Math.PI * 2);
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-
-        // Convert hex color to rgba for proper alpha handling
-        const hexToRgba = (hex: string, alpha: number) => {
-          const r = parseInt(hex.slice(1, 3), 16);
-          const g = parseInt(hex.slice(3, 5), 16);
-          const b = parseInt(hex.slice(5, 7), 16);
-          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
-
-        gradient.addColorStop(0, hexToRgba(color, intensity * 0.8));
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        gradient.addColorStop(0, hexToRgba(color, intensity * glowIntensity));
+        gradient.addColorStop(0.6, hexToRgba(color, intensity * 0.3));
         gradient.addColorStop(1, hexToRgba(color, 0));
         ctx.fillStyle = gradient;
         ctx.fill();
       }
 
-      // Sparkle effect for bright stars
-      if (size > 1.5) {
-        const sparkleLength = size * 3;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 0.5;
+      // Diamond sparkle effect for bright/giant stars (no crosses)
+      if (type === "bright" || type === "giant") {
+        const sparkleSize = size * (type === "giant" ? 2.5 : 1.8);
         const originalAlpha = ctx.globalAlpha;
-        ctx.globalAlpha = intensity * 0.6;
+        ctx.globalAlpha = intensity * 0.4;
+        ctx.fillStyle = hexToRgba(color, 0.6);
+
+        // Draw diamond shape instead of cross
         ctx.beginPath();
-        ctx.moveTo(x - sparkleLength, y);
-        ctx.lineTo(x + sparkleLength, y);
-        ctx.moveTo(x, y - sparkleLength);
-        ctx.lineTo(x, y + sparkleLength);
-        ctx.stroke();
+        ctx.moveTo(x, y - sparkleSize);
+        ctx.lineTo(x + sparkleSize * 0.3, y);
+        ctx.lineTo(x, y + sparkleSize);
+        ctx.lineTo(x - sparkleSize * 0.3, y);
+        ctx.closePath();
+        ctx.fill();
+
         ctx.globalAlpha = originalAlpha;
       }
     },
@@ -174,15 +182,15 @@ export const SpaceMap: React.FC = () => {
       "#f8f8ff", // Purples
     ];
 
-    // Ultra distant background layer (depth 0.02-0.05)
-    for (let i = 0; i < 800; i++) {
+    // Ultra distant background layer (depth 0.01-0.03) - enhanced parallax
+    for (let i = 0; i < 600; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.3 + Math.random() * 0.4,
         opacity: 0.15 + Math.random() * 0.2,
-        speed: Math.random() * 0.003 + 0.001,
-        parallax: 0.02 + Math.random() * 0.03,
+        speed: Math.random() * 0.004 + 0.001,
+        parallax: 0.01 + Math.random() * 0.02, // More pronounced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.9
@@ -190,22 +198,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.002,
-          y: (Math.random() - 0.5) * 0.002,
+          x: (Math.random() - 0.5) * 0.008, // More cosmic dust movement
+          y: (Math.random() - 0.5) * 0.008,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Very distant layer (depth 0.05-0.1)
-    for (let i = 0; i < 600; i++) {
+    // Very distant layer (depth 0.03-0.08) - enhanced parallax
+    for (let i = 0; i < 500; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.4 + Math.random() * 0.5,
         opacity: 0.2 + Math.random() * 0.25,
-        speed: Math.random() * 0.005 + 0.002,
-        parallax: 0.05 + Math.random() * 0.05,
+        speed: Math.random() * 0.006 + 0.002,
+        parallax: 0.03 + Math.random() * 0.05, // Enhanced parallax difference
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.85
@@ -213,22 +221,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0018,
-          y: (Math.random() - 0.5) * 0.0018,
+          x: (Math.random() - 0.5) * 0.007, // More cosmic dust movement
+          y: (Math.random() - 0.5) * 0.007,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Far distant layer (depth 0.1-0.2)
-    for (let i = 0; i < 500; i++) {
+    // Far distant layer (depth 0.08-0.18)
+    for (let i = 0; i < 400; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.5 + Math.random() * 0.6,
         opacity: 0.25 + Math.random() * 0.3,
-        speed: Math.random() * 0.007 + 0.003,
-        parallax: 0.1 + Math.random() * 0.1,
+        speed: Math.random() * 0.008 + 0.003,
+        parallax: 0.08 + Math.random() * 0.1, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.8
@@ -236,22 +244,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.05 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0015,
-          y: (Math.random() - 0.5) * 0.0015,
+          x: (Math.random() - 0.5) * 0.006,
+          y: (Math.random() - 0.5) * 0.006,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Distant layer (depth 0.2-0.35)
-    for (let i = 0; i < 400; i++) {
+    // Distant layer (depth 0.18-0.35)
+    for (let i = 0; i < 350; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
-        speed: Math.random() * 0.009 + 0.004,
-        parallax: 0.2 + Math.random() * 0.15,
+        speed: Math.random() * 0.01 + 0.004,
+        parallax: 0.18 + Math.random() * 0.17, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.75
@@ -259,22 +267,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.08 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0012,
-          y: (Math.random() - 0.5) * 0.0012,
+          x: (Math.random() - 0.5) * 0.005,
+          y: (Math.random() - 0.5) * 0.005,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Mid-distant layer (depth 0.35-0.5)
-    for (let i = 0; i < 350; i++) {
+    // Mid-distant layer (depth 0.35-0.55)
+    for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.7 + Math.random() * 1.0,
         opacity: 0.35 + Math.random() * 0.4,
-        speed: Math.random() * 0.011 + 0.005,
-        parallax: 0.35 + Math.random() * 0.15,
+        speed: Math.random() * 0.012 + 0.005,
+        parallax: 0.35 + Math.random() * 0.2, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.7
@@ -282,22 +290,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.12 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.001,
-          y: (Math.random() - 0.5) * 0.001,
+          x: (Math.random() - 0.5) * 0.004,
+          y: (Math.random() - 0.5) * 0.004,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Middle layer (depth 0.5-0.7)
-    for (let i = 0; i < 300; i++) {
+    // Middle layer (depth 0.55-0.75)
+    for (let i = 0; i < 250; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
-        speed: Math.random() * 0.013 + 0.006,
-        parallax: 0.5 + Math.random() * 0.2,
+        speed: Math.random() * 0.015 + 0.006,
+        parallax: 0.55 + Math.random() * 0.2, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.65
@@ -305,22 +313,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0008,
-          y: (Math.random() - 0.5) * 0.0008,
+          x: (Math.random() - 0.5) * 0.0035,
+          y: (Math.random() - 0.5) * 0.0035,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Close layer (depth 0.7-0.9)
-    for (let i = 0; i < 250; i++) {
+    // Close layer (depth 0.75-0.95)
+    for (let i = 0; i < 200; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.0 + Math.random() * 1.5,
         opacity: 0.45 + Math.random() * 0.35,
-        speed: Math.random() * 0.016 + 0.008,
-        parallax: 0.7 + Math.random() * 0.2,
+        speed: Math.random() * 0.018 + 0.008,
+        parallax: 0.75 + Math.random() * 0.2, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.6
@@ -328,22 +336,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0006,
-          y: (Math.random() - 0.5) * 0.0006,
+          x: (Math.random() - 0.5) * 0.003,
+          y: (Math.random() - 0.5) * 0.003,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Near layer (depth 0.9-1.1)
-    for (let i = 0; i < 200; i++) {
+    // Near layer (depth 0.95-1.15)
+    for (let i = 0; i < 150; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.2 + Math.random() * 1.8,
         opacity: 0.5 + Math.random() * 0.3,
-        speed: Math.random() * 0.02 + 0.01,
-        parallax: 0.9 + Math.random() * 0.2,
+        speed: Math.random() * 0.022 + 0.01,
+        parallax: 0.95 + Math.random() * 0.2, // Enhanced parallax
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.55
@@ -356,22 +364,22 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0004,
-          y: (Math.random() - 0.5) * 0.0004,
+          x: (Math.random() - 0.5) * 0.0025,
+          y: (Math.random() - 0.5) * 0.0025,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Foreground layer (depth 1.1-1.4)
-    for (let i = 0; i < 150; i++) {
+    // Foreground layer (depth 1.15-1.45) - closest layer
+    for (let i = 0; i < 100; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.5 + Math.random() * 2.0,
         opacity: 0.3 + Math.random() * 0.25,
-        speed: Math.random() * 0.025 + 0.012,
-        parallax: 1.1 + Math.random() * 0.3,
+        speed: Math.random() * 0.028 + 0.012,
+        parallax: 1.15 + Math.random() * 0.3, // Maximum parallax effect
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.5
@@ -384,22 +392,22 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0002,
-          y: (Math.random() - 0.5) * 0.0002,
+          x: (Math.random() - 0.5) * 0.002,
+          y: (Math.random() - 0.5) * 0.002,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Very close layer (depth 1.4-1.8)
-    for (let i = 0; i < 100; i++) {
+    // Very close cosmic dust layer (depth 1.45-1.8)
+    for (let i = 0; i < 80; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 2.0 + Math.random() * 2.5,
-        opacity: 0.2 + Math.random() * 0.2,
-        speed: Math.random() * 0.03 + 0.015,
-        parallax: 1.4 + Math.random() * 0.4,
+        opacity: 0.15 + Math.random() * 0.15, // More subtle for dust effect
+        speed: Math.random() * 0.035 + 0.015,
+        parallax: 1.45 + Math.random() * 0.35, // Maximum parallax movement
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.4
@@ -412,8 +420,8 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0001,
-          y: (Math.random() - 0.5) * 0.0001,
+          x: (Math.random() - 0.5) * 0.0015, // Enhanced cosmic dust drift
+          y: (Math.random() - 0.5) * 0.0015,
         },
         pulse: Math.random() * 100,
       });
@@ -567,13 +575,15 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
-      // Update stars
-      starsRef.current.forEach((star) => {
+      // Update stars with optimized loop
+      const stars = starsRef.current;
+      for (let i = 0, len = stars.length; i < len; i++) {
+        const star = stars[i];
         star.x = normalizeCoord(star.x + star.drift.x);
         star.y = normalizeCoord(star.y + star.drift.y);
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
-      });
+      }
 
       // Update projectiles
       projectilesRef.current = projectilesRef.current
@@ -601,7 +611,7 @@ export const SpaceMap: React.FC = () => {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render stars with extended viewport for smooth scrolling
+      // Render stars with extended viewport for smooth scrolling and batching
       const renderViewport = {
         left: -RENDER_BUFFER,
         right: canvas.width + RENDER_BUFFER,
@@ -609,7 +619,12 @@ export const SpaceMap: React.FC = () => {
         bottom: canvas.height + RENDER_BUFFER,
       };
 
-      starsRef.current.forEach((star) => {
+      // Batch stars by type for optimized rendering
+      const starBatches = { normal: [], bright: [], giant: [] };
+      const stars = starsRef.current;
+
+      for (let i = 0, len = stars.length; i < len; i++) {
+        const star = stars[i];
         const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
 
@@ -642,19 +657,33 @@ export const SpaceMap: React.FC = () => {
             finalSize *= 1.5;
           }
 
-          ctx.save();
-          ctx.globalAlpha = finalAlpha;
+          starBatches[star.type].push({
+            x: Math.round(screenX),
+            y: Math.round(screenY),
+            size: finalSize,
+            alpha: finalAlpha,
+            color: star.color,
+            type: star.type,
+          });
+        }
+      }
 
-          // Draw star as a glowing point
+      // Render batched stars (normal first, then bright, then giant for layering)
+      Object.keys(starBatches).forEach((type) => {
+        const batch = starBatches[type];
+        for (let i = 0, len = batch.length; i < len; i++) {
+          const star = batch[i];
+          ctx.save();
+          ctx.globalAlpha = star.alpha;
           drawGlowingStar(
             ctx,
-            Math.round(screenX),
-            Math.round(screenY),
-            finalSize,
+            star.x,
+            star.y,
+            star.size,
             star.color,
-            finalAlpha,
+            star.alpha,
+            star.type,
           );
-
           ctx.restore();
         }
       });
