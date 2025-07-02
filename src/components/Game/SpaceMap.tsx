@@ -361,15 +361,16 @@ export const SpaceMap: React.FC = () => {
       });
 
       // Render projectiles
-      ctx.globalAlpha = 1;
       ctx.fillStyle = "#ffff00";
       projectilesRef.current.forEach((proj) => {
         const screenX = centerX + (proj.x - gameState.camera.x);
         const screenY = centerY + (proj.y - gameState.camera.y);
+        ctx.save();
         ctx.globalAlpha = proj.life / 80;
         ctx.beginPath();
         ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
       });
 
       // Render ship
