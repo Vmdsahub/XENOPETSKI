@@ -1604,8 +1604,10 @@ export const SpaceMap: React.FC = () => {
                 planetsRef.current.find((p) => p.id === selectedWorldId)
                   ?.size || 60
               }
-              onChange={(e) => {
+              onChange={async (e) => {
                 const newSize = Number(e.target.value);
+
+                // Update immediately for responsive feedback
                 planetsRef.current = planetsRef.current.map((planet) =>
                   planet.id === selectedWorldId
                     ? {
@@ -1615,6 +1617,13 @@ export const SpaceMap: React.FC = () => {
                       }
                     : planet,
                 );
+
+                // Save to database
+                if (selectedWorldId) {
+                  await gameService.updateWorldPosition(selectedWorldId, {
+                    size: newSize,
+                  });
+                }
               }}
               className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
             />
