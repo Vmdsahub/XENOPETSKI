@@ -77,6 +77,14 @@ export const SpaceMap: React.FC = () => {
     },
   });
 
+  // FPS tracking
+  const [fps, setFps] = useState(0);
+  const fpsRef = useRef({
+    frameCount: 0,
+    lastTime: 0,
+    frameTimes: [] as number[],
+  });
+
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
     (coord: number, cameraCoord: number) => {
@@ -521,6 +529,30 @@ export const SpaceMap: React.FC = () => {
 
     const gameLoop = (currentTime: number) => {
       const deltaTime = Math.min(currentTime - lastTime, 16.67);
+
+      // Calculate FPS
+      if (fpsRef.current.lastTime > 0) {
+        const frameTime = currentTime - fpsRef.current.lastTime;
+        fpsRef.current.frameTimes.push(frameTime);
+
+        // Keep only last 60 frames for average
+        if (fpsRef.current.frameTimes.length > 60) {
+          fpsRef.current.frameTimes.shift();
+        }
+
+        // Update FPS every 30 frames
+        fpsRef.current.frameCount++;
+        if (fpsRef.current.frameCount >= 30) {
+          const avgFrameTime =
+            fpsRef.current.frameTimes.reduce((a, b) => a + b, 0) /
+            fpsRef.current.frameTimes.length;
+          const currentFps = Math.round(1000 / avgFrameTime);
+          setFps(currentFps);
+          fpsRef.current.frameCount = 0;
+        }
+      }
+
+      fpsRef.current.lastTime = currentTime;
       lastTime = currentTime;
 
       if (
@@ -829,6 +861,17 @@ export const SpaceMap: React.FC = () => {
           {Math.round(
             Math.sqrt(gameState.ship.vx ** 2 + gameState.ship.vy ** 2) * 10,
           ) / 10}
+        </div>
+        <div
+          className={
+            fps < 30
+              ? "text-red-400"
+              : fps < 50
+                ? "text-yellow-400"
+                : "text-green-400"
+          }
+        >
+          FPS: {fps}
         </div>
       </div>
 
