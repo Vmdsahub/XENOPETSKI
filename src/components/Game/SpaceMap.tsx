@@ -77,6 +77,17 @@ export const SpaceMap: React.FC = () => {
     },
   });
 
+  // FPS tracking
+  const [fps, setFps] = useState(0);
+  const fpsRef = useRef({
+    frameCount: 0,
+    lastTime: 0,
+    frameTimes: [] as number[],
+  });
+
+  // Mouse state tracking
+  const [mouseInWindow, setMouseInWindow] = useState(true);
+
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
     (coord: number, cameraCoord: number) => {
@@ -93,8 +104,8 @@ export const SpaceMap: React.FC = () => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
 
-  // Helper function to draw a glowing star (no asterisk shapes)
-  const drawGlowingStar = useCallback(
+  // Helper function to draw pure light points
+  const drawPureLightStar = useCallback(
     (
       ctx: CanvasRenderingContext2D,
       x: number,
@@ -102,47 +113,36 @@ export const SpaceMap: React.FC = () => {
       size: number,
       color: string,
       intensity: number,
+      type: "normal" | "bright" | "giant",
     ) => {
-      // Main star core
+      // Convert hex color to rgba for proper alpha handling
+      const hexToRgba = (hex: string, alpha: number) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      };
+
+      // Main star core - pure light point
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
 
-      // Glow effect for larger stars
-      if (size > 0.8) {
+      // Subtle glow effect only for larger stars
+      if (size > 1.0) {
+        const glowRadius = size * 2;
+        const glowIntensity =
+          type === "giant" ? 0.6 : type === "bright" ? 0.4 : 0.3;
+
         ctx.beginPath();
-        ctx.arc(x, y, size * 2, 0, Math.PI * 2);
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-
-        // Convert hex color to rgba for proper alpha handling
-        const hexToRgba = (hex: string, alpha: number) => {
-          const r = parseInt(hex.slice(1, 3), 16);
-          const g = parseInt(hex.slice(3, 5), 16);
-          const b = parseInt(hex.slice(5, 7), 16);
-          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        };
-
-        gradient.addColorStop(0, hexToRgba(color, intensity * 0.8));
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        gradient.addColorStop(0, hexToRgba(color, intensity * glowIntensity));
+        gradient.addColorStop(0.8, hexToRgba(color, intensity * 0.1));
         gradient.addColorStop(1, hexToRgba(color, 0));
         ctx.fillStyle = gradient;
         ctx.fill();
-      }
-
-      // Sparkle effect for bright stars
-      if (size > 1.5) {
-        const sparkleLength = size * 3;
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 0.5;
-        const originalAlpha = ctx.globalAlpha;
-        ctx.globalAlpha = intensity * 0.6;
-        ctx.beginPath();
-        ctx.moveTo(x - sparkleLength, y);
-        ctx.lineTo(x + sparkleLength, y);
-        ctx.moveTo(x, y - sparkleLength);
-        ctx.lineTo(x, y + sparkleLength);
-        ctx.stroke();
-        ctx.globalAlpha = originalAlpha;
       }
     },
     [],
@@ -174,38 +174,15 @@ export const SpaceMap: React.FC = () => {
       "#f8f8ff", // Purples
     ];
 
-    // Ultra distant background layer (depth 0.02-0.05)
+    // Layer 1: Deep background (parallax 0.1) - ABAIXO do jogador
     for (let i = 0; i < 800; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 0.3 + Math.random() * 0.4,
-        opacity: 0.15 + Math.random() * 0.2,
-        speed: Math.random() * 0.003 + 0.001,
-        parallax: 0.02 + Math.random() * 0.03,
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.9
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.002,
-          y: (Math.random() - 0.5) * 0.002,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Very distant layer (depth 0.05-0.1)
-    for (let i = 0; i < 600; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.4 + Math.random() * 0.5,
-        opacity: 0.2 + Math.random() * 0.25,
-        speed: Math.random() * 0.005 + 0.002,
-        parallax: 0.05 + Math.random() * 0.05,
+        size: 0.4 + Math.random() * 0.6,
+        opacity: 0.2 + Math.random() * 0.3,
+        speed: Math.random() * 0.015 + 0.005,
+        parallax: 0.1, // Camada mais distante
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.85
@@ -213,168 +190,94 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0018,
-          y: (Math.random() - 0.5) * 0.0018,
+          x: (Math.random() - 0.5) * 0.08, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.08,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Far distant layer (depth 0.1-0.2)
-    for (let i = 0; i < 500; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.5 + Math.random() * 0.6,
-        opacity: 0.25 + Math.random() * 0.3,
-        speed: Math.random() * 0.007 + 0.003,
-        parallax: 0.1 + Math.random() * 0.1,
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.8
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.05 ? "bright" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0015,
-          y: (Math.random() - 0.5) * 0.0015,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Distant layer (depth 0.2-0.35)
-    for (let i = 0; i < 400; i++) {
+    // Layer 2: Mid background (parallax 0.3) - ABAIXO do jogador
+    for (let i = 0; i < 700; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
-        speed: Math.random() * 0.009 + 0.004,
-        parallax: 0.2 + Math.random() * 0.15,
+        speed: Math.random() * 0.018 + 0.007,
+        parallax: 0.3, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.75
+          Math.random() < 0.8
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.08 ? "bright" : "normal",
+        type: Math.random() < 0.1 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0012,
-          y: (Math.random() - 0.5) * 0.0012,
+          x: (Math.random() - 0.5) * 0.06, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.06,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Mid-distant layer (depth 0.35-0.5)
-    for (let i = 0; i < 350; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.7 + Math.random() * 1.0,
-        opacity: 0.35 + Math.random() * 0.4,
-        speed: Math.random() * 0.011 + 0.005,
-        parallax: 0.35 + Math.random() * 0.15,
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.7
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.12 ? "bright" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.001,
-          y: (Math.random() - 0.5) * 0.001,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Middle layer (depth 0.5-0.7)
-    for (let i = 0; i < 300; i++) {
+    // Layer 3: Near background (parallax 0.6) - ABAIXO do jogador
+    for (let i = 0; i < 600; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
-        speed: Math.random() * 0.013 + 0.006,
-        parallax: 0.5 + Math.random() * 0.2,
+        speed: Math.random() * 0.022 + 0.009,
+        parallax: 0.6, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.65
+          Math.random() < 0.75
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0008,
-          y: (Math.random() - 0.5) * 0.0008,
+          x: (Math.random() - 0.5) * 0.045, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.045,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Close layer (depth 0.7-0.9)
-    for (let i = 0; i < 250; i++) {
+    // Layer 4: Close background (parallax 0.9) - ABAIXO do jogador
+    for (let i = 0; i < 500; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.0 + Math.random() * 1.5,
-        opacity: 0.45 + Math.random() * 0.35,
-        speed: Math.random() * 0.016 + 0.008,
-        parallax: 0.7 + Math.random() * 0.2,
+        opacity: 0.45 + Math.random() * 0.4,
+        speed: Math.random() * 0.025 + 0.012,
+        parallax: 0.9, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.6
+          Math.random() < 0.7
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0006,
-          y: (Math.random() - 0.5) * 0.0006,
+          x: (Math.random() - 0.5) * 0.035, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.035,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Near layer (depth 0.9-1.1)
-    for (let i = 0; i < 200; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 1.2 + Math.random() * 1.8,
-        opacity: 0.5 + Math.random() * 0.3,
-        speed: Math.random() * 0.02 + 0.01,
-        parallax: 0.9 + Math.random() * 0.2,
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.55
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.25
-            ? "bright"
-            : Math.random() < 0.05
-              ? "giant"
-              : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0004,
-          y: (Math.random() - 0.5) * 0.0004,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Foreground layer (depth 1.1-1.4)
-    for (let i = 0; i < 150; i++) {
+    // Layer 5: Cosmic dust foreground (parallax 1.2) - ACIMA do jogador
+    for (let i = 0; i < 400; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.5 + Math.random() * 2.0,
-        opacity: 0.3 + Math.random() * 0.25,
-        speed: Math.random() * 0.025 + 0.012,
-        parallax: 1.1 + Math.random() * 0.3,
+        opacity: 0.25 + Math.random() * 0.3,
+        speed: Math.random() * 0.03 + 0.015,
+        parallax: 1.2, // Paralaxe de primeiro plano
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.5
+          Math.random() < 0.6
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type:
@@ -384,25 +287,25 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0002,
-          y: (Math.random() - 0.5) * 0.0002,
+          x: (Math.random() - 0.5) * 0.025, // Movimento de poeira cósmica
+          y: (Math.random() - 0.5) * 0.025,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Very close layer (depth 1.4-1.8)
-    for (let i = 0; i < 100; i++) {
+    // Layer 6: Close cosmic dust (parallax 1.6) - ACIMA do jogador
+    for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 2.0 + Math.random() * 2.5,
-        opacity: 0.2 + Math.random() * 0.2,
-        speed: Math.random() * 0.03 + 0.015,
-        parallax: 1.4 + Math.random() * 0.4,
+        size: 2.0 + Math.random() * 3.0,
+        opacity: 0.15 + Math.random() * 0.2,
+        speed: Math.random() * 0.035 + 0.018,
+        parallax: 1.6, // Máximo paralaxe
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.4
+          Math.random() < 0.5
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type:
@@ -412,8 +315,8 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0001,
-          y: (Math.random() - 0.5) * 0.0001,
+          x: (Math.random() - 0.5) * 0.015, // Movimento sutil de poeira próxima
+          y: (Math.random() - 0.5) * 0.015,
         },
         pulse: Math.random() * 100,
       });
@@ -468,6 +371,16 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
+  // Handle mouse leaving canvas
+  const handleMouseLeave = useCallback(() => {
+    setMouseInWindow(false);
+  }, []);
+
+  // Handle mouse entering canvas
+  const handleMouseEnter = useCallback(() => {
+    setMouseInWindow(true);
+  }, []);
+
   // Handle shooting
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -513,6 +426,30 @@ export const SpaceMap: React.FC = () => {
 
     const gameLoop = (currentTime: number) => {
       const deltaTime = Math.min(currentTime - lastTime, 16.67);
+
+      // Calculate FPS
+      if (fpsRef.current.lastTime > 0) {
+        const frameTime = currentTime - fpsRef.current.lastTime;
+        fpsRef.current.frameTimes.push(frameTime);
+
+        // Keep only last 60 frames for average
+        if (fpsRef.current.frameTimes.length > 60) {
+          fpsRef.current.frameTimes.shift();
+        }
+
+        // Update FPS every 30 frames
+        fpsRef.current.frameCount++;
+        if (fpsRef.current.frameCount >= 30) {
+          const avgFrameTime =
+            fpsRef.current.frameTimes.reduce((a, b) => a + b, 0) /
+            fpsRef.current.frameTimes.length;
+          const currentFps = Math.round(1000 / avgFrameTime);
+          setFps(currentFps);
+          fpsRef.current.frameCount = 0;
+        }
+      }
+
+      fpsRef.current.lastTime = currentTime;
       lastTime = currentTime;
 
       if (
@@ -530,20 +467,23 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Only respond to mouse if it's inside the window
+        if (mouseInWindow) {
+          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        newState.ship.angle = Math.atan2(dy, dx);
+          newState.ship.angle = Math.atan2(dy, dx);
 
-        if (distance > 10) {
-          const speedMultiplier = Math.min(distance / 300, 1);
-          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          if (distance > 10) {
+            const speedMultiplier = Math.min(distance / 300, 1);
+            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          }
         }
 
         newState.ship.vx *= FRICTION;
@@ -567,13 +507,15 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
-      // Update stars
-      starsRef.current.forEach((star) => {
+      // Update stars with optimized loop
+      const stars = starsRef.current;
+      for (let i = 0, len = stars.length; i < len; i++) {
+        const star = stars[i];
         star.x = normalizeCoord(star.x + star.drift.x);
         star.y = normalizeCoord(star.y + star.drift.y);
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
-      });
+      }
 
       // Update projectiles
       projectilesRef.current = projectilesRef.current
@@ -585,23 +527,11 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
-      // Clear canvas with deep space gradient
-      const gradient = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        0,
-        centerX,
-        centerY,
-        Math.max(canvas.width, canvas.height) * 0.8,
-      );
-      gradient.addColorStop(0, "#0a0a2e");
-      gradient.addColorStop(0.3, "#16213e");
-      gradient.addColorStop(0.7, "#0e1b2e");
-      gradient.addColorStop(1, "#080820");
-      ctx.fillStyle = gradient;
+      // Clear canvas with solid black background
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render stars with extended viewport for smooth scrolling
+      // Render stars with extended viewport for smooth scrolling and batching
       const renderViewport = {
         left: -RENDER_BUFFER,
         right: canvas.width + RENDER_BUFFER,
@@ -609,7 +539,12 @@ export const SpaceMap: React.FC = () => {
         bottom: canvas.height + RENDER_BUFFER,
       };
 
-      starsRef.current.forEach((star) => {
+      // Batch stars by type for optimized rendering
+      const starBatches = { normal: [], bright: [], giant: [] };
+      const starArray = starsRef.current;
+
+      for (let i = 0, len = starArray.length; i < len; i++) {
+        const star = starArray[i];
         const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
 
@@ -642,19 +577,33 @@ export const SpaceMap: React.FC = () => {
             finalSize *= 1.5;
           }
 
+          starBatches[star.type].push({
+            x: Math.round(screenX),
+            y: Math.round(screenY),
+            size: finalSize,
+            alpha: finalAlpha,
+            color: star.color,
+            type: star.type,
+          });
+        }
+      }
+
+      // Render batched stars (normal first, then bright, then giant for layering)
+      Object.keys(starBatches).forEach((type) => {
+        const batch = starBatches[type];
+        for (let i = 0, len = batch.length; i < len; i++) {
+          const star = batch[i];
           ctx.save();
-          ctx.globalAlpha = finalAlpha;
-
-          // Draw star as a glowing point
-          drawGlowingStar(
+          ctx.globalAlpha = star.alpha;
+          drawPureLightStar(
             ctx,
-            Math.round(screenX),
-            Math.round(screenY),
-            finalSize,
+            star.x,
+            star.y,
+            star.size,
             star.color,
-            finalAlpha,
+            star.alpha,
+            star.type,
           );
-
           ctx.restore();
         }
       });
@@ -781,7 +730,7 @@ export const SpaceMap: React.FC = () => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState, getWrappedDistance, normalizeCoord, drawGlowingStar]);
+  }, [gameState, getWrappedDistance, normalizeCoord, drawPureLightStar]);
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
@@ -789,6 +738,8 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
         onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleMouseEnter}
         onClick={handleClick}
       />
 
@@ -800,6 +751,17 @@ export const SpaceMap: React.FC = () => {
           {Math.round(
             Math.sqrt(gameState.ship.vx ** 2 + gameState.ship.vy ** 2) * 10,
           ) / 10}
+        </div>
+        <div
+          className={
+            fps < 30
+              ? "text-red-400"
+              : fps < 50
+                ? "text-yellow-400"
+                : "text-green-400"
+          }
+        >
+          FPS: {fps}
         </div>
       </div>
 
