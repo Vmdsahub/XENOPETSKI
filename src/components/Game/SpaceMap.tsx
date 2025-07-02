@@ -271,24 +271,19 @@ export const SpaceMap: React.FC = () => {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 1.5 + Math.random() * 2.0,
-        opacity: 0.25 + Math.random() * 0.3,
-        speed: Math.random() * 0.03 + 0.015,
+        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira cósmica
+        opacity: 0.2 + Math.random() * 0.25,
+        speed: Math.random() * 0.01 + 0.005, // Velocidade reduzida
         parallax: 1.2, // Paralaxe de primeiro plano
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.6
+          Math.random() < 0.7
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.3
-            ? "bright"
-            : Math.random() < 0.1
-              ? "giant"
-              : "normal",
+        type: Math.random() < 0.15 ? "bright" : "normal", // Menos estrelas giant
         drift: {
-          x: (Math.random() - 0.5) * 0.025, // Movimento de poeira cósmica
-          y: (Math.random() - 0.5) * 0.025,
+          x: (Math.random() - 0.5) * 0.008, // Movimento muito sutil
+          y: (Math.random() - 0.5) * 0.008,
         },
         pulse: Math.random() * 100,
       });
@@ -299,24 +294,19 @@ export const SpaceMap: React.FC = () => {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 2.0 + Math.random() * 3.0,
-        opacity: 0.15 + Math.random() * 0.2,
-        speed: Math.random() * 0.035 + 0.018,
+        size: 0.2 + Math.random() * 0.5, // Ainda menores para camada mais próxima
+        opacity: 0.1 + Math.random() * 0.15, // Mais transparentes
+        speed: Math.random() * 0.008 + 0.003, // Muito lento
         parallax: 1.6, // Máximo paralaxe
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.5
+          Math.random() < 0.8
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.4
-            ? "bright"
-            : Math.random() < 0.15
-              ? "giant"
-              : "normal",
+        type: Math.random() < 0.1 ? "bright" : "normal", // Principalmente normais
         drift: {
-          x: (Math.random() - 0.5) * 0.015, // Movimento sutil de poeira próxima
-          y: (Math.random() - 0.5) * 0.015,
+          x: (Math.random() - 0.5) * 0.005, // Movimento quase imperceptível
+          y: (Math.random() - 0.5) * 0.005,
         },
         pulse: Math.random() * 100,
       });
