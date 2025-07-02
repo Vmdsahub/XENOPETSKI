@@ -696,21 +696,23 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Always respond to mouse, but handle differently when outside window
-        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Only respond to mouse if it has actually moved
+        if (hasMouseMoved.current) {
+          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        newState.ship.angle = Math.atan2(dy, dx);
+          newState.ship.angle = Math.atan2(dy, dx);
 
-        if (mouseInWindow && distance > 10) {
-          const speedMultiplier = Math.min(distance / 300, 1);
-          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          if (mouseInWindow && distance > 10) {
+            const speedMultiplier = Math.min(distance / 300, 1);
+            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          }
         }
 
         // Apply less friction when mouse is outside window to maintain momentum
