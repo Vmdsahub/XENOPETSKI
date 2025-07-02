@@ -397,6 +397,18 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
+      // Update stars with cosmic drift
+      starsRef.current.forEach((star) => {
+        // Update star position with subtle drift
+        star.x = normalizeCoord(star.x + star.drift.x);
+        star.y = normalizeCoord(star.y + star.drift.y);
+
+        // Update animation properties
+        star.twinkle += star.speed;
+        star.pulse += star.speed * 0.8;
+        star.sparkle += star.speed * 1.2;
+      });
+
       // Update projectiles
       projectilesRef.current = projectilesRef.current
         .map((proj) => ({
