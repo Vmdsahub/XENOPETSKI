@@ -123,6 +123,59 @@ export const SpaceMap: React.FC = () => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
 
+  // Create shooting star
+  const createShootingStar = useCallback((canvas: HTMLCanvasElement) => {
+    const colors = ["#ffffff", "#ffe4b5", "#ffd700", "#87ceeb", "#ff69b4"];
+    const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+    const speed = 3 + Math.random() * 4;
+    const angle = Math.random() * Math.PI * 0.4 + Math.PI * 0.3; // Diagonal direction
+
+    let startX, startY, vx, vy;
+
+    // Start from edges and move diagonally across screen
+    switch (side) {
+      case 0: // from top
+        startX = Math.random() * canvas.width;
+        startY = -50;
+        vx = (Math.random() - 0.5) * speed;
+        vy = speed;
+        break;
+      case 1: // from right
+        startX = canvas.width + 50;
+        startY = Math.random() * canvas.height;
+        vx = -speed;
+        vy = (Math.random() - 0.5) * speed;
+        break;
+      case 2: // from bottom
+        startX = Math.random() * canvas.width;
+        startY = canvas.height + 50;
+        vx = (Math.random() - 0.5) * speed;
+        vy = -speed;
+        break;
+      default: // from left
+        startX = -50;
+        startY = Math.random() * canvas.height;
+        vx = speed;
+        vy = (Math.random() - 0.5) * speed;
+        break;
+    }
+
+    const newShootingStar: ShootingStar = {
+      x: startX,
+      y: startY,
+      vx,
+      vy,
+      life: 120 + Math.random() * 60, // 2-3 seconds at 60fps
+      maxLife: 120 + Math.random() * 60,
+      size: 0.8 + Math.random() * 1.2,
+      opacity: 0.6 + Math.random() * 0.4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tailLength: 15 + Math.random() * 20,
+    };
+
+    shootingStarsRef.current.push(newShootingStar);
+  }, []);
+
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
     (
