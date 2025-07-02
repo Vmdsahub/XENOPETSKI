@@ -621,10 +621,10 @@ export const SpaceMap: React.FC = () => {
 
       // Batch stars by type for optimized rendering
       const starBatches = { normal: [], bright: [], giant: [] };
-      const stars = starsRef.current;
+      const starArray = starsRef.current;
 
-      for (let i = 0, len = stars.length; i < len; i++) {
-        const star = stars[i];
+      for (let i = 0, len = starArray.length; i < len; i++) {
+        const star = starArray[i];
         const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
 
