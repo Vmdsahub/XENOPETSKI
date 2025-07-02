@@ -869,15 +869,28 @@ export const SpaceMap: React.FC = () => {
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance <= planet.size) {
-            setSelectedWorldId(planet.id);
-            setIsDragging(true);
-            setDragOffset({ x: dx, y: dy });
+            // Se já está selecionado e dragging, pare o drag
+            if (selectedWorldId === planet.id && isDragging) {
+              setIsDragging(false);
+              setDragOffset({ x: 0, y: 0 });
+            } else if (selectedWorldId === planet.id && !isDragging) {
+              // Se já está selecionado mas não dragging, inicie o drag
+              setIsDragging(true);
+              setDragOffset({ x: dx, y: dy });
+            } else {
+              // Selecione novo mundo
+              setSelectedWorldId(planet.id);
+              setIsDragging(false);
+            }
             worldClicked = true;
           }
         });
 
+        // Clique fora de qualquer mundo - desseleciona tudo
         if (!worldClicked) {
           setSelectedWorldId(null);
+          setIsDragging(false);
+          setDragOffset({ x: 0, y: 0 });
         }
         return;
       }
