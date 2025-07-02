@@ -289,7 +289,7 @@ export const SpaceMap: React.FC = () => {
     }
 
     planetsRef.current = planets;
-  }, [generateGalacticField]);
+  }, [generateStarField]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
