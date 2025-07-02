@@ -366,7 +366,7 @@ export const SpaceMap: React.FC = () => {
     const newPulse: RadarPulse = {
       planetId: planet.id,
       radius: 8, // Raio inicial original
-      maxRadius: 40, // Expansão menor
+      maxRadius: 40, // Expans��o menor
       life: 160, // Vida mais longa para compensar expansão lenta
       maxLife: 160,
       opacity: 1.2, // Opacidade muito alta para verde ser mais visível
@@ -729,10 +729,51 @@ export const SpaceMap: React.FC = () => {
     starsRef.current = stars;
   }, []);
 
-  // Initialize game objects once
-  useEffect(() => {
-    generateRichStarField();
+  // Load world positions from database
+  const loadWorldPositions = useCallback(async () => {
+    try {
+      const positions = await gameService.getWorldPositions();
 
+      if (positions.length > 0) {
+        // Use database positions
+        const planets: Planet[] = positions.map((position) => ({
+          id: position.id,
+          x: position.x,
+          y: position.y,
+          size: position.size,
+          rotation: position.rotation,
+          color: position.color,
+          name: position.name,
+          interactionRadius: Math.max(90, position.size + 30),
+          imageUrl: position.imageUrl || "",
+        }));
+
+        // Preload planet images
+        positions.forEach((position) => {
+          if (position.imageUrl) {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = position.imageUrl;
+            img.onload = () => {
+              planetImagesRef.current.set(position.id, img);
+            };
+          }
+        });
+
+        planetsRef.current = planets;
+      } else {
+        // Fallback to default positions if no data in database
+        generateDefaultPlanets();
+      }
+    } catch (error) {
+      console.error("Failed to load world positions:", error);
+      // Fallback to default positions on error
+      generateDefaultPlanets();
+    }
+  }, []);
+
+  // Generate default planets (fallback)
+  const generateDefaultPlanets = useCallback(() => {
     // Generate planets (restored original logic)
     const planets: Planet[] = [];
     const colors = [
