@@ -297,10 +297,10 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 20,
-        maxRadius: 65, // Longer range for better wave progression
-        life: 50, // Longer animation for smoother waves
-        maxLife: 50,
+        radius: 15,
+        maxRadius: 70, // Longer range to see all 3 waves
+        life: 60, // Longer life to maintain 3 visible waves
+        maxLife: 60,
         opacity: 1.0,
       };
 
