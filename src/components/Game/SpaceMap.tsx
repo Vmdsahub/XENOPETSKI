@@ -373,9 +373,7 @@ export const SpaceMap: React.FC = () => {
       ctx.rotate(gameState.ship.angle);
       ctx.globalAlpha = 1;
 
-      // Ship glow
-      ctx.shadowColor = "#00aaff";
-      ctx.shadowBlur = 10;
+      // Ship body
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#00aaff";
       ctx.lineWidth = 2;
@@ -389,7 +387,6 @@ export const SpaceMap: React.FC = () => {
       ctx.stroke();
 
       // Engines
-      ctx.shadowBlur = 0;
       ctx.fillStyle = "#ff4400";
       ctx.beginPath();
       ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
