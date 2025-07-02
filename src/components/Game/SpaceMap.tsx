@@ -297,11 +297,11 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 12, // Larger starting radius for better visibility
-        maxRadius: 60, // Much larger max radius for more prominent signal
-        life: 120, // Longer life for more visible animation
-        maxLife: 120,
-        opacity: 1.0, // Full opacity for maximum visibility
+        radius: 8, // Raio inicial original
+        maxRadius: 40, // Expansão menor
+        life: 90, // Vida original
+        maxLife: 90,
+        opacity: 0.9, // Opacidade alta mas não total
       };
 
       radarPulsesRef.current.push(newPulse);
@@ -326,7 +326,7 @@ export const SpaceMap: React.FC = () => {
 
       ctx.save();
 
-      // Brighter gradient with better contrast
+      // Gradiente verde 3D
       const gradient = ctx.createRadialGradient(
         shipScreenX,
         shipScreenY,
@@ -335,19 +335,20 @@ export const SpaceMap: React.FC = () => {
         shipScreenY,
         pulse.radius,
       );
-      gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity})`); // Bright cyan center
-      gradient.addColorStop(0.7, `rgba(0, 200, 255, ${currentOpacity * 0.8})`); // Blue-cyan
-      gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.4})`); // Blue edge
+      gradient.addColorStop(0, `rgba(50, 255, 50, ${currentOpacity})`); // Verde claro centro
+      gradient.addColorStop(0.5, `rgba(0, 220, 0, ${currentOpacity * 0.8})`); // Verde médio
+      gradient.addColorStop(0.8, `rgba(0, 180, 0, ${currentOpacity * 0.6})`); // Verde escuro
+      gradient.addColorStop(1, `rgba(0, 120, 0, ${currentOpacity * 0.3})`); // Verde muito escuro
 
-      // Original arc size with enhanced visibility
-      const arcWidth = Math.PI / 3; // Keep original 60 degrees
+      // Arco original
+      const arcWidth = Math.PI / 3; // 60 graus original
       const startAngle = pulse.angle - arcWidth / 2;
       const endAngle = pulse.angle + arcWidth / 2;
 
-      // Thicker main pulse arc for better visibility
+      // Linha principal mais fina
       ctx.globalAlpha = currentOpacity;
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 4; // Slightly thicker than original
+      ctx.lineWidth = 3; // Linha mais fina
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
@@ -355,10 +356,10 @@ export const SpaceMap: React.FC = () => {
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
-      // Enhanced inner glow for better contrast
-      ctx.globalAlpha = currentOpacity * 0.9;
-      ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity})`;
-      ctx.lineWidth = 2;
+      // Brilho interno verde para efeito 3D
+      ctx.globalAlpha = currentOpacity * 0.7;
+      ctx.strokeStyle = `rgba(150, 255, 150, ${currentOpacity * 0.8})`;
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
