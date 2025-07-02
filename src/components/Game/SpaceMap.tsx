@@ -282,20 +282,28 @@ export const SpaceMap: React.FC = () => {
           const screenX = centerX + parallaxX;
           const screenY = centerY + parallaxY;
 
-          // Wrap stars
-          const wrappedX =
-            ((screenX % canvas.width) + canvas.width) % canvas.width;
-          const wrappedY =
-            ((screenY % canvas.height) + canvas.height) % canvas.height;
+          // Only render stars that are on screen (with margin)
+          if (
+            screenX > -50 &&
+            screenX < canvas.width + 50 &&
+            screenY > -50 &&
+            screenY < canvas.height + 50
+          ) {
+            // Subtle twinkling
+            star.twinkle += star.speed;
+            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
 
-          // Twinkling
-          star.twinkle += star.speed;
-          const alpha = star.opacity * (Math.sin(star.twinkle) * 0.3 + 0.7);
-
-          ctx.globalAlpha = alpha;
-          ctx.beginPath();
-          ctx.arc(wrappedX, wrappedY, star.size, 0, Math.PI * 2);
-          ctx.fill();
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(
+              Math.round(screenX),
+              Math.round(screenY),
+              star.size,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
         }
       });
 
