@@ -286,6 +286,80 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
+  // Create radar pulse towards planet
+  const createRadarPulse = useCallback(
+    (planet: Planet, shipX: number, shipY: number) => {
+      const dx = getWrappedDistance(planet.x, shipX);
+      const dy = getWrappedDistance(planet.y, shipY);
+      const angle = Math.atan2(dy, dx);
+
+      const newPulse: RadarPulse = {
+        planetId: planet.id,
+        angle,
+        radius: 20,
+        maxRadius: 150,
+        life: 60, // 1 second at 60fps
+        maxLife: 60,
+        opacity: 0.8,
+      };
+
+      radarPulsesRef.current.push(newPulse);
+    },
+    [getWrappedDistance],
+  );
+
+  // Helper function to draw directional radar pulse
+  const drawRadarPulse = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      pulse: RadarPulse,
+      shipScreenX: number,
+      shipScreenY: number,
+    ) => {
+      const fadeRatio = pulse.life / pulse.maxLife;
+      const currentOpacity = pulse.opacity * fadeRatio;
+
+      ctx.save();
+      ctx.globalAlpha = currentOpacity;
+      ctx.strokeStyle = "#00ff00";
+      ctx.fillStyle = "#00ff0015";
+
+      // Draw 3 expanding arcs for radar effect
+      for (let i = 0; i < 3; i++) {
+        const arcRadius = pulse.radius + i * 15;
+        const lineWidth = Math.max(1, 3 - i);
+        const arcOpacity = currentOpacity * (1 - i * 0.3);
+
+        if (arcRadius <= pulse.maxRadius) {
+          ctx.globalAlpha = arcOpacity;
+          ctx.lineWidth = lineWidth;
+
+          // Draw directional arc (cone shape)
+          const arcWidth = Math.PI / 6; // 30 degrees total width
+          const startAngle = pulse.angle - arcWidth / 2;
+          const endAngle = pulse.angle + arcWidth / 2;
+
+          ctx.beginPath();
+          ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+          ctx.stroke();
+
+          // Draw filled sector for the main pulse
+          if (i === 0) {
+            ctx.globalAlpha = arcOpacity * 0.3;
+            ctx.beginPath();
+            ctx.moveTo(shipScreenX, shipScreenY);
+            ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+      }
+
+      ctx.restore();
+    },
+    [],
+  );
+
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
     (
