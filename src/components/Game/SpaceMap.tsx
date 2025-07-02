@@ -1034,6 +1034,7 @@ export const SpaceMap: React.FC = () => {
     normalizeCoord,
     drawPureLightStar,
     saveShipState,
+    forceSaveShipState,
   ]);
 
   return (
