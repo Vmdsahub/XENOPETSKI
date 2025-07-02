@@ -272,9 +272,35 @@ export const SpaceMap: React.FC = () => {
           direction: { x: 0, y: 0 },
         };
 
-        // Update camera
-        newState.camera.x += (newState.ship.x - newState.camera.x) * 0.08;
-        newState.camera.y += (newState.ship.y - newState.camera.y) * 0.08;
+        // Update camera with seamless wrapping awareness
+        const cameraFollowSpeed = 0.08;
+
+        // Calculate the shortest distance considering wrapping
+        let deltaX = newState.ship.x - newState.camera.x;
+        let deltaY = newState.ship.y - newState.camera.y;
+
+        // Handle wrapping for X axis
+        if (deltaX > WORLD_SIZE / 2) {
+          deltaX -= WORLD_SIZE;
+        } else if (deltaX < -WORLD_SIZE / 2) {
+          deltaX += WORLD_SIZE;
+        }
+
+        // Handle wrapping for Y axis
+        if (deltaY > WORLD_SIZE / 2) {
+          deltaY -= WORLD_SIZE;
+        } else if (deltaY < -WORLD_SIZE / 2) {
+          deltaY += WORLD_SIZE;
+        }
+
+        newState.camera.x += deltaX * cameraFollowSpeed;
+        newState.camera.y += deltaY * cameraFollowSpeed;
+
+        // Normalize camera position
+        newState.camera.x =
+          ((newState.camera.x % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
+        newState.camera.y =
+          ((newState.camera.y % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
 
         return newState;
       });
