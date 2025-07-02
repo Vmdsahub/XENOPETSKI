@@ -940,22 +940,6 @@ export class GameService {
       updatedAt: new Date(dbPet.updated_at),
     };
   }
-
-  private mapDatabaseWorldToGalaxyWorld(dbWorld: any): GalaxyWorld {
-    return {
-      id: dbWorld.id,
-      name: dbWorld.name,
-      imageUrl: dbWorld.image_url,
-      x: dbWorld.x_position,
-      y: dbWorld.y_position,
-      scale: dbWorld.scale,
-      orderIndex: dbWorld.order_index,
-      isActive: dbWorld.is_active,
-      unlockRequirement: dbWorld.unlock_requirement || {},
-      createdAt: new Date(dbWorld.created_at),
-      updatedAt: new Date(dbWorld.updated_at),
-    };
-  }
 }
 
 export const gameService = GameService.getInstance();
