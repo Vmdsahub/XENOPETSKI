@@ -753,7 +753,8 @@ export const SpaceMap: React.FC = () => {
 
           // Only interact if click was within planet's visual size
           if (clickToPlanetDistance <= planet.size) {
-            alert(`Explorando ${planet.name}!`);
+            setSelectedPlanet(planet);
+            setShowLandingModal(true);
             clickedOnPlanet = true;
           }
         }
