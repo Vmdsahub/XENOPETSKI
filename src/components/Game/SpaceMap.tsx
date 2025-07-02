@@ -864,14 +864,6 @@ export const SpaceMap: React.FC = () => {
     [gameState, getWrappedDistance, isClickOnPlanetPixel],
   );
 
-  // Handle mouse up to stop dragging
-  const handleMouseUp = useCallback(() => {
-    if (isWorldEditMode && isDragging) {
-      setIsDragging(false);
-      setDragOffset({ x: 0, y: 0 });
-    }
-  }, [isWorldEditMode, isDragging]);
-
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
     if (selectedPlanet) {
