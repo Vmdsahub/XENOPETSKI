@@ -335,8 +335,8 @@ export const SpaceMap: React.FC = () => {
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
 
-          // Draw very narrow sound wave arcs
-          const arcWidth = Math.PI / 12; // 15 degrees total width (much narrower)
+          // Draw sound wave arcs
+          const arcWidth = Math.PI / 8; // 22.5 degrees total width (a bit wider)
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
