@@ -112,22 +112,7 @@ function App() {
       case "pet":
         return <PetScreen />;
       case "world":
-        return (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[80vh] flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">Mundo</h1>
-                <p className="text-lg text-gray-600 mb-8">
-                  Área dos Mundos - Pronto para desenvolvimento
-                </p>
-                <div className="mt-8 text-sm text-gray-500">
-                  Aba atual:{" "}
-                  <span className="font-semibold">{currentScreen}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <SpaceMap />;
       case "store":
         return <StoreScreen />;
       case "inventory":
