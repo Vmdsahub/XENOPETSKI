@@ -838,6 +838,22 @@ export const SpaceMap: React.FC = () => {
     loadWorldPositions();
   }, [generateRichStarField, loadWorldPositions]);
 
+  // Reload world positions when component becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Reload world positions when tab becomes active again
+        loadWorldPositions();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loadWorldPositions]);
+
   // Handle mouse movement
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
