@@ -861,7 +861,7 @@ export const SpaceMap: React.FC = () => {
         projectilesRef.current.push(newProjectile);
       }
     },
-    [gameState, getWrappedDistance, isWorldEditMode],
+    [gameState, getWrappedDistance, isClickOnPlanetPixel],
   );
 
   // Handle mouse up to stop dragging
