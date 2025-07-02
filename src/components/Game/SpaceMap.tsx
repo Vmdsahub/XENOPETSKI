@@ -871,7 +871,7 @@ export const SpaceMap: React.FC = () => {
       radarPulsesRef.current = radarPulsesRef.current
         .map((pulse) => ({
           ...pulse,
-          radius: pulse.radius + 4, // Faster expansion like sound waves
+          radius: pulse.radius + 2, // Slower, more natural expansion
           life: pulse.life - 1,
         }))
         .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
