@@ -850,10 +850,10 @@ export const SpaceMap: React.FC = () => {
         if (shipToPlanetDistance <= planet.interactionRadius) {
           currentPlanetsInRange.add(planet.id);
 
-          // Create radar pulse every 1 second while in range
+          // Create radar pulse every 600ms for continuous wave effect
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
-          if (currentTime - lastPulseTime >= 1000) {
-            // 1 second = 1000ms
+          if (currentTime - lastPulseTime >= 600) {
+            // 0.6 second = 600ms for overlapping waves
             createRadarPulse(
               planet,
               currentShipState.ship.x,
