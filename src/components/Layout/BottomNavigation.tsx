@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Package, User, Shield } from "lucide-react";
+import { Heart, Globe, Package, User, Shield } from "lucide-react";
 import { useGameStore } from "../../store/gameStore";
 import { motion } from "framer-motion";
 
