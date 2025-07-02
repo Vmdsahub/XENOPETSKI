@@ -527,20 +527,8 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
-      // Clear canvas with pure deep space gradient
-      const gradient = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        0,
-        centerX,
-        centerY,
-        Math.max(canvas.width, canvas.height) * 0.8,
-      );
-      gradient.addColorStop(0, "#0a0a0a");
-      gradient.addColorStop(0.3, "#141414");
-      gradient.addColorStop(0.7, "#0e0e0e");
-      gradient.addColorStop(1, "#060606");
-      ctx.fillStyle = gradient;
+      // Clear canvas with solid black background
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Render stars with extended viewport for smooth scrolling and batching
