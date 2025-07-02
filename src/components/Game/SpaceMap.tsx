@@ -587,20 +587,15 @@ export const SpaceMap: React.FC = () => {
       };
       projectilesRef.current.push(newProjectile);
 
-      // Check planet clicks
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const clickX =
-        e.clientX - rect.left - canvas.width / 2 + gameState.camera.x;
-      const clickY =
-        e.clientY - rect.top - canvas.height / 2 + gameState.camera.y;
-
+      // Check planet interactions - only if ship is within interaction radius
       planetsRef.current.forEach((planet) => {
-        const dx = getWrappedDistance(planet.x, clickX);
-        const dy = getWrappedDistance(planet.y, clickY);
-        if (Math.sqrt(dx * dx + dy * dy) < planet.size) {
+        const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
+        const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
+        const shipToPlanetDistance = Math.sqrt(
+          shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+        );
+
+        if (shipToPlanetDistance <= planet.interactionRadius) {
           alert(`Explorando ${planet.name}!`);
         }
       });
