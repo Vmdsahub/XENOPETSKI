@@ -539,7 +539,7 @@ export const SpaceMap: React.FC = () => {
         id: `planet-${i}`,
         x: CENTER_X + Math.cos(angle) * radius,
         y: CENTER_Y + Math.sin(angle) * radius,
-        size: 30 + Math.random() * 15,
+        size: 35,
         color: colors[i],
         name: `Planet ${i + 1}`,
       });
