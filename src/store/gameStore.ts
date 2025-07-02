@@ -27,6 +27,10 @@ interface GameStore extends GameState {
     planet: { id: string; name: string; color: string } | null,
   ) => void;
 
+  // World editing mode
+  isWorldEditMode: boolean;
+  setWorldEditMode: (enabled: boolean) => void;
+
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
@@ -636,6 +640,7 @@ export const useGameStore = create<GameStore>()(
       language: "pt-BR",
       currentScreen: "pet",
       currentPlanet: null,
+      isWorldEditMode: false,
       achievements: [],
       collectibles: [],
       quests: [],
@@ -725,6 +730,9 @@ export const useGameStore = create<GameStore>()(
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
       setCurrentPlanet: (planet) => set({ currentPlanet: planet }),
+
+      // World editing mode
+      setWorldEditMode: (enabled) => set({ isWorldEditMode: enabled }),
 
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>

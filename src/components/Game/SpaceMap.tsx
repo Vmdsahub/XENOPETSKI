@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useGameStore } from "../../store/gameStore";
 import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 import { PlanetLandingModal } from "./PlanetLandingModal";
+import { gameService } from "../../services/gameService";
 
 interface Star {
   x: number;
@@ -26,6 +27,7 @@ interface Planet {
   x: number;
   y: number;
   size: number;
+  rotation: number;
   color: string;
   name: string;
   interactionRadius: number;
@@ -87,7 +89,14 @@ const BARRIER_RADIUS = 600;
 const RENDER_BUFFER = 200;
 
 export const SpaceMap: React.FC = () => {
-  const { getShipState, setCurrentScreen, setCurrentPlanet } = useGameStore();
+  const {
+    getShipState,
+    setCurrentScreen,
+    setCurrentPlanet,
+    isWorldEditMode,
+    setWorldEditMode,
+    user,
+  } = useGameStore();
   const { saveShipState, forceSaveShipState } = useShipStatePersistence();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
@@ -165,6 +174,12 @@ export const SpaceMap: React.FC = () => {
   // Modal state
   const [showLandingModal, setShowLandingModal] = useState(false);
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+
+  // World editing state
+  const [selectedWorldId, setSelectedWorldId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isSaving, setIsSaving] = useState(false);
 
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
@@ -715,11 +730,51 @@ export const SpaceMap: React.FC = () => {
     starsRef.current = stars;
   }, []);
 
-  // Initialize game objects once
-  useEffect(() => {
-    generateRichStarField();
+  // Load world positions from database
+  const loadWorldPositions = useCallback(async () => {
+    try {
+      const positions = await gameService.getWorldPositions();
 
-    // Generate planets
+      if (positions.length > 0) {
+        // Use database positions
+        const planets: Planet[] = positions.map((position) => ({
+          id: position.id,
+          x: position.x,
+          y: position.y,
+          size: position.size,
+          rotation: position.rotation,
+          color: position.color,
+          name: position.name,
+          interactionRadius: Math.max(90, position.size + 30),
+          imageUrl: position.imageUrl || "",
+        }));
+
+        // Preload planet images
+        positions.forEach((position) => {
+          if (position.imageUrl) {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = position.imageUrl;
+            img.onload = () => {
+              planetImagesRef.current.set(position.id, img);
+            };
+          }
+        });
+
+        planetsRef.current = planets;
+      } else {
+        // Fallback to default positions if no data in database
+        generateDefaultPlanets();
+      }
+    } catch (error) {
+      console.error("Failed to load world positions:", error);
+      // Fallback to default positions on error
+      generateDefaultPlanets();
+    }
+  }, []);
+
+  // Generate default planets (fallback)
+  const generateDefaultPlanets = useCallback(() => {
     const planets: Planet[] = [];
     const colors = [
       "#ff6b6b",
@@ -755,10 +810,11 @@ export const SpaceMap: React.FC = () => {
         id: `planet-${i}`,
         x: CENTER_X + Math.cos(angle) * radius,
         y: CENTER_Y + Math.sin(angle) * radius,
-        size: 60, // Aumentado para acomodar as imagens
+        size: 60,
+        rotation: 0,
         color: colors[i],
         name: planetNames[i],
-        interactionRadius: 90, // Aumentado junto com o tamanho
+        interactionRadius: 90,
         imageUrl: planetImages[i],
       });
     }
@@ -774,7 +830,13 @@ export const SpaceMap: React.FC = () => {
     });
 
     planetsRef.current = planets;
-  }, [generateRichStarField]);
+  }, []);
+
+  // Initialize game objects once
+  useEffect(() => {
+    generateRichStarField();
+    loadWorldPositions();
+  }, [generateRichStarField, loadWorldPositions]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
@@ -783,13 +845,48 @@ export const SpaceMap: React.FC = () => {
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
+      const newMousePos = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+
+      // Handle world dragging in edit mode
+      if (isWorldEditMode && isDragging && selectedWorldId) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        const worldX =
+          newMousePos.x - centerX + gameState.camera.x - dragOffset.x;
+        const worldY =
+          newMousePos.y - centerY + gameState.camera.y - dragOffset.y;
+
+        // Update world position immediately for responsive feedback
+        planetsRef.current = planetsRef.current.map((planet) =>
+          planet.id === selectedWorldId
+            ? { ...planet, x: worldX, y: worldY }
+            : planet,
+        );
+
+        // Save to database with throttling
+        clearTimeout((window as any).worldDragTimeout);
+        (window as any).worldDragTimeout = setTimeout(async () => {
+          await gameService.updateWorldPosition(selectedWorldId, {
+            x: worldX,
+            y: worldY,
+          });
+        }, 200);
+      }
+
+      mouseRef.current = newMousePos;
       hasMouseMoved.current = true;
     },
-    [],
+    [
+      isWorldEditMode,
+      isDragging,
+      selectedWorldId,
+      gameState.camera,
+      dragOffset,
+    ],
   );
 
   // Handle mouse leaving canvas
@@ -803,7 +900,7 @@ export const SpaceMap: React.FC = () => {
     setMouseInWindow(true);
   }, []);
 
-  // Handle shooting
+  // Handle shooting and world editing
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -818,6 +915,42 @@ export const SpaceMap: React.FC = () => {
       // Convert click position to world coordinates
       const worldClickX = clickX - centerX + gameState.camera.x;
       const worldClickY = clickY - centerY + gameState.camera.y;
+
+      // World editing mode
+      if (isWorldEditMode) {
+        let worldClicked = false;
+
+        planetsRef.current.forEach((planet) => {
+          const dx = getWrappedDistance(planet.x, worldClickX);
+          const dy = getWrappedDistance(planet.y, worldClickY);
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance <= planet.size) {
+            // Se já está selecionado e dragging, pare o drag
+            if (selectedWorldId === planet.id && isDragging) {
+              setIsDragging(false);
+              setDragOffset({ x: 0, y: 0 });
+            } else if (selectedWorldId === planet.id && !isDragging) {
+              // Se já está selecionado mas não dragging, inicie o drag
+              setIsDragging(true);
+              setDragOffset({ x: dx, y: dy });
+            } else {
+              // Selecione novo mundo
+              setSelectedWorldId(planet.id);
+              setIsDragging(false);
+            }
+            worldClicked = true;
+          }
+        });
+
+        // Clique fora de qualquer mundo - desseleciona tudo
+        if (!worldClicked) {
+          setSelectedWorldId(null);
+          setIsDragging(false);
+          setDragOffset({ x: 0, y: 0 });
+        }
+        return;
+      }
 
       // Check if click was on a planet first
       let clickedOnPlanet = false;
@@ -852,8 +985,39 @@ export const SpaceMap: React.FC = () => {
         projectilesRef.current.push(newProjectile);
       }
     },
-    [gameState, getWrappedDistance],
+    [gameState, getWrappedDistance, isClickOnPlanetPixel, isWorldEditMode],
   );
+
+  // Handle mouse up to stop dragging
+  const handleMouseUp = useCallback(async () => {
+    if (isWorldEditMode && isDragging && selectedWorldId) {
+      // Get final position and save to database
+      const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
+      if (planet) {
+        await gameService.updateWorldPosition(selectedWorldId, {
+          x: planet.x,
+          y: planet.y,
+        });
+      }
+
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+    }
+  }, [isWorldEditMode, isDragging, selectedWorldId]);
+
+  // Handle ESC key to cancel editing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isWorldEditMode) {
+        setSelectedWorldId(null);
+        setIsDragging(false);
+        setDragOffset({ x: 0, y: 0 });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isWorldEditMode]);
 
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
@@ -1205,23 +1369,40 @@ export const SpaceMap: React.FC = () => {
             shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
           );
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
+          const isSelected = isWorldEditMode && selectedWorldId === planet.id;
 
           // Render interaction circle
           ctx.save();
-          ctx.globalAlpha = isInRange ? 0.4 : 0.15;
-          ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
-          ctx.lineWidth = isInRange ? 3 : 1;
-          ctx.setLineDash(isInRange ? [] : [5, 5]);
+          if (isWorldEditMode) {
+            // Edit mode styling
+            ctx.globalAlpha = isSelected ? 0.8 : 0.3;
+            ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
+            ctx.lineWidth = isSelected ? 4 : 2;
+            ctx.setLineDash(isSelected ? [] : [8, 8]);
+          } else {
+            // Normal mode styling
+            ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+            ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+            ctx.lineWidth = isInRange ? 3 : 1;
+            ctx.setLineDash(isInRange ? [] : [5, 5]);
+          }
           ctx.beginPath();
           ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
 
-          // Render planet image
+          // Render planet image with rotation
           const img = planetImagesRef.current.get(planet.id);
           if (img && img.complete) {
             ctx.save();
             ctx.globalAlpha = 1;
+
+            // Apply rotation if planet has rotation
+            if (planet.rotation && planet.rotation !== 0) {
+              ctx.translate(screenX, screenY);
+              ctx.rotate(planet.rotation);
+              ctx.translate(-screenX, -screenY);
+            }
 
             const imageSize = planet.size * 2; // Use diameter as image size
             const drawX = screenX - imageSize / 2;
@@ -1375,13 +1556,180 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full"
         style={{
-          cursor: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
+          cursor: isWorldEditMode
+            ? isDragging
+              ? "grabbing"
+              : "grab"
+            : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
+        onMouseUp={handleMouseUp}
       />
+
+      {/* Simple Admin Button for World Editing */}
+      {user?.isAdmin && (
+        <div className="absolute top-2 right-2">
+          <button
+            onClick={() => {
+              setWorldEditMode(!isWorldEditMode);
+              if (isWorldEditMode) {
+                setSelectedWorldId(null);
+                setIsDragging(false);
+              }
+            }}
+            className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
+              isWorldEditMode
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {isWorldEditMode ? "Sair Edição" : "Editar Mundos"}
+          </button>
+        </div>
+      )}
+
+      {/* World Controls when selected */}
+      {isWorldEditMode && selectedWorldId && (
+        <div className="absolute top-14 right-2 bg-white rounded-lg p-3 shadow-lg border border-gray-200 w-64">
+          <h4 className="text-sm font-bold text-gray-900 mb-3">
+            Mundo:{" "}
+            {planetsRef.current.find((p) => p.id === selectedWorldId)?.name}
+          </h4>
+
+          {/* Size Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Tamanho:{" "}
+              {planetsRef.current.find((p) => p.id === selectedWorldId)?.size ||
+                60}
+            </label>
+            <input
+              type="range"
+              min="20"
+              max="150"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.size || 60
+              }
+              onChange={async (e) => {
+                const newSize = Number(e.target.value);
+
+                // Update immediately for responsive feedback
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? {
+                        ...planet,
+                        size: newSize,
+                        interactionRadius: Math.max(90, newSize + 30),
+                      }
+                    : planet,
+                );
+
+                // Save to database
+                if (selectedWorldId) {
+                  await gameService.updateWorldPosition(selectedWorldId, {
+                    size: newSize,
+                  });
+                }
+              }}
+              className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Rotation Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Rotação:{" "}
+              {Math.round(
+                ((planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.rotation || 0) *
+                  180) /
+                  Math.PI,
+              )}
+              °
+            </label>
+            <input
+              type="range"
+              min="0"
+              max={Math.PI * 2}
+              step="0.1"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.rotation || 0
+              }
+              onChange={async (e) => {
+                const newRotation = Number(e.target.value);
+
+                // Update immediately for responsive feedback
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? { ...planet, rotation: newRotation }
+                    : planet,
+                );
+
+                // Save to database
+                if (selectedWorldId) {
+                  await gameService.updateWorldPosition(selectedWorldId, {
+                    rotation: newRotation,
+                  });
+                }
+              }}
+              className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div className="flex space-x-2 mt-3">
+            <button
+              onClick={() => {
+                setIsDragging(true);
+                setDragOffset({ x: 0, y: 0 });
+              }}
+              className={`flex-1 px-2 py-1 text-xs rounded ${
+                isDragging
+                  ? "bg-red-100 text-red-700 border border-red-300"
+                  : "bg-green-100 text-green-700 border border-green-300 hover:bg-green-200"
+              }`}
+              disabled={isDragging}
+            >
+              {isDragging ? "Arrastando..." : "Mover Mundo"}
+            </button>
+
+            {isDragging && (
+              <button
+                onClick={async () => {
+                  // Save final position to database
+                  if (selectedWorldId) {
+                    const planet = planetsRef.current.find(
+                      (p) => p.id === selectedWorldId,
+                    );
+                    if (planet) {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        x: planet.x,
+                        y: planet.y,
+                      });
+                    }
+                  }
+
+                  setIsDragging(false);
+                  setDragOffset({ x: 0, y: 0 });
+                }}
+                className="flex-1 px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200"
+              >
+                Confirmar
+              </button>
+            )}
+          </div>
+
+          <p className="text-xs text-gray-500 mt-2">
+            ✅ Alterações salvas automaticamente
+            <br />
+            ESC para cancelar • Clique fora para desselecionar
+          </p>
+        </div>
+      )}
 
       <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
         <div>X: {Math.round(gameState.ship.x)}</div>
@@ -1406,8 +1754,22 @@ export const SpaceMap: React.FC = () => {
       </div>
 
       <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
-        <div>• Mouse: Mover nave</div>
-        <div>• Click: Atirar/Planeta</div>
+        {isWorldEditMode ? (
+          <>
+            <div className="text-yellow-400 font-bold mb-1">🔧 MODO EDIÇÃO</div>
+            <div>• 1º Click: Selecionar mundo</div>
+            <div>
+              • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
+            </div>
+            <div>• ESC: Cancelar</div>
+            <div>• Painel: Tamanho/Rotação</div>
+          </>
+        ) : (
+          <>
+            <div>• Mouse: Mover nave</div>
+            <div>• Click: Atirar/Planeta</div>
+          </>
+        )}
       </div>
     </div>
   );

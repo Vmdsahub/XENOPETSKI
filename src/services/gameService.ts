@@ -10,6 +10,7 @@ import {
   User,
   Achievement,
   Collectible,
+  WorldPosition,
 } from "../types/game";
 
 export class GameService {
@@ -903,6 +904,62 @@ export class GameService {
       return true;
     } catch (error: any) {
       console.error("Error marking all notifications as read:", error);
+      return false;
+    }
+  }
+
+  // World positions operations
+  async getWorldPositions(): Promise<WorldPosition[]> {
+    try {
+      const { data, error } = await supabase
+        .from("world_positions")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      return data.map((world) => ({
+        id: world.id,
+        name: world.name,
+        x: world.x,
+        y: world.y,
+        size: world.size,
+        rotation: world.rotation,
+        color: world.color,
+        imageUrl: world.image_url,
+        createdAt: new Date(world.created_at),
+        updatedAt: new Date(world.updated_at),
+      }));
+    } catch (error) {
+      console.error("Error fetching world positions:", error);
+      return [];
+    }
+  }
+
+  async updateWorldPosition(
+    worldId: string,
+    updates: Partial<Pick<WorldPosition, "x" | "y" | "size" | "rotation">>,
+  ): Promise<boolean> {
+    try {
+      const updateData: any = {};
+
+      if (updates.x !== undefined) updateData.x = updates.x;
+      if (updates.y !== undefined) updateData.y = updates.y;
+      if (updates.size !== undefined)
+        updateData.size = Math.max(20, Math.min(200, updates.size));
+      if (updates.rotation !== undefined)
+        updateData.rotation = updates.rotation % (Math.PI * 2);
+
+      const { error } = await supabase
+        .from("world_positions")
+        .update(updateData)
+        .eq("id", worldId);
+
+      if (error) throw error;
+
+      return true;
+    } catch (error) {
+      console.error("Error updating world position:", error);
       return false;
     }
   }
