@@ -5,7 +5,7 @@ import { gameService } from "../../services/gameService";
 import { WorldPosition } from "../../types/game";
 
 interface WorldEditorProps {
-  world: WorldPosition;
+  world: WorldPosition | undefined;
   onUpdate: (worldId: string, updates: Partial<WorldPosition>) => void;
   isSelected: boolean;
   onSelect: () => void;
