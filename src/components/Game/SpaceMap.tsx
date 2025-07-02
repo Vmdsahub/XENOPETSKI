@@ -142,8 +142,34 @@ export const SpaceMap: React.FC = () => {
       "#f0e68c",
     ];
 
-    // Distant background stars (cosmic dust)
-    for (let i = 0; i < 200; i++) {
+    // Very distant background stars (cosmic dust)
+    for (let i = 0; i < 300; i++) {
+      const isColored = Math.random() < 0.1; // 10% chance of colored star
+      const isBright = Math.random() < 0.05; // 5% chance of bright star
+
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 0.6 + 0.2,
+        opacity: Math.random() * 0.3 + 0.15,
+        speed: Math.random() * 0.006 + 0.002,
+        parallax: 0.05,
+        twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.0015,
+          y: (Math.random() - 0.5) * 0.0015,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
+      });
+    }
+
+    // Distant background stars
+    for (let i = 0; i < 400; i++) {
       const isColored = Math.random() < 0.15; // 15% chance of colored star
       const isBright = Math.random() < 0.1; // 10% chance of bright star
 
@@ -153,7 +179,7 @@ export const SpaceMap: React.FC = () => {
         size: Math.random() * 0.8 + 0.3,
         opacity: Math.random() * 0.4 + 0.2,
         speed: Math.random() * 0.008 + 0.003,
-        parallax: 0.1,
+        parallax: 0.15,
         twinkle: Math.random() * 100,
         color: isColored
           ? starColors[Math.floor(Math.random() * starColors.length)]
@@ -169,7 +195,7 @@ export const SpaceMap: React.FC = () => {
     }
 
     // Mid-distance stars
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 350; i++) {
       const isColored = Math.random() < 0.2; // 20% chance of colored star
       const isBright = Math.random() < 0.15; // 15% chance of bright star
 
@@ -179,7 +205,7 @@ export const SpaceMap: React.FC = () => {
         size: Math.random() * 1.2 + 0.5,
         opacity: Math.random() * 0.5 + 0.3,
         speed: Math.random() * 0.012 + 0.008,
-        parallax: 0.4,
+        parallax: 0.5,
         twinkle: Math.random() * 100,
         color: isColored
           ? starColors[Math.floor(Math.random() * starColors.length)]
@@ -194,8 +220,8 @@ export const SpaceMap: React.FC = () => {
       });
     }
 
-    // Close foreground stars
-    for (let i = 0; i < 80; i++) {
+    // Close stars
+    for (let i = 0; i < 250; i++) {
       const isColored = Math.random() < 0.25; // 25% chance of colored star
       const isBright = Math.random() < 0.2; // 20% chance of bright star
 
@@ -205,7 +231,7 @@ export const SpaceMap: React.FC = () => {
         size: Math.random() * 1.8 + 0.8,
         opacity: Math.random() * 0.4 + 0.25,
         speed: Math.random() * 0.018 + 0.012,
-        parallax: 1.0,
+        parallax: 0.8,
         twinkle: Math.random() * 100,
         color: isColored
           ? starColors[Math.floor(Math.random() * starColors.length)]
@@ -220,10 +246,10 @@ export const SpaceMap: React.FC = () => {
       });
     }
 
-    // Very close bright stars
-    for (let i = 0; i < 40; i++) {
+    // Foreground stars (same layer as player)
+    for (let i = 0; i < 150; i++) {
       const isColored = Math.random() < 0.3; // 30% chance of colored star
-      const isBright = Math.random() < 0.4; // 40% chance of bright star
+      const isBright = Math.random() < 0.25; // 25% chance of bright star
 
       stars.push({
         x: Math.random() * WORLD_SIZE,
@@ -231,7 +257,7 @@ export const SpaceMap: React.FC = () => {
         size: Math.random() * 2.2 + 1.2,
         opacity: Math.random() * 0.3 + 0.15,
         speed: Math.random() * 0.025 + 0.015,
-        parallax: 1.5,
+        parallax: 1.2,
         twinkle: Math.random() * 100,
         color: isColored
           ? starColors[Math.floor(Math.random() * starColors.length)]
@@ -240,6 +266,32 @@ export const SpaceMap: React.FC = () => {
         drift: {
           x: (Math.random() - 0.5) * 0.0005,
           y: (Math.random() - 0.5) * 0.0005,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
+      });
+    }
+
+    // Very close bright stars (above player)
+    for (let i = 0; i < 120; i++) {
+      const isColored = Math.random() < 0.35; // 35% chance of colored star
+      const isBright = Math.random() < 0.4; // 40% chance of bright star
+
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 2.8 + 1.5,
+        opacity: Math.random() * 0.25 + 0.1,
+        speed: Math.random() * 0.03 + 0.02,
+        parallax: 1.8,
+        twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.0003,
+          y: (Math.random() - 0.5) * 0.0003,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
