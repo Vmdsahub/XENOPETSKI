@@ -86,6 +86,42 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
+  // Helper function to draw a star shape instead of circle
+  const drawStar = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      size: number,
+      spikes: number = 4,
+    ) => {
+      const outerRadius = size;
+      const innerRadius = size * 0.4;
+      let rot = (Math.PI / 2) * 3;
+      const step = Math.PI / spikes;
+
+      ctx.beginPath();
+      ctx.moveTo(x, y - outerRadius);
+
+      for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(
+          x + Math.cos(rot) * outerRadius,
+          y + Math.sin(rot) * outerRadius,
+        );
+        rot += step;
+        ctx.lineTo(
+          x + Math.cos(rot) * innerRadius,
+          y + Math.sin(rot) * innerRadius,
+        );
+        rot += step;
+      }
+
+      ctx.lineTo(x, y - outerRadius);
+      ctx.closePath();
+    },
+    [],
+  );
+
   // Helper function to normalize coordinates within world bounds
   const normalizeCoord = useCallback((coord: number) => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
