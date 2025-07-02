@@ -909,6 +909,11 @@ export const SpaceMap: React.FC = () => {
         ctx.restore();
       });
 
+      // Render shooting stars
+      shootingStarsRef.current.forEach((shootingStar) => {
+        drawShootingStar(ctx, shootingStar);
+      });
+
       // Render ship
       const shipWrappedDeltaX = getWrappedDistance(
         gameState.ship.x,
