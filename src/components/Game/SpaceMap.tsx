@@ -854,7 +854,7 @@ export const SpaceMap: React.FC = () => {
     setMouseInWindow(true);
   }, []);
 
-  // Handle shooting
+  // Handle clicking (shooting or world editing)
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -870,7 +870,30 @@ export const SpaceMap: React.FC = () => {
       const worldClickX = clickX - centerX + gameState.camera.x;
       const worldClickY = clickY - centerY + gameState.camera.y;
 
-      // Check if click was on a planet first
+      // World editing mode handling
+      if (isWorldEditMode) {
+        let worldClicked = false;
+
+        planetsRef.current.forEach((planet) => {
+          const dx = getWrappedDistance(planet.x, worldClickX);
+          const dy = getWrappedDistance(planet.y, worldClickY);
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance <= planet.size) {
+            setSelectedWorldId(planet.id);
+            setIsDragging(true);
+            setDragOffset({ x: dx, y: dy });
+            worldClicked = true;
+          }
+        });
+
+        if (!worldClicked) {
+          setSelectedWorldId(null);
+        }
+        return;
+      }
+
+      // Normal game mode handling
       let clickedOnPlanet = false;
 
       planetsRef.current.forEach((planet) => {
