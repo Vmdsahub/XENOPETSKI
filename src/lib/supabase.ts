@@ -229,39 +229,7 @@ const createMockClient = () => ({
         limit: (count: number) => Promise.resolve({ data: [], error: null }),
         then: (callback: any) =>
           callback({
-            data:
-              table === "galaxy_worlds"
-                ? [
-                    {
-                      id: "world-1",
-                      name: "Nexus Prime",
-                      image_url:
-                        "https://cdn.builder.io/api/v1/image/assets%2F00527235c81749aeadef448eefcc705e%2Fa8f8439a99054a64b3fb9dd9c9f27e47?format=webp&width=200",
-                      x_position: 20,
-                      y_position: 30,
-                      scale: 1.0,
-                      order_index: 1,
-                      is_active: true,
-                      unlock_requirement: {},
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                    },
-                    {
-                      id: "world-2",
-                      name: "Terra Nova",
-                      image_url:
-                        "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=1600",
-                      x_position: 70,
-                      y_position: 20,
-                      scale: 1.0,
-                      order_index: 2,
-                      is_active: true,
-                      unlock_requirement: {},
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                    },
-                  ]
-                : [],
+            data: [],
             error: null,
           }),
       }),
