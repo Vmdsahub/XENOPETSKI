@@ -838,6 +838,53 @@ export const SpaceMap: React.FC = () => {
     loadWorldPositions();
   }, [generateRichStarField, loadWorldPositions]);
 
+  // Reload world positions when component becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Reload world positions when tab becomes active again
+        loadWorldPositions();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loadWorldPositions]);
+
+  // Save any pending changes when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts and save immediately if editing
+      const timeouts = [
+        (window as any).worldDragTimeout,
+        (window as any).worldSizeTimeout,
+        (window as any).worldRotationTimeout,
+      ];
+
+      timeouts.forEach((timeout) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+      });
+
+      if (selectedWorldId) {
+        const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
+        if (planet) {
+          // Fire and forget - save immediately on unmount
+          gameService.updateWorldPosition(selectedWorldId, {
+            x: planet.x,
+            y: planet.y,
+            size: planet.size,
+            rotation: planet.rotation,
+          });
+        }
+      }
+    };
+  }, [selectedWorldId]);
+
   // Handle mouse movement
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -870,10 +917,16 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(async () => {
-          await gameService.updateWorldPosition(selectedWorldId, {
-            x: worldX,
-            y: worldY,
-          });
+          try {
+            await gameService.updateWorldPosition(selectedWorldId, {
+              x: worldX,
+              y: worldY,
+            });
+          } catch (error) {
+            console.error("Failed to update world position:", error);
+            // Reload on error to revert to database state
+            await loadWorldPositions();
+          }
         }, 200);
       }
 
@@ -994,10 +1047,16 @@ export const SpaceMap: React.FC = () => {
       // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
-        await gameService.updateWorldPosition(selectedWorldId, {
-          x: planet.x,
-          y: planet.y,
-        });
+        try {
+          await gameService.updateWorldPosition(selectedWorldId, {
+            x: planet.x,
+            y: planet.y,
+          });
+        } catch (error) {
+          console.error("Failed to update world position on mouse up:", error);
+          // Reload on error to revert to database state
+          await loadWorldPositions();
+        }
       }
 
       setIsDragging(false);
@@ -1628,12 +1687,21 @@ export const SpaceMap: React.FC = () => {
                     : planet,
                 );
 
-                // Save to database
-                if (selectedWorldId) {
-                  await gameService.updateWorldPosition(selectedWorldId, {
-                    size: newSize,
-                  });
-                }
+                // Save to database with throttling to avoid too many calls
+                clearTimeout((window as any).worldSizeTimeout);
+                (window as any).worldSizeTimeout = setTimeout(async () => {
+                  if (selectedWorldId) {
+                    try {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        size: newSize,
+                      });
+                    } catch (error) {
+                      console.error("Failed to update world size:", error);
+                      // Reload on error to revert to database state
+                      await loadWorldPositions();
+                    }
+                  }
+                }, 300);
               }}
               className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
             />
@@ -1649,7 +1717,7 @@ export const SpaceMap: React.FC = () => {
                   180) /
                   Math.PI,
               )}
-              °
+              ��
             </label>
             <input
               type="range"
@@ -1670,12 +1738,21 @@ export const SpaceMap: React.FC = () => {
                     : planet,
                 );
 
-                // Save to database
-                if (selectedWorldId) {
-                  await gameService.updateWorldPosition(selectedWorldId, {
-                    rotation: newRotation,
-                  });
-                }
+                // Save to database with throttling to avoid too many calls
+                clearTimeout((window as any).worldRotationTimeout);
+                (window as any).worldRotationTimeout = setTimeout(async () => {
+                  if (selectedWorldId) {
+                    try {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        rotation: newRotation,
+                      });
+                    } catch (error) {
+                      console.error("Failed to update world rotation:", error);
+                      // Reload on error to revert to database state
+                      await loadWorldPositions();
+                    }
+                  }
+                }, 300);
               }}
               className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
             />
@@ -1706,10 +1783,16 @@ export const SpaceMap: React.FC = () => {
                       (p) => p.id === selectedWorldId,
                     );
                     if (planet) {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        x: planet.x,
-                        y: planet.y,
-                      });
+                      try {
+                        await gameService.updateWorldPosition(selectedWorldId, {
+                          x: planet.x,
+                          y: planet.y,
+                        });
+                      } catch (error) {
+                        console.error("Failed to reset world position:", error);
+                        // Reload on error to revert to database state
+                        await loadWorldPositions();
+                      }
                     }
                   }
 
