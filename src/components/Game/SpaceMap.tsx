@@ -423,195 +423,66 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
-      // Clear canvas with deep space background
-      const gradient = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        0,
-        centerX,
-        centerY,
-        Math.max(canvas.width, canvas.height),
-      );
-      gradient.addColorStop(0, "#0a0a2e");
-      gradient.addColorStop(0.5, "#16213e");
-      gradient.addColorStop(1, "#0e1b2e");
-      ctx.fillStyle = gradient;
+      // Clear canvas
+      ctx.fillStyle = "#0a0a2e";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render nebulae
-      nebulaeRef.current.forEach((nebula) => {
-        const wrappedDeltaX = getWrappedDistance(nebula.x, gameState.camera.x);
-        const wrappedDeltaY = getWrappedDistance(nebula.y, gameState.camera.y);
-        const screenX = centerX + wrappedDeltaX * 0.1;
-        const screenY = centerY + wrappedDeltaY * 0.1;
+      // Render all stars with simple approach
+      ctx.fillStyle = "#ffffff";
+      starsRef.current.forEach((star) => {
+        const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
+        const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
+
+        const parallaxX = wrappedDeltaX * star.parallax;
+        const parallaxY = wrappedDeltaY * star.parallax;
+        const screenX = centerX + parallaxX;
+        const screenY = centerY + parallaxY;
 
         if (
-          screenX > -nebula.size &&
-          screenX < canvas.width + nebula.size &&
-          screenY > -nebula.size &&
-          screenY < canvas.height + nebula.size
+          screenX > -50 &&
+          screenX < canvas.width + 50 &&
+          screenY > -50 &&
+          screenY < canvas.height + 50
         ) {
+          // Simple twinkling
+          const twinkleAlpha = Math.sin(star.twinkle) * 0.3 + 0.7;
+          let finalAlpha = star.opacity * twinkleAlpha;
+          let finalSize = star.size;
+
+          if (star.type === "bright") {
+            finalAlpha *= 1.3;
+            finalSize *= 1.2;
+          }
+
           ctx.save();
-          ctx.globalAlpha = nebula.opacity;
-          ctx.translate(screenX, screenY);
-          ctx.rotate(nebula.rotation);
+          ctx.fillStyle = star.color;
+          ctx.globalAlpha = finalAlpha;
 
-          const nebulaGradient = ctx.createRadialGradient(
-            0,
-            0,
-            0,
-            0,
-            0,
-            nebula.size,
-          );
-          nebulaGradient.addColorStop(0, nebula.color);
-          nebulaGradient.addColorStop(0.5, nebula.color + "40");
-          nebulaGradient.addColorStop(1, "transparent");
+          if (finalSize < 1.5) {
+            // Small stars as circles
+            ctx.beginPath();
+            ctx.arc(
+              Math.round(screenX),
+              Math.round(screenY),
+              finalSize,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          } else {
+            // Larger stars as star shapes
+            drawStar(
+              ctx,
+              Math.round(screenX),
+              Math.round(screenY),
+              finalSize,
+              4,
+            );
+            ctx.fill();
+          }
 
-          ctx.fillStyle = nebulaGradient;
-          ctx.fillRect(
-            -nebula.size,
-            -nebula.size,
-            nebula.size * 2,
-            nebula.size * 2,
-          );
           ctx.restore();
         }
-      });
-
-      // Render stars by parallax layers
-      const parallaxLayers = [
-        0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4,
-        1.6, 1.8,
-      ];
-
-      parallaxLayers.forEach((targetParallax) => {
-        starsRef.current.forEach((star) => {
-          if (Math.abs(star.parallax - targetParallax) < 0.05) {
-            const wrappedDeltaX = getWrappedDistance(
-              star.x,
-              gameState.camera.x,
-            );
-            const wrappedDeltaY = getWrappedDistance(
-              star.y,
-              gameState.camera.y,
-            );
-
-            const parallaxX = wrappedDeltaX * star.parallax;
-            const parallaxY = wrappedDeltaY * star.parallax;
-            const screenX = centerX + parallaxX;
-            const screenY = centerY + parallaxY;
-
-            const margin = star.parallax > 1 ? 100 : 50;
-            if (
-              screenX > -margin &&
-              screenX < canvas.width + margin &&
-              screenY > -margin &&
-              screenY < canvas.height + margin
-            ) {
-              // Enhanced effects based on star type
-              let twinkleAlpha = Math.sin(star.twinkle) * 0.3 + 0.7;
-              let pulseSize = 1;
-              let finalAlpha = star.opacity * twinkleAlpha;
-              let finalSize = star.size;
-
-              switch (star.type) {
-                case "giant":
-                  pulseSize = Math.sin(star.pulse * 0.5) * 0.4 + 1.2;
-                  finalAlpha *= 1.5;
-                  finalSize *= 1.8;
-                  break;
-                case "binary":
-                  twinkleAlpha = Math.sin(star.twinkle * 2) * 0.4 + 0.6;
-                  finalAlpha *= 1.2;
-                  break;
-                case "pulsar":
-                  twinkleAlpha = Math.sin(star.twinkle * 4) * 0.8 + 0.2;
-                  finalAlpha *= 2;
-                  break;
-                case "bright":
-                  finalAlpha *= 1.3;
-                  finalSize *= 1.3;
-                  break;
-              }
-
-              finalSize *= pulseSize;
-
-              ctx.save();
-              ctx.fillStyle = star.color;
-              ctx.globalAlpha = finalAlpha;
-
-              if (finalSize < 1) {
-                // Small distant stars as points
-                ctx.beginPath();
-                ctx.arc(
-                  Math.round(screenX),
-                  Math.round(screenY),
-                  finalSize,
-                  0,
-                  Math.PI * 2,
-                );
-                ctx.fill();
-              } else {
-                // Larger stars as star shapes
-                drawStar(
-                  ctx,
-                  Math.round(screenX),
-                  Math.round(screenY),
-                  finalSize,
-                  4,
-                );
-                ctx.fill();
-
-                // Enhanced glow for special stars
-                if (star.type !== "normal") {
-                  ctx.shadowColor = star.color;
-                  ctx.shadowBlur = finalSize * (star.type === "giant" ? 4 : 2);
-                  ctx.globalAlpha = finalAlpha * 0.3;
-                  drawStar(
-                    ctx,
-                    Math.round(screenX),
-                    Math.round(screenY),
-                    finalSize * 1.2,
-                    4,
-                  );
-                  ctx.fill();
-                  ctx.shadowBlur = 0;
-
-                  // Special effects for different star types
-                  if (star.type === "binary") {
-                    // Secondary companion star
-                    ctx.globalAlpha = finalAlpha * 0.6;
-                    drawStar(
-                      ctx,
-                      Math.round(screenX + finalSize),
-                      Math.round(screenY),
-                      finalSize * 0.7,
-                      4,
-                    );
-                    ctx.fill();
-                  }
-
-                  if (star.type === "pulsar" && finalSize > 2) {
-                    // Pulsar beams
-                    ctx.globalAlpha = finalAlpha * 0.5;
-                    ctx.strokeStyle = star.color;
-                    ctx.lineWidth = 1;
-                    const beamLength = finalSize * 6;
-                    ctx.beginPath();
-                    ctx.moveTo(screenX - beamLength, screenY);
-                    ctx.lineTo(screenX + beamLength, screenY);
-                    ctx.moveTo(screenX, screenY - beamLength);
-                    ctx.lineTo(screenX, screenY + beamLength);
-                    ctx.stroke();
-                  }
-                }
-              }
-
-              ctx.restore();
-            }
-          }
-        });
       });
 
       // Render barrier circle
