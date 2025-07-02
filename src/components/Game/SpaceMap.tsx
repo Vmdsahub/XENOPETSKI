@@ -114,14 +114,17 @@ export const SpaceMap: React.FC = () => {
         ctx.beginPath();
         ctx.arc(x, y, size * 2, 0, Math.PI * 2);
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-        gradient.addColorStop(
-          0,
-          color +
-            Math.floor(intensity * 255)
-              .toString(16)
-              .padStart(2, "0"),
-        );
-        gradient.addColorStop(1, color + "00");
+
+        // Convert hex color to rgba for proper alpha handling
+        const hexToRgba = (hex: string, alpha: number) => {
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        };
+
+        gradient.addColorStop(0, hexToRgba(color, intensity * 0.8));
+        gradient.addColorStop(1, hexToRgba(color, 0));
         ctx.fillStyle = gradient;
         ctx.fill();
       }
@@ -131,6 +134,7 @@ export const SpaceMap: React.FC = () => {
         const sparkleLength = size * 3;
         ctx.strokeStyle = color;
         ctx.lineWidth = 0.5;
+        const originalAlpha = ctx.globalAlpha;
         ctx.globalAlpha = intensity * 0.6;
         ctx.beginPath();
         ctx.moveTo(x - sparkleLength, y);
@@ -138,7 +142,7 @@ export const SpaceMap: React.FC = () => {
         ctx.moveTo(x, y - sparkleLength);
         ctx.lineTo(x, y + sparkleLength);
         ctx.stroke();
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = originalAlpha;
       }
     },
     [],
