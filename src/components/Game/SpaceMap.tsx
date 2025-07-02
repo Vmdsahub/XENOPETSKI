@@ -190,38 +190,15 @@ export const SpaceMap: React.FC = () => {
       "#f8f8ff", // Purples
     ];
 
-    // Ultra distant background layer (depth 0.01-0.03) - enhanced parallax
-    for (let i = 0; i < 600; i++) {
+    // Layer 1: Deep background (depth 0.1-0.2) - ABAIXO do jogador
+    for (let i = 0; i < 800; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 0.3 + Math.random() * 0.4,
-        opacity: 0.15 + Math.random() * 0.2,
-        speed: Math.random() * 0.004 + 0.001,
-        parallax: 0.01 + Math.random() * 0.02, // More pronounced parallax
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.9
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.008, // More cosmic dust movement
-          y: (Math.random() - 0.5) * 0.008,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Very distant layer (depth 0.03-0.08) - enhanced parallax
-    for (let i = 0; i < 500; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.4 + Math.random() * 0.5,
-        opacity: 0.2 + Math.random() * 0.25,
-        speed: Math.random() * 0.006 + 0.002,
-        parallax: 0.03 + Math.random() * 0.05, // Enhanced parallax difference
+        size: 0.4 + Math.random() * 0.6,
+        opacity: 0.2 + Math.random() * 0.3,
+        speed: Math.random() * 0.008 + 0.002,
+        parallax: 0.1 + Math.random() * 0.1, // Strong parallax difference
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.85
@@ -229,168 +206,94 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.007, // More cosmic dust movement
-          y: (Math.random() - 0.5) * 0.007,
+          x: (Math.random() - 0.5) * 0.015, // Strong cosmic dust movement
+          y: (Math.random() - 0.5) * 0.015,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Far distant layer (depth 0.08-0.18)
-    for (let i = 0; i < 400; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.5 + Math.random() * 0.6,
-        opacity: 0.25 + Math.random() * 0.3,
-        speed: Math.random() * 0.008 + 0.003,
-        parallax: 0.08 + Math.random() * 0.1, // Enhanced parallax
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.8
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.05 ? "bright" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.006,
-          y: (Math.random() - 0.5) * 0.006,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Distant layer (depth 0.18-0.35)
-    for (let i = 0; i < 350; i++) {
+    // Layer 2: Mid background (depth 0.3-0.4) - ABAIXO do jogador
+    for (let i = 0; i < 700; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
-        speed: Math.random() * 0.01 + 0.004,
-        parallax: 0.18 + Math.random() * 0.17, // Enhanced parallax
+        speed: Math.random() * 0.012 + 0.004,
+        parallax: 0.3 + Math.random() * 0.1, // Strong parallax
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.75
+          Math.random() < 0.8
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.08 ? "bright" : "normal",
+        type: Math.random() < 0.1 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.005,
-          y: (Math.random() - 0.5) * 0.005,
+          x: (Math.random() - 0.5) * 0.012, // Strong cosmic dust movement
+          y: (Math.random() - 0.5) * 0.012,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Mid-distant layer (depth 0.35-0.55)
-    for (let i = 0; i < 300; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 0.7 + Math.random() * 1.0,
-        opacity: 0.35 + Math.random() * 0.4,
-        speed: Math.random() * 0.012 + 0.005,
-        parallax: 0.35 + Math.random() * 0.2, // Enhanced parallax
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.7
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type: Math.random() < 0.12 ? "bright" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.004,
-          y: (Math.random() - 0.5) * 0.004,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Middle layer (depth 0.55-0.75)
-    for (let i = 0; i < 250; i++) {
+    // Layer 3: Near background (depth 0.6-0.7) - ABAIXO do jogador
+    for (let i = 0; i < 600; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
-        speed: Math.random() * 0.015 + 0.006,
-        parallax: 0.55 + Math.random() * 0.2, // Enhanced parallax
+        speed: Math.random() * 0.016 + 0.006,
+        parallax: 0.6 + Math.random() * 0.1, // Strong parallax
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.65
+          Math.random() < 0.75
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0035,
-          y: (Math.random() - 0.5) * 0.0035,
+          x: (Math.random() - 0.5) * 0.01, // Strong cosmic dust movement
+          y: (Math.random() - 0.5) * 0.01,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Close layer (depth 0.75-0.95)
-    for (let i = 0; i < 200; i++) {
+    // Layer 4: Close background (depth 0.8-0.9) - ABAIXO do jogador
+    for (let i = 0; i < 500; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.0 + Math.random() * 1.5,
-        opacity: 0.45 + Math.random() * 0.35,
-        speed: Math.random() * 0.018 + 0.008,
-        parallax: 0.75 + Math.random() * 0.2, // Enhanced parallax
+        opacity: 0.45 + Math.random() * 0.4,
+        speed: Math.random() * 0.02 + 0.008,
+        parallax: 0.8 + Math.random() * 0.1, // Strong parallax
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.6
+          Math.random() < 0.7
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.003,
-          y: (Math.random() - 0.5) * 0.003,
+          x: (Math.random() - 0.5) * 0.008, // Strong cosmic dust movement
+          y: (Math.random() - 0.5) * 0.008,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Near layer (depth 0.95-1.15)
-    for (let i = 0; i < 150; i++) {
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 1.2 + Math.random() * 1.8,
-        opacity: 0.5 + Math.random() * 0.3,
-        speed: Math.random() * 0.022 + 0.01,
-        parallax: 0.95 + Math.random() * 0.2, // Enhanced parallax
-        twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.55
-            ? "#ffffff"
-            : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.25
-            ? "bright"
-            : Math.random() < 0.05
-              ? "giant"
-              : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0025,
-          y: (Math.random() - 0.5) * 0.0025,
-        },
-        pulse: Math.random() * 100,
-      });
-    }
-
-    // Foreground layer (depth 1.15-1.45) - closest layer
-    for (let i = 0; i < 100; i++) {
+    // Layer 5: Cosmic dust foreground (depth 1.1-1.3) - ACIMA do jogador
+    for (let i = 0; i < 400; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.5 + Math.random() * 2.0,
-        opacity: 0.3 + Math.random() * 0.25,
-        speed: Math.random() * 0.028 + 0.012,
-        parallax: 1.15 + Math.random() * 0.3, // Maximum parallax effect
+        opacity: 0.25 + Math.random() * 0.3, // More subtle for dust effect
+        speed: Math.random() * 0.025 + 0.012,
+        parallax: 1.1 + Math.random() * 0.2, // Strong foreground parallax
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.5
+          Math.random() < 0.6
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type:
@@ -400,25 +303,25 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.002,
-          y: (Math.random() - 0.5) * 0.002,
+          x: (Math.random() - 0.5) * 0.006, // Strong cosmic dust drift
+          y: (Math.random() - 0.5) * 0.006,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Very close cosmic dust layer (depth 1.45-1.8)
-    for (let i = 0; i < 80; i++) {
+    // Layer 6: Close cosmic dust (depth 1.4-1.7) - ACIMA do jogador
+    for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 2.0 + Math.random() * 2.5,
-        opacity: 0.15 + Math.random() * 0.15, // More subtle for dust effect
+        size: 2.0 + Math.random() * 3.0,
+        opacity: 0.15 + Math.random() * 0.2, // Very subtle for close dust
         speed: Math.random() * 0.035 + 0.015,
-        parallax: 1.45 + Math.random() * 0.35, // Maximum parallax movement
+        parallax: 1.4 + Math.random() * 0.3, // Maximum parallax movement
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.4
+          Math.random() < 0.5
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
         type:
@@ -428,8 +331,8 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0015, // Enhanced cosmic dust drift
-          y: (Math.random() - 0.5) * 0.0015,
+          x: (Math.random() - 0.5) * 0.004, // Enhanced cosmic dust drift
+          y: (Math.random() - 0.5) * 0.004,
         },
         pulse: Math.random() * 100,
       });
