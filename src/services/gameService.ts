@@ -10,6 +10,7 @@ import {
   User,
   Achievement,
   Collectible,
+  WorldPosition,
 } from "../types/game";
 
 export class GameService {
