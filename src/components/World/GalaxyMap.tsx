@@ -1,26 +1,93 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { motion, useMotionValue, animate } from "framer-motion";
-import { PlayerShip } from "./PlayerShip";
-import { StarField } from "./StarField";
-import { CenterObjects } from "./CenterObjects";
-import { CircularBarrier } from "./CircularBarrier";
-import { usePlayerMovement } from "../../hooks/usePlayerMovement";
-import { useProjectiles } from "../../hooks/useProjectiles";
+import { motion, useMotionValue } from "framer-motion";
 import { useAuthStore } from "../../store/authStore";
 import { useGameStore } from "../../store/gameStore";
 
 interface GalaxyMapProps {}
 
 // Map configuration - 10,000 x 10,000 pixel world
-const MAP_CONFIG = {
-  width: 10000,
-  height: 10000,
-  centerX: 5000,
-  centerY: 5000,
-} as const;
+const MAP_SIZE = 10000;
+const CENTER_X = MAP_SIZE / 2;
+const CENTER_Y = MAP_SIZE / 2;
+
+// Generate stars for parallax layers
+const generateStars = (count: number, layerIndex: number) => {
+  const stars = [];
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      id: `star-${layerIndex}-${i}`,
+      x: Math.random() * MAP_SIZE * 2,
+      y: Math.random() * MAP_SIZE * 2,
+      size: Math.random() * 2 + 0.5,
+      opacity: Math.random() * 0.8 + 0.2,
+    });
+  }
+  return stars;
+};
+
+// Star layers configuration
+const STAR_LAYERS = [
+  { count: 200, parallax: 0.1, zIndex: 0 }, // Far background
+  { count: 150, parallax: 0.3, zIndex: 1 },
+  { count: 100, parallax: 0.5, zIndex: 2 },
+  { count: 50, parallax: 0.7, zIndex: 3 }, // Near background
+  { count: 30, parallax: 1.5, zIndex: 25 }, // Foreground
+  { count: 20, parallax: 2.0, zIndex: 26 }, // Far foreground
+];
+
+// Planet data for center circle
+const PLANETS = [
+  {
+    id: "gaia",
+    name: "Gaia Selvagem",
+    angle: 0,
+    color: "#22c55e",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=400",
+  },
+  {
+    id: "frozen",
+    name: "Mundo Gelado",
+    angle: 60,
+    color: "#3b82f6",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fea3ec3d920794634bdf7d66a1159511b?format=webp&width=400",
+  },
+  {
+    id: "desert",
+    name: "Reino Desértico",
+    angle: 120,
+    color: "#f59e0b",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F7066e87a53b34231ac837e59befecf75?format=webp&width=400",
+  },
+  {
+    id: "village",
+    name: "Aldeia Pacífica",
+    angle: 180,
+    color: "#8b5cf6",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F02782c34d2cd4353a884ab021ce35173?format=webp&width=400",
+  },
+  {
+    id: "alien",
+    name: "Dimensão Alienígena",
+    angle: 240,
+    color: "#ec4899",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Facb3e8e8eb33422a88b01594f5d1c470?format=webp&width=400",
+  },
+  {
+    id: "station",
+    name: "Estação Mineradora",
+    angle: 300,
+    color: "#6b7280",
+    image:
+      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F213c17a38e9545088415b03b5c9e9319?format=webp&width=400",
+  },
+];
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
-  const { user } = useAuthStore();
   const { setCurrentScreen, setSelectedWorld } = useGameStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,33 +96,47 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     height: 400,
   });
 
-  // Camera position (follows player)
-  const cameraX = useMotionValue(0);
-  const cameraY = useMotionValue(0);
-
-  // Player position in world coordinates
+  // Player position and movement
   const [playerPosition, setPlayerPosition] = useState({
-    x: MAP_CONFIG.centerX,
-    y: MAP_CONFIG.centerY,
+    x: CENTER_X,
+    y: CENTER_Y,
   });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [projectiles, setProjectiles] = useState<
+    Array<{
+      id: string;
+      x: number;
+      y: number;
+      targetX: number;
+      targetY: number;
+    }>
+  >([]);
 
-  // Custom hooks for player movement and shooting
-  const { rotation, handleMouseMove, handleTouch } = usePlayerMovement(
-    playerPosition,
-    setPlayerPosition,
-    cameraX,
-    cameraY,
-    containerSize,
-    MAP_CONFIG,
+  // Camera follows player
+  const cameraX = useMotionValue(-(playerPosition.x - containerSize.width / 2));
+  const cameraY = useMotionValue(
+    -(playerPosition.y - containerSize.height / 2),
   );
 
-  const { projectiles, handleShoot } = useProjectiles(
-    playerPosition,
-    rotation,
-    MAP_CONFIG,
+  // Ship rotation based on mouse
+  const rotation = useMotionValue(0);
+
+  // Generate stars once
+  const [starLayers] = useState(() =>
+    STAR_LAYERS.map((layer, index) => ({
+      ...layer,
+      stars: generateStars(layer.count, index),
+    })),
   );
 
-  // Update container size on mount and resize
+  // Wrap coordinates
+  const wrapCoordinate = (value: number, max: number) => {
+    if (value < 0) return max + value;
+    if (value >= max) return value - max;
+    return value;
+  };
+
+  // Update container size
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
@@ -63,17 +144,87 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         setContainerSize({ width: rect.width, height: rect.height });
       }
     };
-
     updateSize();
     window.addEventListener("resize", updateSize);
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
+  // Update camera when player moves
+  useEffect(() => {
+    cameraX.set(-(playerPosition.x - containerSize.width / 2));
+    cameraY.set(-(playerPosition.y - containerSize.height / 2));
+  }, [playerPosition, containerSize, cameraX, cameraY]);
+
+  // Handle mouse movement
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      setMousePosition({ x: mouseX, y: mouseY });
+
+      // Calculate world position
+      const worldX = mouseX - cameraX.get();
+      const worldY = mouseY - cameraY.get();
+
+      // Calculate rotation
+      const dx = worldX - playerPosition.x;
+      const dy = worldY - playerPosition.y;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      rotation.set(angle);
+
+      // Move player toward mouse (smooth movement)
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 5) {
+        const speed = 0.05;
+        const newX = wrapCoordinate(playerPosition.x + dx * speed, MAP_SIZE);
+        const newY = wrapCoordinate(playerPosition.y + dy * speed, MAP_SIZE);
+        setPlayerPosition({ x: newX, y: newY });
+      }
+    },
+    [playerPosition, cameraX, cameraY, rotation],
+  );
+
+  // Handle shooting
+  const handleShoot = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+
+      const currentRotation = rotation.get();
+      const rotationRad = (currentRotation * Math.PI) / 180;
+
+      const range = 300;
+      const targetX = wrapCoordinate(
+        playerPosition.x + Math.cos(rotationRad) * range,
+        MAP_SIZE,
+      );
+      const targetY = wrapCoordinate(
+        playerPosition.y + Math.sin(rotationRad) * range,
+        MAP_SIZE,
+      );
+
+      const newProjectile = {
+        id: `proj-${Date.now()}`,
+        x: playerPosition.x,
+        y: playerPosition.y,
+        targetX,
+        targetY,
+      };
+
+      setProjectiles((prev) => [...prev, newProjectile]);
+
+      // Remove projectile after animation
+      setTimeout(() => {
+        setProjectiles((prev) => prev.filter((p) => p.id !== newProjectile.id));
+      }, 1000);
+    },
+    [playerPosition, rotation],
+  );
+
   // Handle planet clicks
   const handlePlanetClick = useCallback(
     (planetId: string) => {
-      console.log(`Planet clicked: ${planetId}`);
-      // You can implement planet interaction logic here
       setSelectedWorld(planetId);
       setCurrentScreen("worldDetail");
     },
@@ -85,20 +236,46 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       ref={containerRef}
       className="relative w-full h-96 bg-black overflow-hidden rounded-2xl cursor-crosshair"
       onMouseMove={handleMouseMove}
-      onTouchMove={handleTouch}
       onMouseDown={handleShoot}
-      onTouchStart={handleShoot}
     >
-      {/* Background stars (4 layers behind ship) */}
-      <StarField
-        layerCount={4}
-        cameraX={cameraX}
-        cameraY={cameraY}
-        zIndex="behind"
-        mapConfig={MAP_CONFIG}
-      />
+      {/* Star layers */}
+      {starLayers.map((layer, layerIndex) => (
+        <motion.div
+          key={layerIndex}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            zIndex: layer.zIndex,
+            x: cameraX,
+            y: cameraY,
+            scale: layer.parallax,
+          }}
+        >
+          {layer.stars.map((star) => (
+            <motion.div
+              key={star.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: star.x,
+                top: star.y,
+                width: star.size,
+                height: star.size,
+                opacity: star.opacity,
+                boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, 0.5)`,
+              }}
+              animate={{
+                opacity: [star.opacity, star.opacity * 0.3, star.opacity],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </motion.div>
+      ))}
 
-      {/* Main game world container */}
+      {/* Main world container */}
       <motion.div
         className="absolute inset-0"
         style={{
@@ -106,35 +283,115 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           y: cameraY,
         }}
       >
-        {/* Circular barrier around center */}
-        <CircularBarrier
-          centerX={MAP_CONFIG.centerX}
-          centerY={MAP_CONFIG.centerY}
-          radius={800}
+        {/* Circular barrier */}
+        <div className="absolute z-10">
+          <svg
+            className="absolute pointer-events-none"
+            style={{
+              left: CENTER_X - 850,
+              top: CENTER_Y - 850,
+              width: 1700,
+              height: 1700,
+            }}
+          >
+            <circle
+              cx="850"
+              cy="850"
+              r="800"
+              fill="none"
+              stroke="#fbbf24"
+              strokeWidth="3"
+              strokeDasharray="20 10"
+              opacity="0.6"
+            />
+            <text
+              x="850"
+              y="50"
+              textAnchor="middle"
+              fill="#fbbf24"
+              fontSize="14"
+              fontFamily="monospace"
+              opacity="0.8"
+            >
+              ⚠ ZONA ESPECIAL ⚠
+            </text>
+          </svg>
+        </div>
+
+        {/* Center marker */}
+        <motion.div
+          className="absolute w-4 h-4 bg-yellow-400 rounded-full z-10"
+          style={{
+            left: CENTER_X - 8,
+            top: CENTER_Y - 8,
+          }}
+          animate={{
+            boxShadow: [
+              "0 0 10px rgba(255, 255, 0, 0.5)",
+              "0 0 30px rgba(255, 255, 0, 0.8)",
+              "0 0 10px rgba(255, 255, 0, 0.5)",
+            ],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         />
 
-        {/* Center objects (6 clickable planets/icons) */}
-        <CenterObjects
-          centerX={MAP_CONFIG.centerX}
-          centerY={MAP_CONFIG.centerY}
-          onPlanetClick={handlePlanetClick}
-        />
+        {/* Planets */}
+        {PLANETS.map((planet) => {
+          const angleRad = (planet.angle * Math.PI) / 180;
+          const radius = 200;
+          const x = CENTER_X + Math.cos(angleRad) * radius;
+          const y = CENTER_Y + Math.sin(angleRad) * radius;
+
+          return (
+            <motion.div
+              key={planet.id}
+              className="absolute cursor-pointer group z-10"
+              style={{
+                left: x - 25,
+                top: y - 25,
+              }}
+              onClick={() => handlePlanetClick(planet.id)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden">
+                <img
+                  src={planet.image}
+                  alt={planet.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
+                            bg-black/80 text-white text-xs px-2 py-1 rounded 
+                            opacity-0 group-hover:opacity-100 transition-opacity
+                            pointer-events-none whitespace-nowrap"
+              >
+                {planet.name}
+              </div>
+            </motion.div>
+          );
+        })}
 
         {/* Projectiles */}
         {projectiles.map((projectile) => (
           <motion.div
             key={projectile.id}
-            className="absolute w-2 h-2 bg-yellow-400 rounded-full shadow-lg"
+            className="absolute w-2 h-2 bg-yellow-400 rounded-full z-15"
             style={{
-              left: projectile.x - 4,
-              top: projectile.y - 4,
+              left: projectile.x - 1,
+              top: projectile.y - 1,
             }}
             animate={{
               x: projectile.targetX - projectile.x,
               y: projectile.targetY - projectile.y,
             }}
             transition={{
-              duration: projectile.speed,
+              duration: 1,
               ease: "linear",
             }}
           />
@@ -142,33 +399,56 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
         {/* Player Ship */}
         <motion.div
-          className="absolute"
+          className="absolute z-20"
           style={{
             left: playerPosition.x - 20,
             top: playerPosition.y - 20,
+            rotate: rotation,
           }}
         >
-          <PlayerShip rotation={rotation} />
+          <motion.div
+            className="w-10 h-10"
+            animate={{
+              y: [0, -1, 0, 1, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2F4d288afc418148aaaf0f73eedbc53e2b%2F01991177d397420f9f7b55d6a6283724?format=webp&width=800"
+              alt="Spaceship"
+              className="w-full h-full object-contain drop-shadow-lg"
+            />
+            {/* Engine trail */}
+            <motion.div
+              className="absolute w-1 h-4 bg-gradient-to-t from-transparent to-blue-400 transform -translate-x-1/2"
+              style={{
+                top: "100%",
+                left: "50%",
+                zIndex: -1,
+              }}
+              animate={{
+                opacity: [0.3, 0.8, 0.3],
+                scaleY: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 0.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </motion.div>
         </motion.div>
       </motion.div>
 
-      {/* Foreground stars (2 layers above ship) */}
-      <StarField
-        layerCount={2}
-        cameraX={cameraX}
-        cameraY={cameraY}
-        zIndex="above"
-        mapConfig={MAP_CONFIG}
-      />
-
-      {/* UI Overlay */}
-      <div className="absolute top-4 left-4 text-white text-sm font-mono">
+      {/* UI */}
+      <div className="absolute top-4 left-4 text-white text-sm font-mono z-30">
         <div>X: {playerPosition.x.toFixed(0)}</div>
         <div>Y: {playerPosition.y.toFixed(0)}</div>
-      </div>
-
-      <div className="absolute top-4 right-4 text-white text-sm font-mono">
-        <div>Rotation: {rotation.get().toFixed(0)}°</div>
+        <div>R: {rotation.get().toFixed(0)}°</div>
       </div>
     </div>
   );
