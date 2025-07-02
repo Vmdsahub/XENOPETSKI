@@ -573,12 +573,23 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
-      // Update stars with optimized loop
+      // Update stars with sinusoidal floating motion
       const stars = starsRef.current;
+      const time = currentTime * 0.001; // Convert to seconds
       for (let i = 0, len = stars.length; i < len; i++) {
         const star = stars[i];
-        star.x = normalizeCoord(star.x + star.drift.x);
-        star.y = normalizeCoord(star.y + star.drift.y);
+
+        // Floating motion using sine/cosine waves for cosmic dust effect
+        const floatX =
+          Math.sin(time * star.speed + star.floatPhase.x) *
+          star.floatAmplitude.x;
+        const floatY =
+          Math.cos(time * star.speed * 0.7 + star.floatPhase.y) *
+          star.floatAmplitude.y;
+
+        star.x = normalizeCoord(star.baseX + floatX);
+        star.y = normalizeCoord(star.baseY + floatY);
+
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
       }
