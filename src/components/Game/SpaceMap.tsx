@@ -939,6 +939,20 @@ export const SpaceMap: React.FC = () => {
     }
   }, [isWorldEditMode, isDragging]);
 
+  // Handle ESC key to cancel editing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isWorldEditMode) {
+        setSelectedWorldId(null);
+        setIsDragging(false);
+        setDragOffset({ x: 0, y: 0 });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isWorldEditMode]);
+
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
     if (selectedPlanet) {
