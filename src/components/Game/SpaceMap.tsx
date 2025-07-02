@@ -802,13 +802,45 @@ export const SpaceMap: React.FC = () => {
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
+      const newMousePos = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+
+      // Handle world dragging in edit mode
+      if (isWorldEditMode && isDragging && selectedWorldId) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        const worldX =
+          newMousePos.x - centerX + gameState.camera.x - dragOffset.x;
+        const worldY =
+          newMousePos.y - centerY + gameState.camera.y - dragOffset.y;
+
+        // Update world position immediately for responsive feedback
+        handleWorldUpdate(selectedWorldId, { x: worldX, y: worldY });
+
+        // Save to database with throttling
+        clearTimeout((window as any).worldDragTimeout);
+        (window as any).worldDragTimeout = setTimeout(async () => {
+          await gameService.updateWorldPosition(selectedWorldId, {
+            x: worldX,
+            y: worldY,
+          });
+        }, 100);
+      }
+
+      mouseRef.current = newMousePos;
       hasMouseMoved.current = true;
     },
-    [],
+    [
+      isWorldEditMode,
+      isDragging,
+      selectedWorldId,
+      gameState.camera,
+      dragOffset,
+      handleWorldUpdate,
+    ],
   );
 
   // Handle mouse leaving canvas
