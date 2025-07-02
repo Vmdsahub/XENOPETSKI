@@ -108,6 +108,26 @@ interface GameStore extends GameState {
   canClaimWeeklyReward: () => boolean;
   claimWeeklyReward: () => void;
 
+  // Ship state management
+  updateShipState: (shipState: {
+    x: number;
+    y: number;
+    angle: number;
+    vx: number;
+    vy: number;
+    cameraX: number;
+    cameraY: number;
+  }) => void;
+  getShipState: () => {
+    x: number;
+    y: number;
+    angle: number;
+    vx: number;
+    vy: number;
+    cameraX: number;
+    cameraY: number;
+  } | null;
+
   // Data loading and synchronization
   initializeNewUser: (userData: User) => void;
   loadUserData: (userId: string) => Promise<void>;
