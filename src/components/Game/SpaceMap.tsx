@@ -405,17 +405,12 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
-      // Update stars and nebulae
+      // Update stars with simple drift
       starsRef.current.forEach((star) => {
         star.x = normalizeCoord(star.x + star.drift.x);
         star.y = normalizeCoord(star.y + star.drift.y);
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
-        star.sparkle += star.speed * 1.2;
-      });
-
-      nebulaeRef.current.forEach((nebula) => {
-        nebula.rotation += 0.001;
       });
 
       // Update projectiles
