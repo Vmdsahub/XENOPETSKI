@@ -380,22 +380,24 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render barrier
-      ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = "#00ffff";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([10, 10]);
-      ctx.beginPath();
-      ctx.arc(
-        centerX + (CENTER_X - gameState.camera.x),
-        centerY + (CENTER_Y - gameState.camera.y),
-        BARRIER_RADIUS,
-        0,
-        Math.PI * 2,
-      );
-      ctx.stroke();
-      ctx.restore();
+      // Render barrier (hidden during warp transition)
+      if (!gameState.warpTransition.active) {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.strokeStyle = "#00ffff";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.arc(
+          centerX + (CENTER_X - gameState.camera.x),
+          centerY + (CENTER_Y - gameState.camera.y),
+          BARRIER_RADIUS,
+          0,
+          Math.PI * 2,
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
 
       // Render planets
       planetsRef.current.forEach((planet) => {
