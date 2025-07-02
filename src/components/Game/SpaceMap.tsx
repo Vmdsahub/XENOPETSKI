@@ -707,12 +707,9 @@ export const SpaceMap: React.FC = () => {
 
   // Handle mouse leaving canvas
   const handleMouseLeave = useCallback(() => {
-    // Don't change mouse state if modal is open
-    if (!showLandingModal) {
-      setMouseInWindow(false);
-      hasMouseMoved.current = false; // Reset mouse movement flag
-    }
-  }, [showLandingModal]);
+    setMouseInWindow(false);
+    hasMouseMoved.current = false; // Reset mouse movement flag
+  }, []);
 
   // Handle mouse entering canvas
   const handleMouseEnter = useCallback(() => {
@@ -846,8 +843,8 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Only respond to mouse if it has actually moved
-        if (hasMouseMoved.current) {
+        // Only respond to mouse if it has actually moved and modal is not open
+        if (hasMouseMoved.current && !showLandingModal) {
           const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
           const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
