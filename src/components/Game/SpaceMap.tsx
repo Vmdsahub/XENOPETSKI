@@ -325,19 +325,19 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw 3 expanding wave arcs like WiFi signal
+      // Draw 3 expanding wave arcs like WiFi/sonar signal
       for (let i = 0; i < 3; i++) {
-        const arcRadius = pulse.radius + i * 10;
-        const lineWidth = 3;
-        const arcOpacity = currentOpacity * (1 - i * 0.25);
+        const arcRadius = pulse.radius + i * 12;
+        const lineWidth = 4; // Thicker lines like in image
+        const arcOpacity = currentOpacity * (1 - i * 0.3);
 
         if (arcRadius <= pulse.maxRadius) {
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
           ctx.lineCap = "round";
 
-          // Draw wider curved arcs like WiFi signal
-          const arcWidth = Math.PI / 4; // 45 degrees total width (wider like image)
+          // Draw curved arcs like sonar/WiFi signal (wider and more curved)
+          const arcWidth = Math.PI / 3; // 60 degrees total width (even wider)
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
