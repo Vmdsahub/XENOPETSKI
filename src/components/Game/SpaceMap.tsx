@@ -325,30 +325,21 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw sequential wave arcs like sonar pinging
-      const progress = (pulse.maxLife - pulse.life) / pulse.maxLife;
-
-      // Draw 3 waves that appear sequentially
+      // Draw 3 simple expanding wave arcs like sonar
       for (let i = 0; i < 3; i++) {
-        const waveStart = i * 0.25; // Each wave starts 25% into animation
-        const waveProgress = Math.max(
-          0,
-          (progress - waveStart) / (1 - waveStart),
-        );
+        const baseRadius = 20 + i * 18; // Fixed spacing between waves
+        const arcRadius = pulse.radius + baseRadius;
+        const lineWidth = 6;
+        const arcOpacity = currentOpacity * (0.8 - i * 0.2); // Decreasing opacity
 
-        if (waveProgress > 0) {
-          const arcRadius =
-            pulse.radius + waveProgress * (pulse.maxRadius - pulse.radius);
-          const lineWidth = 6; // Thick lines like image
-          const arcOpacity =
-            currentOpacity * (1 - waveProgress) * (1 - i * 0.2); // Fade as expands
-
+        if (arcRadius <= pulse.maxRadius + 30) {
+          // Allow longer visibility
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
           ctx.lineCap = "round";
 
-          // Draw curved arcs like sonar signal
-          const arcWidth = Math.PI / 2.2; // About 80 degrees for wide curve
+          // Draw wide curved arcs like sonar signal
+          const arcWidth = Math.PI / 2; // 90 degrees for good curve
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
