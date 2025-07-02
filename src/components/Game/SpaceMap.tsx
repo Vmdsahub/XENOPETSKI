@@ -1,15 +1,13 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 
-interface StarLayer {
-  stars: Array<{
-    x: number;
-    y: number;
-    size: number;
-    opacity: number;
-    twinkleSpeed: number;
-  }>;
-  parallaxSpeed: number;
-  count: number;
+interface Star {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  speed: number;
+  parallax: number;
+  twinkle: number;
 }
 
 interface Planet {
@@ -22,12 +20,11 @@ interface Planet {
 }
 
 interface Projectile {
-  id: string;
   x: number;
   y: number;
   vx: number;
   vy: number;
-  age: number;
+  life: number;
 }
 
 interface GameState {
@@ -42,249 +39,146 @@ interface GameState {
     x: number;
     y: number;
   };
-  mouse: {
-    x: number;
-    y: number;
-  };
-  projectiles: Projectile[];
 }
 
 const WORLD_SIZE = 10000;
-const SHIP_MAX_SPEED = 8;
-const SHIP_ACCELERATION = 0.3;
-const SHIP_FRICTION = 0.85;
+const SHIP_MAX_SPEED = 6;
+const FRICTION = 0.92;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
-const CENTER_BARRIER_RADIUS = 800;
-const PLANET_ORBIT_RADIUS = 300;
+const BARRIER_RADIUS = 600;
 
 export const SpaceMap: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const gameLoopRef = useRef<number>();
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const starsRef = useRef<Star[]>([]);
+  const planetsRef = useRef<Planet[]>([]);
+  const projectilesRef = useRef<Projectile[]>([]);
+
   const [gameState, setGameState] = useState<GameState>({
     ship: {
       x: CENTER_X,
-      y: CENTER_Y + 400,
+      y: CENTER_Y + 200,
       angle: 0,
       vx: 0,
       vy: 0,
     },
     camera: {
       x: CENTER_X,
-      y: CENTER_Y + 400,
+      y: CENTER_Y + 200,
     },
-    mouse: {
-      x: 0,
-      y: 0,
-    },
-    projectiles: [],
   });
 
-  const starLayers = useRef<StarLayer[]>([]);
-  const planets = useRef<Planet[]>([]);
-
-  // Initialize star layers
+  // Initialize game objects once
   useEffect(() => {
-    starLayers.current = [
-      // Background layers (behind ship)
-      { stars: [], parallaxSpeed: 0.1, count: 150 },
-      { stars: [], parallaxSpeed: 0.2, count: 100 },
-      { stars: [], parallaxSpeed: 0.3, count: 80 },
-      { stars: [], parallaxSpeed: 0.4, count: 60 },
-      // Foreground layers (in front of ship)
-      { stars: [], parallaxSpeed: 1.2, count: 40 },
-      { stars: [], parallaxSpeed: 1.5, count: 30 },
+    // Generate stars with different layers
+    const stars: Star[] = [];
+
+    // Background stars (behind ship)
+    for (let i = 0; i < 120; i++) {
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 1.5 + 0.5,
+        opacity: Math.random() * 0.6 + 0.2,
+        speed: Math.random() * 0.02 + 0.01,
+        parallax: Math.random() * 0.3 + 0.1,
+        twinkle: Math.random() * 100,
+      });
+    }
+
+    // Foreground stars (in front of ship)
+    for (let i = 0; i < 40; i++) {
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.4 + 0.1,
+        speed: Math.random() * 0.03 + 0.02,
+        parallax: Math.random() * 0.5 + 1.2,
+        twinkle: Math.random() * 100,
+      });
+    }
+
+    starsRef.current = stars;
+
+    // Generate planets
+    const planets: Planet[] = [];
+    const colors = [
+      "#ff6b6b",
+      "#4ecdc4",
+      "#45b7d1",
+      "#96ceb4",
+      "#ffeaa7",
+      "#dda0dd",
     ];
 
-    // Generate stars for each layer
-    starLayers.current.forEach((layer) => {
-      for (let i = 0; i < layer.count; i++) {
-        layer.stars.push({
-          x: Math.random() * WORLD_SIZE,
-          y: Math.random() * WORLD_SIZE,
-          size: Math.random() * 2 + 0.5,
-          opacity: Math.random() * 0.8 + 0.2,
-          twinkleSpeed: Math.random() * 0.02 + 0.01,
-        });
-      }
-    });
-
-    // Initialize planets around center
-    const planetColors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#96CEB4",
-      "#FFEAA7",
-      "#DDA0DD",
-    ];
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
-      planets.current.push({
+      const radius = 250;
+      planets.push({
         id: `planet-${i}`,
-        x: CENTER_X + Math.cos(angle) * PLANET_ORBIT_RADIUS,
-        y: CENTER_Y + Math.sin(angle) * PLANET_ORBIT_RADIUS,
-        size: 40 + Math.random() * 20,
-        color: planetColors[i],
+        x: CENTER_X + Math.cos(angle) * radius,
+        y: CENTER_Y + Math.sin(angle) * radius,
+        size: 30 + Math.random() * 15,
+        color: colors[i],
         name: `Planet ${i + 1}`,
       });
     }
-  }, []);
 
-  // Wrap coordinates to create seamless world
-  const wrapCoordinate = useCallback((value: number) => {
-    if (value < 0) return WORLD_SIZE + value;
-    if (value > WORLD_SIZE) return value - WORLD_SIZE;
-    return value;
+    planetsRef.current = planets;
   }, []);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-
-      setGameState((prev) => ({
-        ...prev,
-        mouse: { x: mouseX, y: mouseY },
-      }));
-    },
-    [],
-  );
-
-  // Handle touch movement
-  const handleTouchMove = useCallback(
-    (event: React.TouchEvent<HTMLCanvasElement>) => {
-      event.preventDefault();
-      const canvas = canvasRef.current;
-      if (!canvas || event.touches.length === 0) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const touch = event.touches[0];
-      const mouseX = touch.clientX - rect.left;
-      const mouseY = touch.clientY - rect.top;
-
-      setGameState((prev) => ({
-        ...prev,
-        mouse: { x: mouseX, y: mouseY },
-      }));
+      mouseRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
     },
     [],
   );
 
   // Handle shooting
-  const handleShoot = useCallback(
-    (
-      event:
-        | React.MouseEvent<HTMLCanvasElement>
-        | React.TouchEvent<HTMLCanvasElement>,
-    ) => {
-      event.preventDefault();
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const newProjectile: Projectile = {
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        vx: Math.cos(gameState.ship.angle) * 10,
+        vy: Math.sin(gameState.ship.angle) * 10,
+        life: 80,
+      };
+      projectilesRef.current.push(newProjectile);
 
-      setGameState((prev) => {
-        const ship = prev.ship;
-        const projectileSpeed = 12;
-        const newProjectile: Projectile = {
-          id: `proj-${Date.now()}-${Math.random()}`,
-          x: ship.x,
-          y: ship.y,
-          vx: Math.cos(ship.angle) * projectileSpeed,
-          vy: Math.sin(ship.angle) * projectileSpeed,
-          age: 0,
-        };
+      // Check planet clicks
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-        return {
-          ...prev,
-          projectiles: [...prev.projectiles, newProjectile],
-        };
+      const rect = canvas.getBoundingClientRect();
+      const clickX =
+        e.clientX - rect.left - canvas.width / 2 + gameState.camera.x;
+      const clickY =
+        e.clientY - rect.top - canvas.height / 2 + gameState.camera.y;
+
+      planetsRef.current.forEach((planet) => {
+        const dx = clickX - planet.x;
+        const dy = clickY - planet.y;
+        if (Math.sqrt(dx * dx + dy * dy) < planet.size) {
+          alert(`Explorando ${planet.name}!`);
+        }
       });
     },
-    [],
+    [gameState],
   );
 
-  // Handle planet clicks
-  const handlePlanetClick = useCallback((planet: Planet) => {
-    alert(`Clicked on ${planet.name}!`);
-  }, []);
-
-  // Game loop
-  useEffect(() => {
-    const gameLoop = () => {
-      setGameState((prev) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return prev;
-
-        // Calculate mouse position in world coordinates
-        const worldMouseX = prev.mouse.x - canvas.width / 2 + prev.camera.x;
-        const worldMouseY = prev.mouse.y - canvas.height / 2 + prev.camera.y;
-
-        // Calculate ship movement
-        const ship = { ...prev.ship };
-        const dx = worldMouseX - ship.x;
-        const dy = worldMouseY - ship.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        // Ship rotation (always look at mouse)
-        ship.angle = Math.atan2(dy, dx);
-
-        // Ship movement (speed based on distance to mouse)
-        if (distance > 10) {
-          const speedMultiplier = Math.min(distance / 200, 1);
-          const targetVx = (dx / distance) * SHIP_MAX_SPEED * speedMultiplier;
-          const targetVy = (dy / distance) * SHIP_MAX_SPEED * speedMultiplier;
-
-          ship.vx += (targetVx - ship.vx) * SHIP_ACCELERATION;
-          ship.vy += (targetVy - ship.vy) * SHIP_ACCELERATION;
-        }
-
-        // Apply friction
-        ship.vx *= SHIP_FRICTION;
-        ship.vy *= SHIP_FRICTION;
-
-        // Update ship position with wrapping
-        ship.x = wrapCoordinate(ship.x + ship.vx);
-        ship.y = wrapCoordinate(ship.y + ship.vy);
-
-        // Smooth camera follow
-        const camera = { ...prev.camera };
-        camera.x += (ship.x - camera.x) * 0.1;
-        camera.y += (ship.y - camera.y) * 0.1;
-
-        // Update projectiles
-        const projectiles = prev.projectiles
-          .map((proj) => ({
-            ...proj,
-            x: wrapCoordinate(proj.x + proj.vx),
-            y: wrapCoordinate(proj.y + proj.vy),
-            age: proj.age + 1,
-          }))
-          .filter((proj) => proj.age < 120); // Remove old projectiles
-
-        return {
-          ...prev,
-          ship,
-          camera,
-          projectiles,
-        };
-      });
-
-      animationRef.current = requestAnimationFrame(gameLoop);
-    };
-
-    gameLoop();
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [wrapCoordinate]);
-
-  // Render game
+  // Optimized game loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -292,137 +186,185 @@ export const SpaceMap: React.FC = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    let lastTime = 0;
 
-    const render = () => {
-      // Clear canvas
-      ctx.fillStyle = "#0a0a1a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const gameLoop = (currentTime: number) => {
+      const deltaTime = Math.min(currentTime - lastTime, 16.67); // Cap at 60fps
+      lastTime = currentTime;
+
+      // Resize canvas if needed
+      if (
+        canvas.width !== canvas.offsetWidth ||
+        canvas.height !== canvas.offsetHeight
+      ) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Render background star layers
-      starLayers.current.slice(0, 4).forEach((layer, layerIndex) => {
-        ctx.save();
-        layer.stars.forEach((star) => {
-          const parallaxX = (star.x - gameState.camera.x) * layer.parallaxSpeed;
-          const parallaxY = (star.y - gameState.camera.y) * layer.parallaxSpeed;
+      // Update game state
+      setGameState((prevState) => {
+        const newState = { ...prevState };
+
+        // Calculate world mouse position
+        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+
+        // Update ship
+        const dx = worldMouseX - newState.ship.x;
+        const dy = worldMouseY - newState.ship.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        newState.ship.angle = Math.atan2(dy, dx);
+
+        if (distance > 5) {
+          const speed = Math.min(distance * 0.02, SHIP_MAX_SPEED);
+          newState.ship.vx += (dx / distance) * speed * 0.1;
+          newState.ship.vy += (dy / distance) * speed * 0.1;
+        }
+
+        newState.ship.vx *= FRICTION;
+        newState.ship.vy *= FRICTION;
+
+        newState.ship.x += newState.ship.vx;
+        newState.ship.y += newState.ship.vy;
+
+        // Wrap world
+        if (newState.ship.x < 0) newState.ship.x += WORLD_SIZE;
+        if (newState.ship.x > WORLD_SIZE) newState.ship.x -= WORLD_SIZE;
+        if (newState.ship.y < 0) newState.ship.y += WORLD_SIZE;
+        if (newState.ship.y > WORLD_SIZE) newState.ship.y -= WORLD_SIZE;
+
+        // Update camera
+        newState.camera.x += (newState.ship.x - newState.camera.x) * 0.1;
+        newState.camera.y += (newState.ship.y - newState.camera.y) * 0.1;
+
+        return newState;
+      });
+
+      // Update projectiles
+      projectilesRef.current = projectilesRef.current
+        .map((proj) => ({
+          ...proj,
+          x: proj.x + proj.vx,
+          y: proj.y + proj.vy,
+          life: proj.life - 1,
+        }))
+        .filter((proj) => proj.life > 0);
+
+      // Clear canvas
+      ctx.fillStyle = "#0a0a2e";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Render background stars
+      ctx.fillStyle = "#ffffff";
+      starsRef.current.forEach((star, i) => {
+        if (star.parallax < 1) {
+          // Background stars only
+          const parallaxX = (star.x - gameState.camera.x) * star.parallax;
+          const parallaxY = (star.y - gameState.camera.y) * star.parallax;
           const screenX = centerX + parallaxX;
           const screenY = centerY + parallaxY;
 
-          // Wrap stars around screen
-          const wrappedScreenX =
+          // Wrap stars
+          const wrappedX =
             ((screenX % canvas.width) + canvas.width) % canvas.width;
-          const wrappedScreenY =
+          const wrappedY =
             ((screenY % canvas.height) + canvas.height) % canvas.height;
 
-          // Twinkling effect
-          const twinkle = Math.sin(Date.now() * star.twinkleSpeed) * 0.3 + 0.7;
-          ctx.globalAlpha = star.opacity * twinkle;
-          ctx.fillStyle = "#ffffff";
+          // Twinkling
+          star.twinkle += star.speed;
+          const alpha = star.opacity * (Math.sin(star.twinkle) * 0.3 + 0.7);
+
+          ctx.globalAlpha = alpha;
           ctx.beginPath();
-          ctx.arc(wrappedScreenX, wrappedScreenY, star.size, 0, Math.PI * 2);
+          ctx.arc(wrappedX, wrappedY, star.size, 0, Math.PI * 2);
           ctx.fill();
-        });
-        ctx.restore();
+        }
       });
 
-      // Render center barrier (dashed circle)
-      ctx.save();
-      const barrierScreenX = centerX + (CENTER_X - gameState.camera.x);
-      const barrierScreenY = centerY + (CENTER_Y - gameState.camera.y);
-      ctx.setLineDash([10, 10]);
+      // Render barrier
+      ctx.globalAlpha = 0.5;
       ctx.strokeStyle = "#00ffff";
       ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.6;
+      ctx.setLineDash([10, 10]);
       ctx.beginPath();
       ctx.arc(
-        barrierScreenX,
-        barrierScreenY,
-        CENTER_BARRIER_RADIUS,
+        centerX + (CENTER_X - gameState.camera.x),
+        centerY + (CENTER_Y - gameState.camera.y),
+        BARRIER_RADIUS,
         0,
         Math.PI * 2,
       );
       ctx.stroke();
-      ctx.restore();
+      ctx.setLineDash([]);
 
       // Render planets
-      planets.current.forEach((planet) => {
-        const planetScreenX = centerX + (planet.x - gameState.camera.x);
-        const planetScreenY = centerY + (planet.y - gameState.camera.y);
+      planetsRef.current.forEach((planet) => {
+        const screenX = centerX + (planet.x - gameState.camera.x);
+        const screenY = centerY + (planet.y - gameState.camera.y);
 
-        // Only render if on screen (with margin)
         if (
-          planetScreenX > -100 &&
-          planetScreenX < canvas.width + 100 &&
-          planetScreenY > -100 &&
-          planetScreenY < canvas.height + 100
+          screenX > -100 &&
+          screenX < canvas.width + 100 &&
+          screenY > -100 &&
+          screenY < canvas.height + 100
         ) {
           // Planet glow
-          ctx.save();
           const gradient = ctx.createRadialGradient(
-            planetScreenX,
-            planetScreenY,
+            screenX,
+            screenY,
             0,
-            planetScreenX,
-            planetScreenY,
+            screenX,
+            screenY,
             planet.size * 1.5,
           );
-          gradient.addColorStop(0, planet.color + "80");
+          gradient.addColorStop(0, planet.color + "60");
           gradient.addColorStop(1, planet.color + "00");
+          ctx.globalAlpha = 0.8;
           ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(
-            planetScreenX,
-            planetScreenY,
-            planet.size * 1.5,
-            0,
-            Math.PI * 2,
-          );
+          ctx.arc(screenX, screenY, planet.size * 1.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.restore();
 
           // Planet body
+          ctx.globalAlpha = 1;
           ctx.fillStyle = planet.color;
           ctx.beginPath();
-          ctx.arc(planetScreenX, planetScreenY, planet.size, 0, Math.PI * 2);
+          ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
           ctx.fill();
 
-          // Planet highlight
-          ctx.save();
+          // Highlight
           ctx.globalAlpha = 0.3;
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
           ctx.arc(
-            planetScreenX - planet.size * 0.3,
-            planetScreenY - planet.size * 0.3,
+            screenX - planet.size * 0.3,
+            screenY - planet.size * 0.3,
             planet.size * 0.4,
             0,
             Math.PI * 2,
           );
           ctx.fill();
-          ctx.restore();
         }
       });
 
       // Render projectiles
-      gameState.projectiles.forEach((proj) => {
-        const projScreenX = centerX + (proj.x - gameState.camera.x);
-        const projScreenY = centerY + (proj.y - gameState.camera.y);
-
-        ctx.save();
-        ctx.globalAlpha = 1 - proj.age / 120;
-        ctx.fillStyle = "#ffff00";
-        ctx.shadowColor = "#ffff00";
-        ctx.shadowBlur = 5;
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#ffff00";
+      ctx.shadowColor = "#ffff00";
+      ctx.shadowBlur = 8;
+      projectilesRef.current.forEach((proj) => {
+        const screenX = centerX + (proj.x - gameState.camera.x);
+        const screenY = centerY + (proj.y - gameState.camera.y);
+        ctx.globalAlpha = proj.life / 80;
         ctx.beginPath();
-        ctx.arc(projScreenX, projScreenY, 3, 0, Math.PI * 2);
+        ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       });
+      ctx.shadowBlur = 0;
 
       // Render ship
       const shipScreenX = centerX + (gameState.ship.x - gameState.camera.x);
@@ -431,144 +373,95 @@ export const SpaceMap: React.FC = () => {
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
       ctx.rotate(gameState.ship.angle);
+      ctx.globalAlpha = 1;
 
       // Ship glow
-      ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.fillStyle = "#00aaff";
       ctx.shadowColor = "#00aaff";
-      ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.moveTo(20, 0);
-      ctx.lineTo(-15, -10);
-      ctx.lineTo(-10, 0);
-      ctx.lineTo(-15, 10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-
-      // Ship body
+      ctx.shadowBlur = 10;
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#00aaff";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(20, 0);
-      ctx.lineTo(-15, -10);
-      ctx.lineTo(-10, 0);
-      ctx.lineTo(-15, 10);
+      ctx.moveTo(15, 0);
+      ctx.lineTo(-10, -8);
+      ctx.lineTo(-6, 0);
+      ctx.lineTo(-10, 8);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
 
-      // Ship engines
+      // Engines
+      ctx.shadowBlur = 0;
       ctx.fillStyle = "#ff4400";
       ctx.beginPath();
-      ctx.arc(-12, -6, 2, 0, Math.PI * 2);
+      ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(-12, 6, 2, 0, Math.PI * 2);
+      ctx.arc(-8, 4, 1.5, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();
 
-      // Render foreground star layers
-      starLayers.current.slice(4).forEach((layer) => {
-        ctx.save();
-        layer.stars.forEach((star) => {
-          const parallaxX = (star.x - gameState.camera.x) * layer.parallaxSpeed;
-          const parallaxY = (star.y - gameState.camera.y) * layer.parallaxSpeed;
+      // Render foreground stars
+      ctx.fillStyle = "#ffffff";
+      starsRef.current.forEach((star) => {
+        if (star.parallax >= 1) {
+          // Foreground stars only
+          const parallaxX = (star.x - gameState.camera.x) * star.parallax;
+          const parallaxY = (star.y - gameState.camera.y) * star.parallax;
           const screenX = centerX + parallaxX;
           const screenY = centerY + parallaxY;
 
-          const wrappedScreenX =
+          const wrappedX =
             ((screenX % canvas.width) + canvas.width) % canvas.width;
-          const wrappedScreenY =
+          const wrappedY =
             ((screenY % canvas.height) + canvas.height) % canvas.height;
 
-          const twinkle = Math.sin(Date.now() * star.twinkleSpeed) * 0.3 + 0.7;
-          ctx.globalAlpha = star.opacity * twinkle * 0.7;
-          ctx.fillStyle = "#ffffff";
+          star.twinkle += star.speed;
+          const alpha = star.opacity * (Math.sin(star.twinkle) * 0.4 + 0.6);
+
+          ctx.globalAlpha = alpha;
           ctx.beginPath();
-          ctx.arc(
-            wrappedScreenX,
-            wrappedScreenY,
-            star.size * 1.2,
-            0,
-            Math.PI * 2,
-          );
+          ctx.arc(wrappedX, wrappedY, star.size, 0, Math.PI * 2);
           ctx.fill();
-        });
-        ctx.restore();
-      });
-
-      requestAnimationFrame(render);
-    };
-
-    render();
-  }, [gameState]);
-
-  // Handle canvas clicks for planets
-  const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-
-      // Convert screen coordinates to world coordinates
-      const worldClickX = clickX - centerX + gameState.camera.x;
-      const worldClickY = clickY - centerY + gameState.camera.y;
-
-      // Check if clicked on any planet
-      planets.current.forEach((planet) => {
-        const dx = worldClickX - planet.x;
-        const dy = worldClickY - planet.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance <= planet.size) {
-          handlePlanetClick(planet);
         }
       });
 
-      // Also shoot
-      handleShoot(event);
-    },
-    [gameState.camera, handlePlanetClick, handleShoot],
-  );
+      gameLoopRef.current = requestAnimationFrame(gameLoop);
+    };
+
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
+
+    return () => {
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
+    };
+  }, [gameState]);
 
   return (
-    <div className="w-full h-full bg-gray-900 overflow-hidden">
+    <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
       <canvas
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
         onMouseMove={handleMouseMove}
-        onTouchMove={handleTouchMove}
-        onClick={handleCanvasClick}
-        onTouchEnd={handleShoot}
-        style={{ touchAction: "none" }}
+        onClick={handleClick}
       />
 
-      {/* Game UI */}
-      <div className="absolute top-4 left-4 text-white bg-black bg-opacity-50 p-2 rounded">
+      <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
         <div>X: {Math.round(gameState.ship.x)}</div>
         <div>Y: {Math.round(gameState.ship.y)}</div>
         <div>
-          Speed:{" "}
+          Vel:{" "}
           {Math.round(
             Math.sqrt(gameState.ship.vx ** 2 + gameState.ship.vy ** 2) * 10,
           ) / 10}
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-4 text-white bg-black bg-opacity-50 p-2 rounded text-sm">
-        <div>• Move: Point mouse/finger</div>
-        <div>• Shoot: Click/Tap</div>
-        <div>• Planets: Click to interact</div>
+      <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
+        <div>• Mouse: Mover nave</div>
+        <div>• Click: Atirar/Planeta</div>
       </div>
     </div>
   );
