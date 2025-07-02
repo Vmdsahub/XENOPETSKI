@@ -12,6 +12,10 @@ interface Star {
   type: "normal" | "bright" | "giant";
   drift: { x: number; y: number };
   pulse: number;
+  baseX: number; // Posição base para movimento oscilatório
+  baseY: number; // Posição base para movimento oscilatório
+  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutuação
+  floatPhase: { x: number; y: number }; // Fase do movimento senoidal
 }
 
 interface Planet {
@@ -21,6 +25,7 @@ interface Planet {
   size: number;
   color: string;
   name: string;
+  interactionRadius: number;
 }
 
 interface Projectile {
@@ -29,6 +34,19 @@ interface Projectile {
   vx: number;
   vy: number;
   life: number;
+}
+
+interface ShootingStar {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  opacity: number;
+  color: string;
+  tailLength: number;
 }
 
 interface GameState {
@@ -45,7 +63,7 @@ interface GameState {
   };
 }
 
-const WORLD_SIZE = 10000;
+const WORLD_SIZE = 15000;
 const SHIP_MAX_SPEED = 2;
 const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
@@ -62,6 +80,8 @@ export const SpaceMap: React.FC = () => {
   const starsRef = useRef<Star[]>([]);
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
+  const shootingStarsRef = useRef<ShootingStar[]>([]);
+  const lastShootingStarTime = useRef(0);
 
   const [gameState, setGameState] = useState<GameState>({
     ship: {
@@ -103,6 +123,117 @@ export const SpaceMap: React.FC = () => {
   const normalizeCoord = useCallback((coord: number) => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
+
+  // Create shooting star
+  const createShootingStar = useCallback((canvas: HTMLCanvasElement) => {
+    const colors = ["#ffffff", "#ffe4b5", "#ffd700", "#87ceeb", "#ff69b4"];
+    const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+    const speed = 3 + Math.random() * 4;
+    const angle = Math.random() * Math.PI * 0.4 + Math.PI * 0.3; // Diagonal direction
+
+    let startX, startY, vx, vy;
+
+    // Start from edges and move diagonally across screen
+    switch (side) {
+      case 0: // from top
+        startX = Math.random() * canvas.width;
+        startY = -50;
+        vx = (Math.random() - 0.5) * speed;
+        vy = speed;
+        break;
+      case 1: // from right
+        startX = canvas.width + 50;
+        startY = Math.random() * canvas.height;
+        vx = -speed;
+        vy = (Math.random() - 0.5) * speed;
+        break;
+      case 2: // from bottom
+        startX = Math.random() * canvas.width;
+        startY = canvas.height + 50;
+        vx = (Math.random() - 0.5) * speed;
+        vy = -speed;
+        break;
+      default: // from left
+        startX = -50;
+        startY = Math.random() * canvas.height;
+        vx = speed;
+        vy = (Math.random() - 0.5) * speed;
+        break;
+    }
+
+    const newShootingStar: ShootingStar = {
+      x: startX,
+      y: startY,
+      vx,
+      vy,
+      life: 120 + Math.random() * 60, // 2-3 seconds at 60fps
+      maxLife: 120 + Math.random() * 60,
+      size: 0.8 + Math.random() * 1.2,
+      opacity: 0.6 + Math.random() * 0.4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tailLength: 15 + Math.random() * 20,
+    };
+
+    shootingStarsRef.current.push(newShootingStar);
+  }, []);
+
+  // Helper function to draw shooting star with tail
+  const drawShootingStar = useCallback(
+    (ctx: CanvasRenderingContext2D, shootingStar: ShootingStar) => {
+      const fadeRatio = shootingStar.life / shootingStar.maxLife;
+      const currentOpacity = shootingStar.opacity * fadeRatio;
+
+      // Draw tail
+      const tailPoints = 8;
+      ctx.save();
+      ctx.globalAlpha = currentOpacity * 0.6;
+
+      for (let i = 0; i < tailPoints; i++) {
+        const ratio = i / tailPoints;
+        const tailX =
+          shootingStar.x - shootingStar.vx * ratio * shootingStar.tailLength;
+        const tailY =
+          shootingStar.y - shootingStar.vy * ratio * shootingStar.tailLength;
+        const tailSize = shootingStar.size * (1 - ratio) * 0.8;
+        const tailAlpha = currentOpacity * (1 - ratio) * 0.5;
+
+        ctx.globalAlpha = tailAlpha;
+        ctx.fillStyle = shootingStar.color;
+        ctx.beginPath();
+        ctx.arc(tailX, tailY, tailSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw main star
+      ctx.globalAlpha = currentOpacity;
+      ctx.fillStyle = shootingStar.color;
+      ctx.beginPath();
+      ctx.arc(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.size,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+
+      // Add bright core
+      ctx.globalAlpha = currentOpacity * 1.2;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.size * 0.5,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+
+      ctx.restore();
+    },
+    [],
+  );
 
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
@@ -176,9 +307,13 @@ export const SpaceMap: React.FC = () => {
 
     // Layer 1: Deep background (parallax 0.1) - ABAIXO do jogador
     for (let i = 0; i < 800; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.4 + Math.random() * 0.6,
         opacity: 0.2 + Math.random() * 0.3,
         speed: Math.random() * 0.015 + 0.005,
@@ -190,18 +325,30 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.08, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.08,
+          x: 0, // Movimento será calculado via seno/cosseno
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 12 + 4, // Movimento visível para camada distante
+          y: Math.random() * 12 + 4,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2, // Fase inicial aleatória
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 2: Mid background (parallax 0.3) - ABAIXO do jogador
     for (let i = 0; i < 700; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
         speed: Math.random() * 0.018 + 0.007,
@@ -213,18 +360,30 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.1 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.06, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.06,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 10 + 3,
+          y: Math.random() * 10 + 3,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 3: Near background (parallax 0.6) - ABAIXO do jogador
     for (let i = 0; i < 600; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
         speed: Math.random() * 0.022 + 0.009,
@@ -236,18 +395,30 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.045, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.045,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 8 + 2.5,
+          y: Math.random() * 8 + 2.5,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 4: Close background (parallax 0.9) - ABAIXO do jogador
     for (let i = 0; i < 500; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 1.0 + Math.random() * 1.5,
         opacity: 0.45 + Math.random() * 0.4,
         speed: Math.random() * 0.025 + 0.012,
@@ -259,66 +430,88 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.035, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.035,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 6 + 2,
+          y: Math.random() * 6 + 2,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 5: Cosmic dust foreground (parallax 1.2) - ACIMA do jogador
     for (let i = 0; i < 400; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 1.5 + Math.random() * 2.0,
-        opacity: 0.25 + Math.random() * 0.3,
-        speed: Math.random() * 0.03 + 0.015,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
+        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira cósmica
+        opacity: 0.2 + Math.random() * 0.25,
+        speed: Math.random() * 0.01 + 0.005, // Velocidade reduzida
         parallax: 1.2, // Paralaxe de primeiro plano
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.6
+          Math.random() < 0.7
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.3
-            ? "bright"
-            : Math.random() < 0.1
-              ? "giant"
-              : "normal",
+        type: Math.random() < 0.15 ? "bright" : "normal", // Menos estrelas giant
         drift: {
-          x: (Math.random() - 0.5) * 0.025, // Movimento de poeira cósmica
-          y: (Math.random() - 0.5) * 0.025,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 5 + 1.5, // Movimento visível para poeira cósmica
+          y: Math.random() * 5 + 1.5,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 6: Close cosmic dust (parallax 1.6) - ACIMA do jogador
     for (let i = 0; i < 300; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: 2.0 + Math.random() * 3.0,
-        opacity: 0.15 + Math.random() * 0.2,
-        speed: Math.random() * 0.035 + 0.018,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
+        size: 0.2 + Math.random() * 0.5, // Ainda menores para camada mais próxima
+        opacity: 0.1 + Math.random() * 0.15, // Mais transparentes
+        speed: Math.random() * 0.008 + 0.003, // Muito lento
         parallax: 1.6, // Máximo paralaxe
         twinkle: Math.random() * 100,
         color:
-          Math.random() < 0.5
+          Math.random() < 0.8
             ? "#ffffff"
             : starColors[Math.floor(Math.random() * starColors.length)],
-        type:
-          Math.random() < 0.4
-            ? "bright"
-            : Math.random() < 0.15
-              ? "giant"
-              : "normal",
+        type: Math.random() < 0.1 ? "bright" : "normal", // Principalmente normais
         drift: {
-          x: (Math.random() - 0.5) * 0.015, // Movimento sutil de poeira próxima
-          y: (Math.random() - 0.5) * 0.015,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 4 + 1, // Movimento sutil mas visível
+          y: Math.random() * 4 + 1,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
@@ -347,9 +540,10 @@ export const SpaceMap: React.FC = () => {
         id: `planet-${i}`,
         x: CENTER_X + Math.cos(angle) * radius,
         y: CENTER_Y + Math.sin(angle) * radius,
-        size: 30 + Math.random() * 15,
+        size: 35,
         color: colors[i],
         name: `Planet ${i + 1}`,
+        interactionRadius: 80, // Zona de interação ao redor do planeta
       });
     }
 
@@ -393,20 +587,15 @@ export const SpaceMap: React.FC = () => {
       };
       projectilesRef.current.push(newProjectile);
 
-      // Check planet clicks
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const clickX =
-        e.clientX - rect.left - canvas.width / 2 + gameState.camera.x;
-      const clickY =
-        e.clientY - rect.top - canvas.height / 2 + gameState.camera.y;
-
+      // Check planet interactions - only if ship is within interaction radius
       planetsRef.current.forEach((planet) => {
-        const dx = getWrappedDistance(planet.x, clickX);
-        const dy = getWrappedDistance(planet.y, clickY);
-        if (Math.sqrt(dx * dx + dy * dy) < planet.size) {
+        const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
+        const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
+        const shipToPlanetDistance = Math.sqrt(
+          shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+        );
+
+        if (shipToPlanetDistance <= planet.interactionRadius) {
           alert(`Explorando ${planet.name}!`);
         }
       });
@@ -467,27 +656,27 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Only respond to mouse if it's inside the window
-        if (mouseInWindow) {
-          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Always respond to mouse, but handle differently when outside window
+        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-          const distance = Math.sqrt(dx * dx + dy * dy);
+        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-          newState.ship.angle = Math.atan2(dy, dx);
+        newState.ship.angle = Math.atan2(dy, dx);
 
-          if (distance > 10) {
-            const speedMultiplier = Math.min(distance / 300, 1);
-            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
-          }
+        if (mouseInWindow && distance > 10) {
+          const speedMultiplier = Math.min(distance / 300, 1);
+          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
         }
 
-        newState.ship.vx *= FRICTION;
-        newState.ship.vy *= FRICTION;
+        // Apply less friction when mouse is outside window to maintain momentum
+        const currentFriction = mouseInWindow ? FRICTION : 0.995;
+        newState.ship.vx *= currentFriction;
+        newState.ship.vy *= currentFriction;
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
@@ -507,12 +696,22 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
-      // Update stars with optimized loop
+      // Update stars with floating motion
       const stars = starsRef.current;
+      const time = currentTime * 0.002; // Increased time for visible movement
       for (let i = 0, len = stars.length; i < len; i++) {
         const star = stars[i];
-        star.x = normalizeCoord(star.x + star.drift.x);
-        star.y = normalizeCoord(star.y + star.drift.y);
+
+        // Floating motion using sine/cosine waves for cosmic dust effect
+        const floatTime = time * (0.5 + star.speed * 5); // More visible speed variation
+        const floatX =
+          Math.sin(floatTime + star.floatPhase.x) * star.floatAmplitude.x;
+        const floatY =
+          Math.cos(floatTime * 0.7 + star.floatPhase.y) * star.floatAmplitude.y;
+
+        star.x = normalizeCoord(star.baseX + floatX);
+        star.y = normalizeCoord(star.baseY + floatY);
+
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
       }
@@ -526,6 +725,33 @@ export const SpaceMap: React.FC = () => {
           life: proj.life - 1,
         }))
         .filter((proj) => proj.life > 0);
+
+      // Create shooting stars periodically
+      if (
+        currentTime - lastShootingStarTime.current >
+        8000 + Math.random() * 12000
+      ) {
+        // Every 8-20 seconds
+        createShootingStar(canvas);
+        lastShootingStarTime.current = currentTime;
+      }
+
+      // Update shooting stars
+      shootingStarsRef.current = shootingStarsRef.current
+        .map((star) => ({
+          ...star,
+          x: star.x + star.vx,
+          y: star.y + star.vy,
+          life: star.life - 1,
+        }))
+        .filter(
+          (star) =>
+            star.life > 0 &&
+            star.x > -100 &&
+            star.x < canvas.width + 100 &&
+            star.y > -100 &&
+            star.y < canvas.height + 100,
+        );
 
       // Clear canvas with solid black background
       ctx.fillStyle = "#000000";
@@ -644,12 +870,33 @@ export const SpaceMap: React.FC = () => {
           screenY > -100 &&
           screenY < canvas.height + 100
         ) {
+          // Check if ship is within interaction radius for visual feedback
+          const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
+          const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
+          const shipToPlanetDistance = Math.sqrt(
+            shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+          );
+          const isInRange = shipToPlanetDistance <= planet.interactionRadius;
+
+          // Render interaction circle
+          ctx.save();
+          ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+          ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+          ctx.lineWidth = isInRange ? 3 : 1;
+          ctx.setLineDash(isInRange ? [] : [5, 5]);
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+
+          // Render planet
           ctx.globalAlpha = 1;
           ctx.fillStyle = planet.color;
           ctx.beginPath();
           ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
           ctx.fill();
 
+          // Planet highlight
           ctx.globalAlpha = 0.3;
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
@@ -678,6 +925,11 @@ export const SpaceMap: React.FC = () => {
         ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+      });
+
+      // Render shooting stars
+      shootingStarsRef.current.forEach((shootingStar) => {
+        drawShootingStar(ctx, shootingStar);
       });
 
       // Render ship
@@ -736,7 +988,10 @@ export const SpaceMap: React.FC = () => {
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-crosshair"
+        className="w-full h-full"
+        style={{
+          cursor: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
+        }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
