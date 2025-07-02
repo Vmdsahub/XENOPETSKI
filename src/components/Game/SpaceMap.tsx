@@ -262,7 +262,7 @@ export const SpaceMap: React.FC = () => {
 
   // Initialize game objects once
   useEffect(() => {
-    generateGalacticField();
+    generateStarField();
 
     // Generate planets
     const planets: Planet[] = [];
