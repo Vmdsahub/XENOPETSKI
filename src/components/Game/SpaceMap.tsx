@@ -325,18 +325,19 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw 4 tight sound wave arcs
-      for (let i = 0; i < 4; i++) {
-        const arcRadius = pulse.radius + i * 8;
-        const lineWidth = 2;
-        const arcOpacity = currentOpacity * (1 - i * 0.2);
+      // Draw 3 expanding wave arcs like WiFi signal
+      for (let i = 0; i < 3; i++) {
+        const arcRadius = pulse.radius + i * 10;
+        const lineWidth = 3;
+        const arcOpacity = currentOpacity * (1 - i * 0.25);
 
         if (arcRadius <= pulse.maxRadius) {
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
+          ctx.lineCap = "round";
 
-          // Draw sound wave arcs
-          const arcWidth = Math.PI / 8; // 22.5 degrees total width (a bit wider)
+          // Draw wider curved arcs like WiFi signal
+          const arcWidth = Math.PI / 4; // 45 degrees total width (wider like image)
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
@@ -570,7 +571,7 @@ export const SpaceMap: React.FC = () => {
         y: baseY,
         baseX,
         baseY,
-        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira cósmica
+        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira c��smica
         opacity: 0.2 + Math.random() * 0.25,
         speed: Math.random() * 0.01 + 0.005, // Velocidade reduzida
         parallax: 1.2, // Paralaxe de primeiro plano
