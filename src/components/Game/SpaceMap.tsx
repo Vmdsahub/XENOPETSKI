@@ -75,28 +75,41 @@ export const SpaceMap: React.FC = () => {
     // Generate stars with different layers
     const stars: Star[] = [];
 
-    // Background stars (behind ship)
-    for (let i = 0; i < 120; i++) {
+    // Background stars (far)
+    for (let i = 0; i < 80; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.6 + 0.2,
-        speed: Math.random() * 0.02 + 0.01,
-        parallax: Math.random() * 0.3 + 0.1,
+        size: Math.random() * 1 + 0.5,
+        opacity: Math.random() * 0.5 + 0.3,
+        speed: Math.random() * 0.01 + 0.005,
+        parallax: 0.2,
         twinkle: Math.random() * 100,
       });
     }
 
-    // Foreground stars (in front of ship)
-    for (let i = 0; i < 40; i++) {
+    // Mid stars
+    for (let i = 0; i < 60; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.4 + 0.1,
-        speed: Math.random() * 0.03 + 0.02,
-        parallax: Math.random() * 0.5 + 1.2,
+        size: Math.random() * 1.2 + 0.7,
+        opacity: Math.random() * 0.4 + 0.4,
+        speed: Math.random() * 0.015 + 0.01,
+        parallax: 0.5,
+        twinkle: Math.random() * 100,
+      });
+    }
+
+    // Foreground stars (close)
+    for (let i = 0; i < 30; i++) {
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 1.5 + 1,
+        opacity: Math.random() * 0.3 + 0.2,
+        speed: Math.random() * 0.02 + 0.015,
+        parallax: 1.3,
         twinkle: Math.random() * 100,
       });
     }
