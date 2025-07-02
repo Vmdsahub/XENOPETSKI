@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 
 const navigationItems = [
   { id: "pet", label: "Pet", icon: Heart, color: "text-pink-500" },
+  { id: "world", label: "Mundo", icon: Globe, color: "text-blue-500" },
   {
     id: "inventory",
     label: "Inventário",
