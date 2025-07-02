@@ -670,6 +670,7 @@ export const useGameStore = create<GameStore>()(
         },
       ],
       viewedUserId: null,
+      shipState: null,
 
       // Egg selection and hatching state
       selectedEggForHatching: null,
