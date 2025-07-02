@@ -139,278 +139,126 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
-  // Generate realistic galactic distribution
-  const generateGalacticField = useCallback(() => {
+  // Generate optimized star field for good performance
+  const generateStarField = useCallback(() => {
     const stars: Star[] = [];
-    const nebulae: Nebula[] = [];
-
-    // Define galactic center and arms
-    const galacticCenter = { x: CENTER_X, y: CENTER_Y };
-    const armCount = 4;
-    const armLength = WORLD_SIZE * 0.4;
-
-    // Color palettes for different regions
-    const coreColors = ["#ffeb3b", "#ffc107", "#ff9800", "#ff5722"];
-    const armColors = ["#2196f3", "#03a9f4", "#00bcd4", "#009688"];
-    const haloColors = ["#e1f5fe", "#f3e5f5", "#fff3e0", "#ffffff"];
-    const nebulaColors = [
-      "#e91e63",
-      "#9c27b0",
-      "#673ab7",
-      "#3f51b5",
-      "#2196f3",
-      "#00bcd4",
-      "#4caf50",
-      "#8bc34a",
+    const starColors = [
+      "#ffffff",
+      "#ffe4b5",
+      "#ffd700",
+      "#87ceeb",
+      "#ff69b4",
+      "#98fb98",
+      "#dda0dd",
+      "#f0e68c",
     ];
 
-    // Generate nebulae first (background)
-    for (let i = 0; i < 25; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * WORLD_SIZE * 0.6;
-      const nebulaType =
-        Math.random() < 0.6
-          ? "emission"
-          : Math.random() < 0.8
-            ? "reflection"
-            : "dark";
+    // Background stars (far) - reduced to 150
+    for (let i = 0; i < 150; i++) {
+      const isColored = Math.random() < 0.15;
 
-      nebulae.push({
-        x: galacticCenter.x + Math.cos(angle) * distance,
-        y: galacticCenter.y + Math.sin(angle) * distance,
-        size: 300 + Math.random() * 800,
-        color: nebulaColors[Math.floor(Math.random() * nebulaColors.length)],
-        opacity: 0.05 + Math.random() * 0.1,
-        rotation: Math.random() * Math.PI * 2,
-        type: nebulaType,
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 0.8 + 0.3,
+        opacity: Math.random() * 0.4 + 0.2,
+        speed: Math.random() * 0.008 + 0.003,
+        parallax: 0.1,
+        twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.002,
+          y: (Math.random() - 0.5) * 0.002,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
       });
     }
 
-    // Generate galactic core (dense, bright stars)
-    for (let i = 0; i < 1200; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * Math.random() * 800; // Concentrated in center
+    // Mid-distance stars - reduced to 120
+    for (let i = 0; i < 120; i++) {
+      const isColored = Math.random() < 0.2;
+      const isBright = Math.random() < 0.1;
 
-      const star: Star = {
-        x: galacticCenter.x + Math.cos(angle) * distance,
-        y: galacticCenter.y + Math.sin(angle) * distance,
-        size: 0.8 + Math.random() * 2.5,
-        opacity: 0.4 + Math.random() * 0.6,
-        speed: Math.random() * 0.01 + 0.005,
-        parallax: 0.1 + Math.random() * 0.3,
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 1.2 + 0.5,
+        opacity: Math.random() * 0.5 + 0.3,
+        speed: Math.random() * 0.012 + 0.008,
+        parallax: 0.3,
         twinkle: Math.random() * 100,
-        color: coreColors[Math.floor(Math.random() * coreColors.length)],
-        type:
-          Math.random() < 0.3
-            ? "giant"
-            : Math.random() < 0.1
-              ? "binary"
-              : "bright",
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : "normal",
         drift: {
           x: (Math.random() - 0.5) * 0.001,
           y: (Math.random() - 0.5) * 0.001,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
-        constellation: "Core",
-      };
-
-      stars.push(star);
+      });
     }
 
-    // Generate spiral arms
-    for (let arm = 0; arm < armCount; arm++) {
-      const armAngle = (arm / armCount) * Math.PI * 2;
+    // Close stars - reduced to 80
+    for (let i = 0; i < 80; i++) {
+      const isColored = Math.random() < 0.25;
+      const isBright = Math.random() < 0.15;
 
-      // Each arm has different density regions
-      for (let segment = 0; segment < 8; segment++) {
-        const segmentLength = armLength / 8;
-        const segmentDistance = segment * segmentLength;
-        const spiralAngle =
-          armAngle + (segmentDistance / armLength) * Math.PI * 1.5;
-
-        const armX = galacticCenter.x + Math.cos(spiralAngle) * segmentDistance;
-        const armY = galacticCenter.y + Math.sin(spiralAngle) * segmentDistance;
-
-        // Dense star clusters along arms
-        const clusterSize = 200 - segment * 20; // Smaller clusters further out
-        const starCount = 150 - segment * 15; // Fewer stars further out
-
-        for (let i = 0; i < starCount; i++) {
-          const clusterAngle = Math.random() * Math.PI * 2;
-          const clusterRadius = Math.random() * clusterSize;
-
-          const star: Star = {
-            x: normalizeCoord(armX + Math.cos(clusterAngle) * clusterRadius),
-            y: normalizeCoord(armY + Math.sin(clusterAngle) * clusterRadius),
-            size: 0.5 + Math.random() * 2,
-            opacity: 0.3 + Math.random() * 0.5,
-            speed: Math.random() * 0.015 + 0.008,
-            parallax: 0.2 + Math.random() * 0.6,
-            twinkle: Math.random() * 100,
-            color:
-              Math.random() < 0.7
-                ? "#ffffff"
-                : armColors[Math.floor(Math.random() * armColors.length)],
-            type:
-              Math.random() < 0.05
-                ? "giant"
-                : Math.random() < 0.02
-                  ? "pulsar"
-                  : "normal",
-            drift: {
-              x: (Math.random() - 0.5) * 0.0008,
-              y: (Math.random() - 0.5) * 0.0008,
-            },
-            pulse: Math.random() * 100,
-            sparkle: Math.random() * 100,
-            constellation: `Arm-${arm + 1}`,
-          };
-
-          stars.push(star);
-        }
-      }
-    }
-
-    // Generate star-forming regions (bright clusters)
-    for (let i = 0; i < 12; i++) {
-      const regionX = Math.random() * WORLD_SIZE;
-      const regionY = Math.random() * WORLD_SIZE;
-      const regionSize = 100 + Math.random() * 200;
-
-      // Hot young stars
-      for (let j = 0; j < 80; j++) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * regionSize;
-
-        const star: Star = {
-          x: normalizeCoord(regionX + Math.cos(angle) * distance),
-          y: normalizeCoord(regionY + Math.sin(angle) * distance),
-          size: 1 + Math.random() * 3,
-          opacity: 0.6 + Math.random() * 0.4,
-          speed: Math.random() * 0.02 + 0.01,
-          parallax: 0.5 + Math.random() * 0.8,
-          twinkle: Math.random() * 100,
-          color: ["#87ceeb", "#b0e0e6", "#add8e6", "#ffffff"][
-            Math.floor(Math.random() * 4)
-          ],
-          type: Math.random() < 0.4 ? "bright" : "giant",
-          drift: {
-            x: (Math.random() - 0.5) * 0.0005,
-            y: (Math.random() - 0.5) * 0.0005,
-          },
-          pulse: Math.random() * 100,
-          sparkle: Math.random() * 100,
-          constellation: `Cluster-${i + 1}`,
-        };
-
-        stars.push(star);
-      }
-    }
-
-    // Generate globular clusters (old stars)
-    for (let i = 0; i < 8; i++) {
-      const clusterAngle = Math.random() * Math.PI * 2;
-      const clusterDistance =
-        WORLD_SIZE * 0.3 + Math.random() * WORLD_SIZE * 0.2;
-      const clusterX =
-        galacticCenter.x + Math.cos(clusterAngle) * clusterDistance;
-      const clusterY =
-        galacticCenter.y + Math.sin(clusterAngle) * clusterDistance;
-
-      for (let j = 0; j < 120; j++) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * Math.random() * 150; // Dense center
-
-        const star: Star = {
-          x: normalizeCoord(clusterX + Math.cos(angle) * distance),
-          y: normalizeCoord(clusterY + Math.sin(angle) * distance),
-          size: 0.4 + Math.random() * 1.5,
-          opacity: 0.5 + Math.random() * 0.4,
-          speed: Math.random() * 0.008 + 0.003,
-          parallax: 0.3 + Math.random() * 0.4,
-          twinkle: Math.random() * 100,
-          color: ["#ffd700", "#ffeb3b", "#fff8e1", "#fffde7"][
-            Math.floor(Math.random() * 4)
-          ],
-          type: "normal",
-          drift: {
-            x: (Math.random() - 0.5) * 0.0003,
-            y: (Math.random() - 0.5) * 0.0003,
-          },
-          pulse: Math.random() * 100,
-          sparkle: Math.random() * 100,
-          constellation: `Globular-${i + 1}`,
-        };
-
-        stars.push(star);
-      }
-    }
-
-    // Generate halo stars (sparse, old, distant)
-    for (let i = 0; i < 2000; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const distance = WORLD_SIZE * 0.2 + Math.random() * WORLD_SIZE * 0.4;
-
-      const star: Star = {
-        x: normalizeCoord(galacticCenter.x + Math.cos(angle) * distance),
-        y: normalizeCoord(galacticCenter.y + Math.sin(angle) * distance),
-        size: 0.2 + Math.random() * 0.8,
-        opacity: 0.2 + Math.random() * 0.3,
-        speed: Math.random() * 0.005 + 0.001,
-        parallax: 0.05 + Math.random() * 0.15,
-        twinkle: Math.random() * 100,
-        color: haloColors[Math.floor(Math.random() * haloColors.length)],
-        type: "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0015,
-          y: (Math.random() - 0.5) * 0.0015,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-        constellation: "Halo",
-      };
-
-      stars.push(star);
-    }
-
-    // Generate foreground bright stars for depth
-    for (let i = 0; i < 300; i++) {
-      const star: Star = {
+      stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: 1.5 + Math.random() * 3.5,
-        opacity: 0.3 + Math.random() * 0.4,
-        speed: Math.random() * 0.025 + 0.015,
-        parallax: 1.2 + Math.random() * 0.6,
+        size: Math.random() * 1.8 + 0.8,
+        opacity: Math.random() * 0.4 + 0.25,
+        speed: Math.random() * 0.018 + 0.012,
+        parallax: 0.6,
         twinkle: Math.random() * 100,
-        color:
-          Math.random() < 0.6
-            ? "#ffffff"
-            : ["#ff69b4", "#87ceeb", "#98fb98", "#dda0dd"][
-                Math.floor(Math.random() * 4)
-              ],
-        type:
-          Math.random() < 0.3
-            ? "bright"
-            : Math.random() < 0.05
-              ? "binary"
-              : "normal",
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0002,
-          y: (Math.random() - 0.5) * 0.0002,
+          x: (Math.random() - 0.5) * 0.0008,
+          y: (Math.random() - 0.5) * 0.0008,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
-        constellation: "Foreground",
-      };
+      });
+    }
 
-      stars.push(star);
+    // Foreground stars - reduced to 50
+    for (let i = 0; i < 50; i++) {
+      const isColored = Math.random() < 0.3;
+      const isBright = Math.random() < 0.2;
+
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 2.5 + 1.2,
+        opacity: Math.random() * 0.3 + 0.15,
+        speed: Math.random() * 0.025 + 0.015,
+        parallax: 1.2,
+        twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.0005,
+          y: (Math.random() - 0.5) * 0.0005,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
+      });
     }
 
     starsRef.current = stars;
-    nebulaeRef.current = nebulae;
-  }, [normalizeCoord]);
+    nebulaeRef.current = []; // Remove nebulae for better performance
+  }, []);
 
   // Initialize game objects once
   useEffect(() => {
