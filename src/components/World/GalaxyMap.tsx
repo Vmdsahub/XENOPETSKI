@@ -1,7 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, useMotionValue } from "framer-motion";
-import { useAuthStore } from "../../store/authStore";
-import { useGameStore } from "../../store/gameStore";
 
 interface GalaxyMapProps {}
 
@@ -88,8 +86,6 @@ const PLANETS = [
 ];
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
-  const { setCurrentScreen, setSelectedWorld } = useGameStore();
-
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({
     width: 400,
@@ -223,13 +219,12 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   );
 
   // Handle planet clicks
-  const handlePlanetClick = useCallback(
-    (planetId: string) => {
-      setSelectedWorld(planetId);
-      setCurrentScreen("worldDetail");
-    },
-    [setSelectedWorld, setCurrentScreen],
-  );
+  const handlePlanetClick = useCallback((planetId: string) => {
+    const planet = PLANETS.find((p) => p.id === planetId);
+    alert(
+      `🌍 ${planet?.name || "Planeta"}\n\nVocê clicou no planeta! Em breve será possível explorar este mundo.`,
+    );
+  }, []);
 
   return (
     <div
@@ -366,8 +361,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 />
               </div>
               <div
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
-                            bg-black/80 text-white text-xs px-2 py-1 rounded 
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
+                            bg-black/80 text-white text-xs px-2 py-1 rounded
                             opacity-0 group-hover:opacity-100 transition-opacity
                             pointer-events-none whitespace-nowrap"
               >
