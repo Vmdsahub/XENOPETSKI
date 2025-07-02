@@ -173,6 +173,60 @@ export const AdminPanel: React.FC = () => {
     { id: "achievements", name: "Conquistas", icon: Trophy, count: 0 },
   ];
 
+  const renderWorldsTab = () => (
+    <div className="space-y-6">
+      {/* Header with Edit Mode Toggle */}
+      <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">
+              Editor de Mundos
+            </h3>
+            <p className="text-gray-600">
+              Reposicione, redimensione e rotacione os mundos no mapa espacial
+            </p>
+          </div>
+          <motion.button
+            onClick={() => {
+              const { isWorldEditMode, setWorldEditMode, setCurrentScreen } =
+                useGameStore.getState();
+              if (!isWorldEditMode) {
+                setCurrentScreen("space");
+              }
+              setWorldEditMode(!isWorldEditMode);
+            }}
+            className={`flex items-center space-x-2 px-4 py-2 text-white rounded-xl transition-all font-semibold shadow-lg ${
+              useGameStore.getState().isWorldEditMode
+                ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                : "bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+            }`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Edit className="w-5 h-5" />
+            <span>
+              {useGameStore.getState().isWorldEditMode
+                ? "Sair do Modo Edição"
+                : "Ativar Modo Edição"}
+            </span>
+          </motion.button>
+        </div>
+
+        {/* Instructions */}
+        <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+          <h4 className="text-sm font-bold text-blue-800 mb-2">Como usar:</h4>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• Clique em "Ativar Modo Edição" para começar</li>
+            <li>• Arraste os mundos para reposicionar</li>
+            <li>• Use as barras laterais para ajustar tamanho e rotação</li>
+            <li>• As alterações são salvas automaticamente</li>
+            <li>• Clique em "Sair do Modo Edição" quando terminar</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderCodesTab = () => (
     <div className="space-y-6">
       {/* Header with Create Button */}
