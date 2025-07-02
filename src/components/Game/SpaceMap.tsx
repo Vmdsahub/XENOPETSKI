@@ -320,13 +320,13 @@ export const SpaceMap: React.FC = () => {
       const fadeRatio = pulse.life / pulse.maxLife;
       const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
 
-      // Enhanced fade out with minimum visibility
+      // Better fade out for improved visibility
       const currentOpacity =
-        pulse.opacity * Math.max(fadeRatio * (0.4 + expandRatio * 0.6), 0.3);
+        pulse.opacity * fadeRatio * (0.5 + expandRatio * 0.5);
 
       ctx.save();
 
-      // Enhanced gradient with brighter colors
+      // Brighter gradient with better contrast
       const gradient = ctx.createRadialGradient(
         shipScreenX,
         shipScreenY,
@@ -336,19 +336,18 @@ export const SpaceMap: React.FC = () => {
         pulse.radius,
       );
       gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity})`); // Bright cyan center
-      gradient.addColorStop(0.5, `rgba(0, 255, 128, ${currentOpacity * 0.9})`); // Green-cyan mix
-      gradient.addColorStop(0.8, `rgba(0, 200, 255, ${currentOpacity * 0.7})`); // Blue-cyan
+      gradient.addColorStop(0.7, `rgba(0, 200, 255, ${currentOpacity * 0.8})`); // Blue-cyan
       gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.4})`); // Blue edge
 
-      // Enhanced arc with larger width for better visibility
-      const arcWidth = Math.PI / 2.5; // 72 degrees for wider, more visible beam
+      // Original arc size with enhanced visibility
+      const arcWidth = Math.PI / 3; // Keep original 60 degrees
       const startAngle = pulse.angle - arcWidth / 2;
       const endAngle = pulse.angle + arcWidth / 2;
 
-      // Main outer pulse arc with thicker line
+      // Thicker main pulse arc for better visibility
       ctx.globalAlpha = currentOpacity;
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 5; // Thicker line for better visibility
+      ctx.lineWidth = 4; // Slightly thicker than original
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
@@ -356,38 +355,13 @@ export const SpaceMap: React.FC = () => {
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
-      // Add bright inner glow
-      ctx.globalAlpha = currentOpacity * 0.8;
+      // Enhanced inner glow for better contrast
+      ctx.globalAlpha = currentOpacity * 0.9;
       ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
-
-      // Add pulsing center dot for better visibility
-      ctx.globalAlpha = currentOpacity * 1.2;
-      ctx.fillStyle = `rgba(0, 255, 255, ${currentOpacity})`;
-      ctx.beginPath();
-      ctx.arc(shipScreenX, shipScreenY, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Add directional arrow/pointer effect
-      const arrowDistance = pulse.radius + 8;
-      const arrowX = shipScreenX + Math.cos(pulse.angle) * arrowDistance;
-      const arrowY = shipScreenY + Math.sin(pulse.angle) * arrowDistance;
-
-      ctx.globalAlpha = currentOpacity * 0.9;
-      ctx.fillStyle = `rgba(255, 255, 0, ${currentOpacity})`;
-      ctx.save();
-      ctx.translate(arrowX, arrowY);
-      ctx.rotate(pulse.angle);
-      ctx.beginPath();
-      ctx.moveTo(6, 0);
-      ctx.lineTo(-3, -4);
-      ctx.lineTo(-3, 4);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
 
       ctx.restore();
     },
