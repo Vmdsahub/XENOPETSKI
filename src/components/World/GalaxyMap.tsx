@@ -28,82 +28,29 @@ const STAR_LAYERS = [
   { count: 200, parallax: 0.1, zIndex: 0 }, // Far background
   { count: 150, parallax: 0.3, zIndex: 1 },
   { count: 100, parallax: 0.5, zIndex: 2 },
-  { count: 50, parallax: 0.7, zIndex: 3 }, // Near background
+  { count: 50, parallax: 0.7, zIndex: 3 },  // Near background
   { count: 30, parallax: 1.5, zIndex: 25 }, // Foreground
   { count: 20, parallax: 2.0, zIndex: 26 }, // Far foreground
 ];
 
 // Planet data for center circle
 const PLANETS = [
-  {
-    id: "gaia",
-    name: "Gaia Selvagem",
-    angle: 0,
-    color: "#22c55e",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=400",
-  },
-  {
-    id: "frozen",
-    name: "Mundo Gelado",
-    angle: 60,
-    color: "#3b82f6",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fea3ec3d920794634bdf7d66a1159511b?format=webp&width=400",
-  },
-  {
-    id: "desert",
-    name: "Reino Desértico",
-    angle: 120,
-    color: "#f59e0b",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F7066e87a53b34231ac837e59befecf75?format=webp&width=400",
-  },
-  {
-    id: "village",
-    name: "Aldeia Pacífica",
-    angle: 180,
-    color: "#8b5cf6",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F02782c34d2cd4353a884ab021ce35173?format=webp&width=400",
-  },
-  {
-    id: "alien",
-    name: "Dimensão Alienígena",
-    angle: 240,
-    color: "#ec4899",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Facb3e8e8eb33422a88b01594f5d1c470?format=webp&width=400",
-  },
-  {
-    id: "station",
-    name: "Estação Mineradora",
-    angle: 300,
-    color: "#6b7280",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F213c17a38e9545088415b03b5c9e9319?format=webp&width=400",
-  },
+  { id: "gaia", name: "Gaia Selvagem", angle: 0, color: "#22c55e", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fbd58c52f19d147f09ff36547a19e0305?format=webp&width=400" },
+  { id: "frozen", name: "Mundo Gelado", angle: 60, color: "#3b82f6", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Fea3ec3d920794634bdf7d66a1159511b?format=webp&width=400" },
+  { id: "desert", name: "Reino Desértico", angle: 120, color: "#f59e0b", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F7066e87a53b34231ac837e59befecf75?format=webp&width=400" },
+  { id: "village", name: "Aldeia Pacífica", angle: 180, color: "#8b5cf6", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F02782c34d2cd4353a884ab021ce35173?format=webp&width=400" },
+  { id: "alien", name: "Dimensão Alienígena", angle: 240, color: "#ec4899", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2Facb3e8e8eb33422a88b01594f5d1c470?format=webp&width=400" },
+  { id: "station", name: "Estação Mineradora", angle: 300, color: "#6b7280", image: "https://cdn.builder.io/api/v1/image/assets%2F676198b3123e49d5b76d7e142e1266eb%2F213c17a38e9545088415b03b5c9e9319?format=webp&width=400" },
 ];
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Player position and movement
-  const [playerPosition, setPlayerPosition] = useState({
-    x: CENTER_X,
-    y: CENTER_Y,
-  });
+  const [playerPosition, setPlayerPosition] = useState({ x: CENTER_X, y: CENTER_Y });
   const [mousePosition, setMousePosition] = useState({ x: 200, y: 200 });
   const [isMouseInside, setIsMouseInside] = useState(false);
-  const [projectiles, setProjectiles] = useState<
-    Array<{
-      id: string;
-      x: number;
-      y: number;
-      targetX: number;
-      targetY: number;
-    }>
-  >([]);
+  const [projectiles, setProjectiles] = useState<Array<{id: string, x: number, y: number, targetX: number, targetY: number}>>([]);
 
   // Camera follows player
   const cameraX = useMotionValue(0);
@@ -120,7 +67,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     STAR_LAYERS.map((layer, index) => ({
       ...layer,
       stars: generateStars(layer.count, index),
-    })),
+    }))
   );
 
   // Wrap coordinates
@@ -139,15 +86,20 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     }
   }, [playerPosition, cameraX, cameraY]);
 
-  // Movement loop
+  // Movement loop with higher frequency
   useEffect(() => {
     let animationId: number;
+    let lastTime = 0;
 
-    const moveShip = () => {
-      if (!isMouseInside || !containerRef.current) {
-        animationId = requestAnimationFrame(moveShip);
-        return;
-      }
+    const moveShip = (currentTime: number) => {
+      // Target 60 FPS for smooth movement
+      if (currentTime - lastTime >= 16) { // ~60 FPS
+        lastTime = currentTime;
+
+        if (!isMouseInside || !containerRef.current) {
+          animationId = requestAnimationFrame(moveShip);
+          return;
+        }
 
       const rect = containerRef.current.getBoundingClientRect();
       const shipScreenX = rect.width / 2;
@@ -161,24 +113,28 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       // Dead zone - if mouse is too close to ship, don't move
       const deadZone = 30;
       if (distance > deadZone) {
-        // Calculate rotation
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        // Calculate rotation (add 90 degrees to fix ship orientation - ship image points up by default)
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
         rotation.set(angle);
 
-        // Calculate speed based on distance (further = faster)
-        const maxDistance = 300;
-        const maxSpeed = 4;
+        // Calculate speed based on distance (further = faster, more fluid)
+        const maxDistance = 200;
+        const maxSpeed = 3;
         const speedMultiplier = Math.min(distance / maxDistance, 1);
         const speed = speedMultiplier * maxSpeed;
 
-        // Move ship in world coordinates
+        // Move ship in world coordinates with smoother interpolation
         const moveX = (dx / distance) * speed;
         const moveY = (dy / distance) * speed;
 
-        setPlayerPosition((prev) => ({
+        setPlayerPosition(prev => ({
           x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
           y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
         }));
+      } else {
+        // Still rotate even in dead zone so ship points to mouse
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        rotation.set(angle);
       }
 
       animationId = requestAnimationFrame(moveShip);
@@ -214,47 +170,36 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   }, []);
 
   // Handle shooting
-  const handleShoot = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault();
+  const handleShoot = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
 
-      const currentRotation = rotation.get();
-      const rotationRad = (currentRotation * Math.PI) / 180;
+    const currentRotation = rotation.get();
+    const rotationRad = (currentRotation * Math.PI) / 180;
 
-      const range = 300;
-      const targetX = wrapCoordinate(
-        playerPosition.x + Math.cos(rotationRad) * range,
-        MAP_SIZE,
-      );
-      const targetY = wrapCoordinate(
-        playerPosition.y + Math.sin(rotationRad) * range,
-        MAP_SIZE,
-      );
+    const range = 300;
+    const targetX = wrapCoordinate(playerPosition.x + Math.cos(rotationRad) * range, MAP_SIZE);
+    const targetY = wrapCoordinate(playerPosition.y + Math.sin(rotationRad) * range, MAP_SIZE);
 
-      const newProjectile = {
-        id: `proj-${Date.now()}`,
-        x: playerPosition.x,
-        y: playerPosition.y,
-        targetX,
-        targetY,
-      };
+    const newProjectile = {
+      id: `proj-${Date.now()}`,
+      x: playerPosition.x,
+      y: playerPosition.y,
+      targetX,
+      targetY,
+    };
 
-      setProjectiles((prev) => [...prev, newProjectile]);
+    setProjectiles(prev => [...prev, newProjectile]);
 
-      // Remove projectile after animation
-      setTimeout(() => {
-        setProjectiles((prev) => prev.filter((p) => p.id !== newProjectile.id));
-      }, 1000);
-    },
-    [playerPosition, rotation],
-  );
+    // Remove projectile after animation
+    setTimeout(() => {
+      setProjectiles(prev => prev.filter(p => p.id !== newProjectile.id));
+    }, 1000);
+  }, [playerPosition, rotation]);
 
   // Handle planet clicks
   const handlePlanetClick = useCallback((planetId: string) => {
-    const planet = PLANETS.find((p) => p.id === planetId);
-    alert(
-      `🌍 ${planet?.name || "Planeta"}\n\nVocê clicou no planeta! Em breve será possível explorar este mundo.`,
-    );
+    const planet = PLANETS.find(p => p.id === planetId);
+    alert(`🌍 ${planet?.name || 'Planeta'}\n\nVocê clicou no planeta! Em breve será possível explorar este mundo.`);
   }, []);
 
   return (
@@ -393,12 +338,10 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
-                            bg-black/80 text-white text-xs px-2 py-1 rounded 
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
+                            bg-black/80 text-white text-xs px-2 py-1 rounded
                             opacity-0 group-hover:opacity-100 transition-opacity
-                            pointer-events-none whitespace-nowrap"
-              >
+                            pointer-events-none whitespace-nowrap">
                 {planet.name}
               </div>
             </motion.div>
@@ -431,16 +374,18 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           style={{
             left: playerPosition.x - 20,
             top: playerPosition.y - 20,
-            rotate: rotation,
           }}
         >
           <motion.div
             className="w-10 h-10"
+            style={{
+              rotate: rotation,
+            }}
             animate={{
-              y: [0, -1, 0, 1, 0],
+              y: [0, -0.5, 0, 0.5, 0],
             }}
             transition={{
-              duration: 2,
+              duration: 1.5,
               repeat: Infinity,
               ease: "easeInOut",
             }}
