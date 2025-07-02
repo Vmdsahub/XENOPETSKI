@@ -1263,6 +1263,10 @@ export const SpaceMap: React.FC = () => {
     forceSaveShipState,
     createRadarPulse,
     drawRadarPulse,
+    showLandingModal,
+    mouseInWindow,
+    createShootingStar,
+    drawShootingStar,
   ]);
 
   return (
