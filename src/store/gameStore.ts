@@ -656,9 +656,6 @@ export const useGameStore = create<GameStore>()(
       isHatchingInProgress: false,
       hatchingEgg: null,
 
-      // Selected world state
-      selectedWorld: null,
-
       // Core actions
       setUser: (user) => {
         const state = get();
@@ -1445,7 +1442,7 @@ export const useGameStore = create<GameStore>()(
 
         // Check if user already used this code
         if (redeemCode.usedBy.includes(state.user.id)) {
-          return { success: false, message: "Você já resgatou este código" };
+          return { success: false, message: "Você já resgatou este c��digo" };
         }
 
         // Check usage limits
