@@ -1721,6 +1721,7 @@ export const useGameStore = create<GameStore>()(
         notifications: state.notifications,
         language: state.language,
         currentScreen: state.currentScreen,
+        currentPlanet: state.currentPlanet,
         achievements: state.achievements,
         collectibles: state.collectibles,
         redeemCodes: state.redeemCodes,
