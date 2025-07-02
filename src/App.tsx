@@ -99,16 +99,49 @@ function App() {
   }
 
   const renderScreen = () => {
+    const getScreenContent = () => {
+      switch (currentScreen) {
+        case "pet":
+          return {
+            title: "Pet",
+            content: "Área do seu Pet - Em desenvolvimento",
+          };
+        case "world":
+          return {
+            title: "Mundo",
+            content: "Área dos Mundos - Em desenvolvimento",
+          };
+        case "inventory":
+          return {
+            title: "Inventário",
+            content: "Seus itens e equipamentos - Em desenvolvimento",
+          };
+        case "profile":
+          return {
+            title: "Perfil",
+            content: "Seu perfil e conquistas - Em desenvolvimento",
+          };
+        case "admin":
+          return {
+            title: "Admin",
+            content: "Painel administrativo - Em desenvolvimento",
+          };
+        default:
+          return {
+            title: "Pet",
+            content: "Área do seu Pet - Em desenvolvimento",
+          };
+      }
+    };
+
+    const { title, content } = getScreenContent();
+
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-8 min-h-[80vh] flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">
-              Container Principal
-            </h1>
-            <p className="text-lg text-gray-600">
-              Navegue pelas abas no menu inferior
-            </p>
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
+            <p className="text-lg text-gray-600 mb-8">{content}</p>
             <div className="mt-8 text-sm text-gray-500">
               Aba atual: <span className="font-semibold">{currentScreen}</span>
             </div>
