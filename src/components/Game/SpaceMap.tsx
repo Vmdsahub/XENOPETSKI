@@ -423,8 +423,7 @@ export const SpaceMap: React.FC = () => {
       ctx.fillStyle = "#0a0a2e";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render background stars
-      ctx.fillStyle = "#ffffff";
+      // Render background and mid stars with enhanced effects
       starsRef.current.forEach((star) => {
         if (star.parallax < 1) {
           const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
@@ -441,20 +440,61 @@ export const SpaceMap: React.FC = () => {
             screenY > -50 &&
             screenY < canvas.height + 50
           ) {
-            star.twinkle += star.speed;
-            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
+            // Calculate twinkling and pulsing effects
+            const twinkleAlpha = Math.sin(star.twinkle) * 0.3 + 0.7;
+            const pulseSize = Math.sin(star.pulse) * 0.2 + 1;
+            const sparkleIntensity = Math.sin(star.sparkle) * 0.4 + 0.6;
+
+            let finalAlpha = star.opacity * twinkleAlpha * sparkleIntensity;
+            let finalSize = star.size * pulseSize;
+
+            // Enhance bright stars
+            if (star.type === "bright") {
+              finalAlpha *= 1.4;
+              finalSize *= 1.2;
+            }
 
             ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(
-              Math.round(screenX),
-              Math.round(screenY),
-              star.size,
-              0,
-              Math.PI * 2,
-            );
-            ctx.fill();
+            ctx.fillStyle = star.color;
+            ctx.globalAlpha = finalAlpha;
+
+            if (star.size < 1) {
+              // Small stars as points
+              ctx.beginPath();
+              ctx.arc(
+                Math.round(screenX),
+                Math.round(screenY),
+                finalSize,
+                0,
+                Math.PI * 2,
+              );
+              ctx.fill();
+            } else {
+              // Larger stars as star shapes
+              drawStar(
+                ctx,
+                Math.round(screenX),
+                Math.round(screenY),
+                finalSize,
+              );
+              ctx.fill();
+
+              // Add glow effect for bright and colored stars
+              if (star.type === "bright" || star.type === "colored") {
+                ctx.shadowColor = star.color;
+                ctx.shadowBlur = finalSize * 2;
+                ctx.globalAlpha = finalAlpha * 0.5;
+                drawStar(
+                  ctx,
+                  Math.round(screenX),
+                  Math.round(screenY),
+                  finalSize * 0.8,
+                );
+                ctx.fill();
+                ctx.shadowBlur = 0;
+              }
+            }
+
             ctx.restore();
           }
         }
