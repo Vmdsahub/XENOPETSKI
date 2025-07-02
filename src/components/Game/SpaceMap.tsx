@@ -255,7 +255,68 @@ export const SpaceMap: React.FC = () => {
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
-        // Wrap world
+        // Handle seamless world wrapping with smooth transitions
+        const WARP_BUFFER = 50; // Buffer zone before wrapping
+        let needsWarp = false;
+        let warpDirection = { x: 0, y: 0 };
+
+        if (newState.ship.x < WARP_BUFFER) {
+          needsWarp = true;
+          warpDirection.x = 1; // Wrapping from left to right
+        } else if (newState.ship.x > WORLD_SIZE - WARP_BUFFER) {
+          needsWarp = true;
+          warpDirection.x = -1; // Wrapping from right to left
+        }
+
+        if (newState.ship.y < WARP_BUFFER) {
+          needsWarp = true;
+          warpDirection.y = 1; // Wrapping from top to bottom
+        } else if (newState.ship.y > WORLD_SIZE - WARP_BUFFER) {
+          needsWarp = true;
+          warpDirection.y = -1; // Wrapping from bottom to top
+        }
+
+        // Start warp transition if needed and not already active
+        if (needsWarp && !newState.warpTransition.active) {
+          newState.warpTransition = {
+            active: true,
+            progress: 0,
+            direction: warpDirection,
+          };
+        }
+
+        // Handle active warp transition
+        if (newState.warpTransition.active) {
+          newState.warpTransition.progress += 0.1; // Transition speed
+
+          if (newState.warpTransition.progress >= 1) {
+            // Complete the warp
+            if (newState.warpTransition.direction.x !== 0) {
+              if (newState.ship.x < WARP_BUFFER) {
+                newState.ship.x += WORLD_SIZE - WARP_BUFFER * 2;
+              } else if (newState.ship.x > WORLD_SIZE - WARP_BUFFER) {
+                newState.ship.x -= WORLD_SIZE - WARP_BUFFER * 2;
+              }
+            }
+
+            if (newState.warpTransition.direction.y !== 0) {
+              if (newState.ship.y < WARP_BUFFER) {
+                newState.ship.y += WORLD_SIZE - WARP_BUFFER * 2;
+              } else if (newState.ship.y > WORLD_SIZE - WARP_BUFFER) {
+                newState.ship.y -= WORLD_SIZE - WARP_BUFFER * 2;
+              }
+            }
+
+            // Reset transition
+            newState.warpTransition = {
+              active: false,
+              progress: 0,
+              direction: { x: 0, y: 0 },
+            };
+          }
+        }
+
+        // Fallback hard wrap for edge cases
         if (newState.ship.x < 0) newState.ship.x += WORLD_SIZE;
         if (newState.ship.x > WORLD_SIZE) newState.ship.x -= WORLD_SIZE;
         if (newState.ship.y < 0) newState.ship.y += WORLD_SIZE;
