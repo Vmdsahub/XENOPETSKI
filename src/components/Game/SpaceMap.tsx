@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
+import { useGameStore } from "../../store/gameStore";
 
 interface Star {
   x: number;
