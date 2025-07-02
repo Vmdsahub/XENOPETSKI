@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useGameStore } from "../../store/gameStore";
 import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 import { PlanetLandingModal } from "./PlanetLandingModal";
+import { gameService } from "../../services/gameService";
 
 interface Star {
   x: number;
