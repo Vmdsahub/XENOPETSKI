@@ -26,6 +26,7 @@ interface Planet {
   x: number;
   y: number;
   size: number;
+  rotation: number;
   color: string;
   name: string;
   interactionRadius: number;
