@@ -635,6 +635,7 @@ export const useGameStore = create<GameStore>()(
       notifications: [],
       language: "pt-BR",
       currentScreen: "pet",
+      currentPlanet: null,
       achievements: [],
       collectibles: [],
       quests: [],
