@@ -42,8 +42,8 @@ interface GameState {
 }
 
 const WORLD_SIZE = 10000;
-const SHIP_MAX_SPEED = 6;
-const FRICTION = 0.92;
+const SHIP_MAX_SPEED = 2;
+const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
 const BARRIER_RADIUS = 600;
