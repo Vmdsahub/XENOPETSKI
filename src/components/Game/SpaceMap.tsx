@@ -318,29 +318,49 @@ export const SpaceMap: React.FC = () => {
       shipScreenY: number,
     ) => {
       const fadeRatio = pulse.life / pulse.maxLife;
-      const currentOpacity = pulse.opacity * fadeRatio;
+      const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
+
+      // Smooth fade out as it expands
+      const currentOpacity =
+        pulse.opacity * fadeRatio * (0.3 + expandRatio * 0.7);
 
       ctx.save();
-      ctx.globalAlpha = currentOpacity;
-      ctx.strokeStyle = "#00ff00";
-      ctx.fillStyle = "#00ff0015";
 
-      // Draw single expanding wave arc
-      const arcRadius = pulse.radius;
-      const lineWidth = 6;
-      const arcOpacity = currentOpacity;
+      // Create gradient for more modern look
+      const gradient = ctx.createRadialGradient(
+        shipScreenX,
+        shipScreenY,
+        0,
+        shipScreenX,
+        shipScreenY,
+        pulse.radius,
+      );
+      gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity * 0.8})`); // Cyan center
+      gradient.addColorStop(0.7, `rgba(0, 200, 255, ${currentOpacity * 0.6})`); // Blue-cyan
+      gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.2})`); // Blue edge
 
-      ctx.globalAlpha = arcOpacity;
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = "round";
-
-      // Draw wide curved arc like sonar signal
-      const arcWidth = Math.PI / 2; // 90 degrees for good curve
+      // Draw refined arc with smaller width for more elegant look
+      const arcWidth = Math.PI / 3; // 60 degrees for more focused beam
       const startAngle = pulse.angle - arcWidth / 2;
       const endAngle = pulse.angle + arcWidth / 2;
 
+      // Main pulse arc with gradient
+      ctx.globalAlpha = currentOpacity;
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 3; // Thinner line for more refined look
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
       ctx.beginPath();
-      ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+      ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
+      ctx.stroke();
+
+      // Add subtle inner glow
+      ctx.globalAlpha = currentOpacity * 0.6;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity * 0.8})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
       ctx.restore();
