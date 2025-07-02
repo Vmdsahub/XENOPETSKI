@@ -255,72 +255,22 @@ export const SpaceMap: React.FC = () => {
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
-        // Handle seamless world wrapping with smooth transitions
-        const WARP_BUFFER = 50; // Buffer zone before wrapping
-        let needsWarp = false;
-        let warpDirection = { x: 0, y: 0 };
+        // Completely seamless world wrapping - instant and imperceptible
+        const WORLD_HALF = WORLD_SIZE / 2;
 
-        if (newState.ship.x < WARP_BUFFER) {
-          needsWarp = true;
-          warpDirection.x = 1; // Wrapping from left to right
-        } else if (newState.ship.x > WORLD_SIZE - WARP_BUFFER) {
-          needsWarp = true;
-          warpDirection.x = -1; // Wrapping from right to left
-        }
+        // Normalize ship position to always be within world bounds
+        // This creates true seamless wrapping with no visual artifacts
+        newState.ship.x =
+          ((newState.ship.x % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
+        newState.ship.y =
+          ((newState.ship.y % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
 
-        if (newState.ship.y < WARP_BUFFER) {
-          needsWarp = true;
-          warpDirection.y = 1; // Wrapping from top to bottom
-        } else if (newState.ship.y > WORLD_SIZE - WARP_BUFFER) {
-          needsWarp = true;
-          warpDirection.y = -1; // Wrapping from bottom to top
-        }
-
-        // Start warp transition if needed and not already active
-        if (needsWarp && !newState.warpTransition.active) {
-          newState.warpTransition = {
-            active: true,
-            progress: 0,
-            direction: warpDirection,
-          };
-        }
-
-        // Handle active warp transition
-        if (newState.warpTransition.active) {
-          newState.warpTransition.progress += 0.1; // Transition speed
-
-          if (newState.warpTransition.progress >= 1) {
-            // Complete the warp
-            if (newState.warpTransition.direction.x !== 0) {
-              if (newState.ship.x < WARP_BUFFER) {
-                newState.ship.x += WORLD_SIZE - WARP_BUFFER * 2;
-              } else if (newState.ship.x > WORLD_SIZE - WARP_BUFFER) {
-                newState.ship.x -= WORLD_SIZE - WARP_BUFFER * 2;
-              }
-            }
-
-            if (newState.warpTransition.direction.y !== 0) {
-              if (newState.ship.y < WARP_BUFFER) {
-                newState.ship.y += WORLD_SIZE - WARP_BUFFER * 2;
-              } else if (newState.ship.y > WORLD_SIZE - WARP_BUFFER) {
-                newState.ship.y -= WORLD_SIZE - WARP_BUFFER * 2;
-              }
-            }
-
-            // Reset transition
-            newState.warpTransition = {
-              active: false,
-              progress: 0,
-              direction: { x: 0, y: 0 },
-            };
-          }
-        }
-
-        // Fallback hard wrap for edge cases
-        if (newState.ship.x < 0) newState.ship.x += WORLD_SIZE;
-        if (newState.ship.x > WORLD_SIZE) newState.ship.x -= WORLD_SIZE;
-        if (newState.ship.y < 0) newState.ship.y += WORLD_SIZE;
-        if (newState.ship.y > WORLD_SIZE) newState.ship.y -= WORLD_SIZE;
+        // Reset any active transition since we're using instant seamless wrapping
+        newState.warpTransition = {
+          active: false,
+          progress: 0,
+          direction: { x: 0, y: 0 },
+        };
 
         // Update camera
         newState.camera.x += (newState.ship.x - newState.camera.x) * 0.08;
