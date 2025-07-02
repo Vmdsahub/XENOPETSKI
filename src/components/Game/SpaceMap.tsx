@@ -334,23 +334,6 @@ export const SpaceMap: React.FC = () => {
           screenY > -100 &&
           screenY < canvas.height + 100
         ) {
-          // Planet glow
-          const gradient = ctx.createRadialGradient(
-            screenX,
-            screenY,
-            0,
-            screenX,
-            screenY,
-            planet.size * 1.5,
-          );
-          gradient.addColorStop(0, planet.color + "60");
-          gradient.addColorStop(1, planet.color + "00");
-          ctx.globalAlpha = 0.8;
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.arc(screenX, screenY, planet.size * 1.5, 0, Math.PI * 2);
-          ctx.fill();
-
           // Planet body
           ctx.globalAlpha = 1;
           ctx.fillStyle = planet.color;
@@ -358,18 +341,21 @@ export const SpaceMap: React.FC = () => {
           ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
           ctx.fill();
 
-          // Highlight
+          // Simple highlight
           ctx.globalAlpha = 0.3;
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
           ctx.arc(
-            screenX - planet.size * 0.3,
-            screenY - planet.size * 0.3,
-            planet.size * 0.4,
+            screenX - planet.size * 0.2,
+            screenY - planet.size * 0.2,
+            planet.size * 0.3,
             0,
             Math.PI * 2,
           );
           ctx.fill();
+
+          // Reset alpha
+          ctx.globalAlpha = 1;
         }
       });
 
