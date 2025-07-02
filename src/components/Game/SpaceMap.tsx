@@ -324,34 +324,24 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw 3 expanding arcs for radar effect
-      for (let i = 0; i < 3; i++) {
-        const arcRadius = pulse.radius + i * 15;
-        const lineWidth = Math.max(1, 3 - i);
-        const arcOpacity = currentOpacity * (1 - i * 0.3);
+      // Draw 4 tight sound wave arcs
+      for (let i = 0; i < 4; i++) {
+        const arcRadius = pulse.radius + i * 8;
+        const lineWidth = 2;
+        const arcOpacity = currentOpacity * (1 - i * 0.2);
 
         if (arcRadius <= pulse.maxRadius) {
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
 
-          // Draw directional arc (cone shape)
-          const arcWidth = Math.PI / 6; // 30 degrees total width
+          // Draw very narrow sound wave arcs
+          const arcWidth = Math.PI / 12; // 15 degrees total width (much narrower)
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
           ctx.beginPath();
           ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
           ctx.stroke();
-
-          // Draw filled sector for the main pulse
-          if (i === 0) {
-            ctx.globalAlpha = arcOpacity * 0.3;
-            ctx.beginPath();
-            ctx.moveTo(shipScreenX, shipScreenY);
-            ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
-            ctx.closePath();
-            ctx.fill();
-          }
         }
       }
 
