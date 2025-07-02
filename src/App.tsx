@@ -135,7 +135,9 @@ function App() {
       {/* Componente de pré-carregamento de áudios */}
       <AudioPreloader />
 
-      <main className="pb-24 px-4 min-h-screen">
+      <TopBar />
+
+      <main className="pt-20 pb-24 px-4 min-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentScreen}
