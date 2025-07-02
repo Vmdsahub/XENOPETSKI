@@ -95,9 +95,9 @@ export const SpaceMap: React.FC = () => {
         ship: {
           x: savedState.x,
           y: savedState.y,
-          angle: savedState.angle,
-          vx: savedState.vx,
-          vy: savedState.vy,
+          angle: 0, // Reset angle to neutral position
+          vx: 0, // Reset velocity to stop movement
+          vy: 0, // Reset velocity to stop movement
         },
         camera: {
           x: savedState.cameraX,
