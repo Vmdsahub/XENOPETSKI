@@ -617,8 +617,7 @@ export const SpaceMap: React.FC = () => {
 
       ctx.restore();
 
-      // Render foreground stars
-      ctx.fillStyle = "#ffffff";
+      // Render foreground stars with enhanced effects
       starsRef.current.forEach((star) => {
         if (star.parallax >= 1) {
           const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
@@ -635,20 +634,63 @@ export const SpaceMap: React.FC = () => {
             screenY > -30 &&
             screenY < canvas.height + 30
           ) {
-            star.twinkle += star.speed;
-            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
+            // Calculate enhanced effects for foreground stars
+            const twinkleAlpha = Math.sin(star.twinkle) * 0.4 + 0.6;
+            const pulseSize = Math.sin(star.pulse) * 0.3 + 1;
+            const sparkleIntensity = Math.sin(star.sparkle) * 0.5 + 0.5;
+
+            let finalAlpha = star.opacity * twinkleAlpha * sparkleIntensity;
+            let finalSize = star.size * pulseSize;
+
+            // Enhance bright stars even more
+            if (star.type === "bright") {
+              finalAlpha *= 1.6;
+              finalSize *= 1.3;
+            }
 
             ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(
+            ctx.fillStyle = star.color;
+            ctx.globalAlpha = finalAlpha;
+
+            // All foreground stars as star shapes
+            drawStar(
+              ctx,
               Math.round(screenX),
               Math.round(screenY),
-              star.size,
-              0,
-              Math.PI * 2,
+              finalSize,
+              4,
             );
             ctx.fill();
+
+            // Enhanced glow for foreground stars
+            if (star.type === "bright" || star.type === "colored") {
+              ctx.shadowColor = star.color;
+              ctx.shadowBlur = finalSize * 3;
+              ctx.globalAlpha = finalAlpha * 0.3;
+              drawStar(
+                ctx,
+                Math.round(screenX),
+                Math.round(screenY),
+                finalSize * 1.2,
+                4,
+              );
+              ctx.fill();
+              ctx.shadowBlur = 0;
+
+              // Add sparkle rays for very bright stars
+              if (star.type === "bright" && finalSize > 1.5) {
+                ctx.globalAlpha = finalAlpha * 0.6;
+                ctx.strokeStyle = star.color;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(screenX - finalSize * 2, screenY);
+                ctx.lineTo(screenX + finalSize * 2, screenY);
+                ctx.moveTo(screenX, screenY - finalSize * 2);
+                ctx.lineTo(screenX, screenY + finalSize * 2);
+                ctx.stroke();
+              }
+            }
+
             ctx.restore();
           }
         }
