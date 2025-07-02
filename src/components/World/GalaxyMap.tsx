@@ -113,10 +113,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   >([]);
 
   // Camera follows player
-  const cameraX = useMotionValue(-(playerPosition.x - containerSize.width / 2));
-  const cameraY = useMotionValue(
-    -(playerPosition.y - containerSize.height / 2),
-  );
+  const cameraX = useMotionValue(0);
+  const cameraY = useMotionValue(0);
 
   // Ship rotation based on mouse
   const rotation = useMotionValue(0);
