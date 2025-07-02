@@ -325,19 +325,30 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#00ff00";
       ctx.fillStyle = "#00ff0015";
 
-      // Draw 3 expanding wave arcs like WiFi/sonar signal
-      for (let i = 0; i < 3; i++) {
-        const arcRadius = pulse.radius + i * 15; // Better spacing between waves
-        const lineWidth = 5; // Even thicker lines
-        const arcOpacity = currentOpacity * Math.pow(1 - i * 0.25, 2); // Smoother fade
+      // Draw sequential wave arcs like sonar pinging
+      const progress = (pulse.maxLife - pulse.life) / pulse.maxLife;
 
-        if (arcRadius <= pulse.maxRadius && arcRadius >= pulse.radius) {
+      // Draw 3 waves that appear sequentially
+      for (let i = 0; i < 3; i++) {
+        const waveStart = i * 0.25; // Each wave starts 25% into animation
+        const waveProgress = Math.max(
+          0,
+          (progress - waveStart) / (1 - waveStart),
+        );
+
+        if (waveProgress > 0) {
+          const arcRadius =
+            pulse.radius + waveProgress * (pulse.maxRadius - pulse.radius);
+          const lineWidth = 6; // Thick lines like image
+          const arcOpacity =
+            currentOpacity * (1 - waveProgress) * (1 - i * 0.2); // Fade as expands
+
           ctx.globalAlpha = arcOpacity;
           ctx.lineWidth = lineWidth;
           ctx.lineCap = "round";
 
-          // Draw curved arcs like sonar/WiFi signal
-          const arcWidth = Math.PI / 2.5; // About 72 degrees for nice curve
+          // Draw curved arcs like sonar signal
+          const arcWidth = Math.PI / 2.2; // About 80 degrees for wide curve
           const startAngle = pulse.angle - arcWidth / 2;
           const endAngle = pulse.angle + arcWidth / 2;
 
@@ -442,7 +453,7 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: 0, // Movimento ser�� calculado via seno/cosseno
+          x: 0, // Movimento será calculado via seno/cosseno
           y: 0,
         },
         pulse: Math.random() * 100,
