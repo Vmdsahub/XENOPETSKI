@@ -29,7 +29,7 @@ export const BottomNavigation: React.FC = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-lg">
       <div
-        className={`flex justify-around max-w-md mx-auto px-2 py-2 ${user?.isAdmin ? "grid grid-cols-4" : "grid grid-cols-3"}`}
+        className={`flex justify-around max-w-md mx-auto px-2 py-2 ${user?.isAdmin ? "grid grid-cols-5" : "grid grid-cols-4"}`}
       >
         {items.map(({ id, label, icon: Icon, color }) => {
           const isActive = currentScreen === id;
