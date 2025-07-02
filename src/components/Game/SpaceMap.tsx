@@ -810,18 +810,18 @@ export const SpaceMap: React.FC = () => {
         newState.camera.x = normalizeCoord(newState.camera.x);
         newState.camera.y = normalizeCoord(newState.camera.y);
 
-        // Save to store for persistence (throttled)
-        saveShipState({
-          x: newState.ship.x,
-          y: newState.ship.y,
-          angle: newState.ship.angle,
-          vx: newState.ship.vx,
-          vy: newState.ship.vy,
-          cameraX: newState.camera.x,
-          cameraY: newState.camera.y,
-        });
-
         return newState;
+      });
+
+      // Save to store for persistence (throttled) - moved outside setState
+      saveShipState({
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        angle: gameState.ship.angle,
+        vx: gameState.ship.vx,
+        vy: gameState.ship.vy,
+        cameraX: gameState.camera.x,
+        cameraY: gameState.camera.y,
       });
 
       // Check for planets in range and create radar pulses
