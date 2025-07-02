@@ -922,10 +922,10 @@ export const SpaceMap: React.FC = () => {
               x: worldX,
               y: worldY,
             });
-            // Reload planets from database to ensure consistency
-            await loadWorldPositions();
           } catch (error) {
             console.error("Failed to update world position:", error);
+            // Reload on error to revert to database state
+            await loadWorldPositions();
           }
         }, 200);
       }
@@ -1052,10 +1052,10 @@ export const SpaceMap: React.FC = () => {
             x: planet.x,
             y: planet.y,
           });
-          // Reload planets from database to ensure consistency
-          await loadWorldPositions();
         } catch (error) {
           console.error("Failed to update world position on mouse up:", error);
+          // Reload on error to revert to database state
+          await loadWorldPositions();
         }
       }
 
@@ -1695,10 +1695,10 @@ export const SpaceMap: React.FC = () => {
                       await gameService.updateWorldPosition(selectedWorldId, {
                         size: newSize,
                       });
-                      // Reload planets from database to ensure consistency
-                      await loadWorldPositions();
                     } catch (error) {
                       console.error("Failed to update world size:", error);
+                      // Reload on error to revert to database state
+                      await loadWorldPositions();
                     }
                   }
                 }, 300);
@@ -1746,10 +1746,10 @@ export const SpaceMap: React.FC = () => {
                       await gameService.updateWorldPosition(selectedWorldId, {
                         rotation: newRotation,
                       });
-                      // Reload planets from database to ensure consistency
-                      await loadWorldPositions();
                     } catch (error) {
                       console.error("Failed to update world rotation:", error);
+                      // Reload on error to revert to database state
+                      await loadWorldPositions();
                     }
                   }
                 }, 300);
@@ -1788,10 +1788,10 @@ export const SpaceMap: React.FC = () => {
                           x: planet.x,
                           y: planet.y,
                         });
-                        // Reload planets from database to ensure consistency
-                        await loadWorldPositions();
                       } catch (error) {
                         console.error("Failed to reset world position:", error);
+                        // Reload on error to revert to database state
+                        await loadWorldPositions();
                       }
                     }
                   }
