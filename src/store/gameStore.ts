@@ -27,6 +27,10 @@ interface GameStore extends GameState {
     planet: { id: string; name: string; color: string } | null,
   ) => void;
 
+  // World editing mode
+  isWorldEditMode: boolean;
+  setWorldEditMode: (enabled: boolean) => void;
+
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
