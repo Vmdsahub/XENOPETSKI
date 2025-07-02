@@ -1298,11 +1298,18 @@ export const SpaceMap: React.FC = () => {
           ctx.stroke();
           ctx.restore();
 
-          // Render planet image
+          // Render planet image with rotation
           const img = planetImagesRef.current.get(planet.id);
           if (img && img.complete) {
             ctx.save();
             ctx.globalAlpha = 1;
+
+            // Apply rotation if planet has rotation
+            if (planet.rotation && planet.rotation !== 0) {
+              ctx.translate(screenX, screenY);
+              ctx.rotate(planet.rotation);
+              ctx.translate(-screenX, -screenY);
+            }
 
             const imageSize = planet.size * 2; // Use diameter as image size
             const drawX = screenX - imageSize / 2;
