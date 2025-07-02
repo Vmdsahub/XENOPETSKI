@@ -573,38 +573,39 @@ export const SpaceMap: React.FC = () => {
 
       ctx.restore();
 
-      // Render foreground stars
+      // Render foreground stars with seamless wrapping
       ctx.fillStyle = "#ffffff";
       starsRef.current.forEach((star) => {
         if (star.parallax >= 1) {
           // Foreground stars only
-          const parallaxX = (star.x - gameState.camera.x) * star.parallax;
-          const parallaxY = (star.y - gameState.camera.y) * star.parallax;
-          const screenX = centerX + parallaxX;
-          const screenY = centerY + parallaxY;
+          renderStar(star);
 
-          // Only render stars that are on screen
+          // Render wrapped duplicates for seamless transitions
+          const STAR_EDGE_THRESHOLD = canvas.width * 1.5;
+
           if (
-            screenX > -30 &&
-            screenX < canvas.width + 30 &&
-            screenY > -30 &&
-            screenY < canvas.height + 30
+            (star.x - gameState.camera.x) * star.parallax <
+            STAR_EDGE_THRESHOLD
           ) {
-            star.twinkle += star.speed;
-            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
-
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(
-              Math.round(screenX),
-              Math.round(screenY),
-              star.size,
-              0,
-              Math.PI * 2,
-            );
-            ctx.fill();
-            ctx.restore();
+            renderStar(star, WORLD_SIZE, 0);
+          }
+          if (
+            (star.x - gameState.camera.x) * star.parallax >
+            -STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, -WORLD_SIZE, 0);
+          }
+          if (
+            (star.y - gameState.camera.y) * star.parallax <
+            STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, 0, WORLD_SIZE);
+          }
+          if (
+            (star.y - gameState.camera.y) * star.parallax >
+            -STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, 0, -WORLD_SIZE);
           }
         }
       });
