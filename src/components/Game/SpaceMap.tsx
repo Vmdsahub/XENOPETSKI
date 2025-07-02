@@ -176,6 +176,64 @@ export const SpaceMap: React.FC = () => {
     shootingStarsRef.current.push(newShootingStar);
   }, []);
 
+  // Helper function to draw shooting star with tail
+  const drawShootingStar = useCallback(
+    (ctx: CanvasRenderingContext2D, shootingStar: ShootingStar) => {
+      const fadeRatio = shootingStar.life / shootingStar.maxLife;
+      const currentOpacity = shootingStar.opacity * fadeRatio;
+
+      // Draw tail
+      const tailPoints = 8;
+      ctx.save();
+      ctx.globalAlpha = currentOpacity * 0.6;
+
+      for (let i = 0; i < tailPoints; i++) {
+        const ratio = i / tailPoints;
+        const tailX =
+          shootingStar.x - shootingStar.vx * ratio * shootingStar.tailLength;
+        const tailY =
+          shootingStar.y - shootingStar.vy * ratio * shootingStar.tailLength;
+        const tailSize = shootingStar.size * (1 - ratio) * 0.8;
+        const tailAlpha = currentOpacity * (1 - ratio) * 0.5;
+
+        ctx.globalAlpha = tailAlpha;
+        ctx.fillStyle = shootingStar.color;
+        ctx.beginPath();
+        ctx.arc(tailX, tailY, tailSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw main star
+      ctx.globalAlpha = currentOpacity;
+      ctx.fillStyle = shootingStar.color;
+      ctx.beginPath();
+      ctx.arc(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.size,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+
+      // Add bright core
+      ctx.globalAlpha = currentOpacity * 1.2;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(
+        shootingStar.x,
+        shootingStar.y,
+        shootingStar.size * 0.5,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+
+      ctx.restore();
+    },
+    [],
+  );
+
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
     (
