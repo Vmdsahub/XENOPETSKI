@@ -122,6 +122,19 @@ export const SpaceMap: React.FC = () => {
 
   const [gameState, setGameState] = useState<GameState>(getInitialGameState);
 
+  // Reset velocities on component mount to ensure ship starts stationary
+  useEffect(() => {
+    setGameState((prevState) => ({
+      ...prevState,
+      ship: {
+        ...prevState.ship,
+        vx: 0,
+        vy: 0,
+        angle: 0,
+      },
+    }));
+  }, []); // Empty dependency array ensures this runs only on mount
+
   // FPS tracking
   const [fps, setFps] = useState(0);
   const fpsRef = useRef({
