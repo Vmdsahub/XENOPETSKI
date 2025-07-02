@@ -847,14 +847,20 @@ export const SpaceMap: React.FC = () => {
         if (shipToPlanetDistance <= planet.interactionRadius) {
           currentPlanetsInRange.add(planet.id);
 
-          // If this planet wasn't in range before, create a radar pulse
-          if (!lastRadarCheckRef.current.has(planet.id)) {
+          // Create radar pulse every 1 second while in range
+          const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
+          if (currentTime - lastPulseTime >= 1000) {
+            // 1 second = 1000ms
             createRadarPulse(
               planet,
               currentShipState.ship.x,
               currentShipState.ship.y,
             );
+            lastRadarPulseTime.current.set(planet.id, currentTime);
           }
+        } else {
+          // Remove pulse timing when out of range
+          lastRadarPulseTime.current.delete(planet.id);
         }
       });
 
