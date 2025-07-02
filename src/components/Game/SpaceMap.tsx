@@ -39,11 +39,6 @@ interface GameState {
     x: number;
     y: number;
   };
-  warpTransition: {
-    active: boolean;
-    progress: number;
-    direction: { x: number; y: number };
-  };
 }
 
 const WORLD_SIZE = 10000;
@@ -51,7 +46,6 @@ const SHIP_MAX_SPEED = 2;
 const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
-const BARRIER_RADIUS = 600;
 
 export const SpaceMap: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,12 +67,23 @@ export const SpaceMap: React.FC = () => {
       x: CENTER_X,
       y: CENTER_Y + 200,
     },
-    warpTransition: {
-      active: false,
-      progress: 0,
-      direction: { x: 0, y: 0 },
-    },
   });
+
+  // Helper function for seamless wrapping distance calculation
+  const getWrappedDistance = useCallback(
+    (coord: number, cameraCoord: number) => {
+      let delta = coord - cameraCoord;
+      if (delta > WORLD_SIZE / 2) delta -= WORLD_SIZE;
+      else if (delta < -WORLD_SIZE / 2) delta += WORLD_SIZE;
+      return delta;
+    },
+    [],
+  );
+
+  // Helper function to normalize coordinates within world bounds
+  const normalizeCoord = useCallback((coord: number) => {
+    return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
+  }, []);
 
   // Initialize game objects once
   useEffect(() => {
@@ -191,14 +196,14 @@ export const SpaceMap: React.FC = () => {
         e.clientY - rect.top - canvas.height / 2 + gameState.camera.y;
 
       planetsRef.current.forEach((planet) => {
-        const dx = clickX - planet.x;
-        const dy = clickY - planet.y;
+        const dx = getWrappedDistance(planet.x, clickX);
+        const dy = getWrappedDistance(planet.y, clickY);
         if (Math.sqrt(dx * dx + dy * dy) < planet.size) {
           alert(`Explorando ${planet.name}!`);
         }
       });
     },
-    [gameState],
+    [gameState, getWrappedDistance],
   );
 
   // Optimized game loop
@@ -231,13 +236,13 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Calculate world mouse position
+        // Calculate world mouse position using wrapped distance
         const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
         const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
         // Update ship
-        const dx = worldMouseX - newState.ship.x;
-        const dy = worldMouseY - newState.ship.y;
+        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         newState.ship.angle = Math.atan2(dy, dx);
@@ -255,52 +260,22 @@ export const SpaceMap: React.FC = () => {
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
-        // Completely seamless world wrapping - instant and imperceptible
-        const WORLD_HALF = WORLD_SIZE / 2;
-
-        // Normalize ship position to always be within world bounds
-        // This creates true seamless wrapping with no visual artifacts
-        newState.ship.x =
-          ((newState.ship.x % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
-        newState.ship.y =
-          ((newState.ship.y % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
-
-        // Reset any active transition since we're using instant seamless wrapping
-        newState.warpTransition = {
-          active: false,
-          progress: 0,
-          direction: { x: 0, y: 0 },
-        };
+        // Normalize ship position for seamless wrapping
+        newState.ship.x = normalizeCoord(newState.ship.x);
+        newState.ship.y = normalizeCoord(newState.ship.y);
 
         // Update camera with seamless wrapping awareness
         const cameraFollowSpeed = 0.08;
 
-        // Calculate the shortest distance considering wrapping
-        let deltaX = newState.ship.x - newState.camera.x;
-        let deltaY = newState.ship.y - newState.camera.y;
-
-        // Handle wrapping for X axis
-        if (deltaX > WORLD_SIZE / 2) {
-          deltaX -= WORLD_SIZE;
-        } else if (deltaX < -WORLD_SIZE / 2) {
-          deltaX += WORLD_SIZE;
-        }
-
-        // Handle wrapping for Y axis
-        if (deltaY > WORLD_SIZE / 2) {
-          deltaY -= WORLD_SIZE;
-        } else if (deltaY < -WORLD_SIZE / 2) {
-          deltaY += WORLD_SIZE;
-        }
+        const deltaX = getWrappedDistance(newState.ship.x, newState.camera.x);
+        const deltaY = getWrappedDistance(newState.ship.y, newState.camera.y);
 
         newState.camera.x += deltaX * cameraFollowSpeed;
         newState.camera.y += deltaY * cameraFollowSpeed;
 
         // Normalize camera position
-        newState.camera.x =
-          ((newState.camera.x % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
-        newState.camera.y =
-          ((newState.camera.y % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
+        newState.camera.x = normalizeCoord(newState.camera.x);
+        newState.camera.y = normalizeCoord(newState.camera.y);
 
         return newState;
       });
@@ -309,8 +284,8 @@ export const SpaceMap: React.FC = () => {
       projectilesRef.current = projectilesRef.current
         .map((proj) => ({
           ...proj,
-          x: proj.x + proj.vx,
-          y: proj.y + proj.vy,
+          x: normalizeCoord(proj.x + proj.vx),
+          y: normalizeCoord(proj.y + proj.vy),
           life: proj.life - 1,
         }))
         .filter((proj) => proj.life > 0);
@@ -319,7 +294,7 @@ export const SpaceMap: React.FC = () => {
       ctx.fillStyle = "#0a0a2e";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render background stars with seamless wrapping
+      // Render background stars
       ctx.fillStyle = "#ffffff";
       starsRef.current.forEach((star) => {
         if (star.parallax < 1) {
@@ -331,14 +306,12 @@ export const SpaceMap: React.FC = () => {
           const screenX = centerX + parallaxX;
           const screenY = centerY + parallaxY;
 
-          // Only render stars that are on screen (with margin)
           if (
             screenX > -50 &&
             screenX < canvas.width + 50 &&
             screenY > -50 &&
             screenY < canvas.height + 50
           ) {
-            // Subtle twinkling
             star.twinkle += star.speed;
             const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
 
@@ -358,16 +331,7 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Barrier removed for truly seamless infinite world experience
-
-      // Render planets with seamless wrapping using shortest distance
-      const getWrappedDistance = (coord: number, cameraCoord: number) => {
-        let delta = coord - cameraCoord;
-        if (delta > WORLD_SIZE / 2) delta -= WORLD_SIZE;
-        else if (delta < -WORLD_SIZE / 2) delta += WORLD_SIZE;
-        return delta;
-      };
-
+      // Render planets
       planetsRef.current.forEach((planet) => {
         const wrappedDeltaX = getWrappedDistance(planet.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(planet.y, gameState.camera.y);
@@ -409,8 +373,10 @@ export const SpaceMap: React.FC = () => {
       // Render projectiles
       ctx.fillStyle = "#ffff00";
       projectilesRef.current.forEach((proj) => {
-        const screenX = centerX + (proj.x - gameState.camera.x);
-        const screenY = centerY + (proj.y - gameState.camera.y);
+        const wrappedDeltaX = getWrappedDistance(proj.x, gameState.camera.x);
+        const wrappedDeltaY = getWrappedDistance(proj.y, gameState.camera.y);
+        const screenX = centerX + wrappedDeltaX;
+        const screenY = centerY + wrappedDeltaY;
         ctx.save();
         ctx.globalAlpha = proj.life / 80;
         ctx.beginPath();
@@ -420,8 +386,16 @@ export const SpaceMap: React.FC = () => {
       });
 
       // Render ship
-      const shipScreenX = centerX + (gameState.ship.x - gameState.camera.x);
-      const shipScreenY = centerY + (gameState.ship.y - gameState.camera.y);
+      const shipWrappedDeltaX = getWrappedDistance(
+        gameState.ship.x,
+        gameState.camera.x,
+      );
+      const shipWrappedDeltaY = getWrappedDistance(
+        gameState.ship.y,
+        gameState.camera.y,
+      );
+      const shipScreenX = centerX + shipWrappedDeltaX;
+      const shipScreenY = centerY + shipWrappedDeltaY;
 
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
@@ -452,81 +426,42 @@ export const SpaceMap: React.FC = () => {
 
       ctx.restore();
 
-      // Render foreground stars with seamless wrapping
+      // Render foreground stars
       ctx.fillStyle = "#ffffff";
       starsRef.current.forEach((star) => {
         if (star.parallax >= 1) {
-          // Foreground stars only
-          renderStar(star);
+          const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
+          const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
 
-          // Render wrapped duplicates for seamless transitions
-          const STAR_EDGE_THRESHOLD = canvas.width * 1.5;
+          const parallaxX = wrappedDeltaX * star.parallax;
+          const parallaxY = wrappedDeltaY * star.parallax;
+          const screenX = centerX + parallaxX;
+          const screenY = centerY + parallaxY;
 
           if (
-            (star.x - gameState.camera.x) * star.parallax <
-            STAR_EDGE_THRESHOLD
+            screenX > -30 &&
+            screenX < canvas.width + 30 &&
+            screenY > -30 &&
+            screenY < canvas.height + 30
           ) {
-            renderStar(star, WORLD_SIZE, 0);
-          }
-          if (
-            (star.x - gameState.camera.x) * star.parallax >
-            -STAR_EDGE_THRESHOLD
-          ) {
-            renderStar(star, -WORLD_SIZE, 0);
-          }
-          if (
-            (star.y - gameState.camera.y) * star.parallax <
-            STAR_EDGE_THRESHOLD
-          ) {
-            renderStar(star, 0, WORLD_SIZE);
-          }
-          if (
-            (star.y - gameState.camera.y) * star.parallax >
-            -STAR_EDGE_THRESHOLD
-          ) {
-            renderStar(star, 0, -WORLD_SIZE);
+            star.twinkle += star.speed;
+            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(
+              Math.round(screenX),
+              Math.round(screenY),
+              star.size,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+            ctx.restore();
           }
         }
       });
-
-      // Render warp transition effect
-      if (gameState.warpTransition.active) {
-        const fadeAlpha =
-          Math.sin(gameState.warpTransition.progress * Math.PI * 2) * 0.1 +
-          0.05;
-
-        // Subtle fade overlay to mask the transition
-        ctx.save();
-        ctx.globalAlpha = fadeAlpha;
-        ctx.fillStyle = "#0a0a2e";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.restore();
-
-        // Add subtle warp effect around screen edges
-        const warpIntensity =
-          Math.sin(gameState.warpTransition.progress * Math.PI) * 0.3;
-
-        if (warpIntensity > 0) {
-          ctx.save();
-          ctx.globalAlpha = warpIntensity;
-
-          // Create gradient from edges
-          const gradient = ctx.createRadialGradient(
-            centerX,
-            centerY,
-            0,
-            centerX,
-            centerY,
-            Math.max(canvas.width, canvas.height) * 0.7,
-          );
-          gradient.addColorStop(0, "rgba(10, 10, 46, 0)");
-          gradient.addColorStop(1, "rgba(0, 255, 255, 0.1)");
-
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        }
-      }
 
       // Final reset to ensure clean state
       ctx.globalAlpha = 1;
@@ -541,7 +476,7 @@ export const SpaceMap: React.FC = () => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState]);
+  }, [gameState, getWrappedDistance, normalizeCoord]);
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
