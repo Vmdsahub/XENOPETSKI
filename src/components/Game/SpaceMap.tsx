@@ -1658,8 +1658,11 @@ export const SpaceMap: React.FC = () => {
         {isWorldEditMode ? (
           <>
             <div className="text-yellow-400 font-bold mb-1">🔧 MODO EDIÇÃO</div>
-            <div>• Click: Selecionar mundo</div>
-            <div>• Arrastar: Mover mundo</div>
+            <div>• 1º Click: Selecionar mundo</div>
+            <div>
+              • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
+            </div>
+            <div>• ESC: Cancelar</div>
             <div>• Painel: Tamanho/Rotação</div>
           </>
         ) : (
