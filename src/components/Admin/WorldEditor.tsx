@@ -77,7 +77,7 @@ export const WorldEditor: React.FC<WorldEditorProps> = ({
       {/* Size Control */}
       <div className="mb-6">
         <div className="flex items-center space-x-2 mb-2">
-          <Resize className="w-4 h-4 text-blue-600" />
+          <Maximize2 className="w-4 h-4 text-blue-600" />
           <label className="text-sm font-medium text-gray-700">Tamanho</label>
           <span className="text-sm text-gray-500">
             ({Math.round(localSize)})
