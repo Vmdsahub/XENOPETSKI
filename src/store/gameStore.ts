@@ -730,6 +730,9 @@ export const useGameStore = create<GameStore>()(
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
       setCurrentPlanet: (planet) => set({ currentPlanet: planet }),
 
+      // World editing mode
+      setWorldEditMode: (enabled) => set({ isWorldEditMode: enabled }),
+
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>
         set({ selectedEggForHatching: eggData }),
