@@ -716,6 +716,17 @@ export const SpaceMap: React.FC = () => {
         newState.camera.x = normalizeCoord(newState.camera.x);
         newState.camera.y = normalizeCoord(newState.camera.y);
 
+        // Save to store for persistence
+        updateShipState({
+          x: newState.ship.x,
+          y: newState.ship.y,
+          angle: newState.ship.angle,
+          vx: newState.ship.vx,
+          vy: newState.ship.vy,
+          cameraX: newState.camera.x,
+          cameraY: newState.camera.y,
+        });
+
         return newState;
       });
 
