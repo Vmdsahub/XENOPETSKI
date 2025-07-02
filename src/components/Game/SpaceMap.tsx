@@ -1488,7 +1488,7 @@ export const SpaceMap: React.FC = () => {
       />
 
       {/* World Editor in edit mode */}
-      {isWorldEditMode && (
+      {isWorldEditMode && worldPositions.length > 0 && (
         <WorldEditor
           world={
             worldPositions.find((w) => w.id === selectedWorldId) ||
