@@ -180,9 +180,13 @@ export const SpaceMap: React.FC = () => {
 
     // Layer 1: Deep background (parallax 0.1) - ABAIXO do jogador
     for (let i = 0; i < 800; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.4 + Math.random() * 0.6,
         opacity: 0.2 + Math.random() * 0.3,
         speed: Math.random() * 0.015 + 0.005,
@@ -194,10 +198,18 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.08, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.08,
+          x: 0, // Movimento será calculado via seno/cosseno
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 8 + 2, // Amplitude de flutuação
+          y: Math.random() * 8 + 2,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2, // Fase inicial aleatória
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
