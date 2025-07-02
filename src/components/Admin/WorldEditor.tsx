@@ -17,6 +17,11 @@ export const WorldEditor: React.FC<WorldEditorProps> = ({
   isSelected,
   onSelect,
 }) => {
+  // Defensive check for undefined world
+  if (!world) {
+    return null;
+  }
+
   const [localSize, setLocalSize] = useState(world.size);
   const [localRotation, setLocalRotation] = useState(world.rotation);
 
