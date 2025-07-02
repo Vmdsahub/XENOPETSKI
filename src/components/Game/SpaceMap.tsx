@@ -1679,18 +1679,21 @@ export const SpaceMap: React.FC = () => {
                     : planet,
                 );
 
-                // Save to database
-                if (selectedWorldId) {
-                  try {
-                    await gameService.updateWorldPosition(selectedWorldId, {
-                      size: newSize,
-                    });
-                    // Reload planets from database to ensure consistency
-                    await loadWorldPositions();
-                  } catch (error) {
-                    console.error("Failed to update world size:", error);
+                // Save to database with throttling to avoid too many calls
+                clearTimeout((window as any).worldSizeTimeout);
+                (window as any).worldSizeTimeout = setTimeout(async () => {
+                  if (selectedWorldId) {
+                    try {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        size: newSize,
+                      });
+                      // Reload planets from database to ensure consistency
+                      await loadWorldPositions();
+                    } catch (error) {
+                      console.error("Failed to update world size:", error);
+                    }
                   }
-                }
+                }, 300);
               }}
               className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
             />
