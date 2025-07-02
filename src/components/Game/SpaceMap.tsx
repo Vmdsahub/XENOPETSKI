@@ -926,8 +926,16 @@ export const SpaceMap: React.FC = () => {
         projectilesRef.current.push(newProjectile);
       }
     },
-    [gameState, getWrappedDistance],
+    [gameState, getWrappedDistance, isWorldEditMode],
   );
+
+  // Handle mouse up to stop dragging
+  const handleMouseUp = useCallback(() => {
+    if (isWorldEditMode && isDragging) {
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+    }
+  }, [isWorldEditMode, isDragging]);
 
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
