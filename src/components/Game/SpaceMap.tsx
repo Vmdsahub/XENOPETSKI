@@ -693,16 +693,22 @@ export const SpaceMap: React.FC = () => {
   // Handle shooting
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const newProjectile: Projectile = {
-        x: gameState.ship.x,
-        y: gameState.ship.y,
-        vx: Math.cos(gameState.ship.angle) * 10,
-        vy: Math.sin(gameState.ship.angle) * 10,
-        life: 80,
-      };
-      projectilesRef.current.push(newProjectile);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-      // Check planet interactions - only if ship is within interaction radius
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      // Convert click position to world coordinates
+      const worldClickX = clickX - centerX + gameState.camera.x;
+      const worldClickY = clickY - centerY + gameState.camera.y;
+
+      // Check if click was on a planet first
+      let clickedOnPlanet = false;
+
       planetsRef.current.forEach((planet) => {
         const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
         const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
@@ -710,10 +716,34 @@ export const SpaceMap: React.FC = () => {
           shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
         );
 
+        // Only check for planet click if ship is within interaction radius
         if (shipToPlanetDistance <= planet.interactionRadius) {
-          alert(`Explorando ${planet.name}!`);
+          // Check if the click was specifically on the planet image
+          const clickToPlanetX = getWrappedDistance(planet.x, worldClickX);
+          const clickToPlanetY = getWrappedDistance(planet.y, worldClickY);
+          const clickToPlanetDistance = Math.sqrt(
+            clickToPlanetX * clickToPlanetX + clickToPlanetY * clickToPlanetY,
+          );
+
+          // Only interact if click was within planet's visual size
+          if (clickToPlanetDistance <= planet.size) {
+            alert(`Explorando ${planet.name}!`);
+            clickedOnPlanet = true;
+          }
         }
       });
+
+      // Only shoot if we didn't click on a planet
+      if (!clickedOnPlanet) {
+        const newProjectile: Projectile = {
+          x: gameState.ship.x,
+          y: gameState.ship.y,
+          vx: Math.cos(gameState.ship.angle) * 10,
+          vy: Math.sin(gameState.ship.angle) * 10,
+          life: 80,
+        };
+        projectilesRef.current.push(newProjectile);
+      }
     },
     [gameState, getWrappedDistance],
   );
