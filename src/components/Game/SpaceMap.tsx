@@ -1457,13 +1457,31 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full"
         style={{
-          cursor: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
+          cursor: isWorldEditMode
+            ? isDragging
+              ? "grabbing"
+              : "grab"
+            : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
+        onMouseUp={handleMouseUp}
       />
+
+      {/* World Editor in edit mode */}
+      {isWorldEditMode && (
+        <WorldEditor
+          world={
+            worldPositions.find((w) => w.id === selectedWorldId) ||
+            worldPositions[0]
+          }
+          onUpdate={handleWorldUpdate}
+          isSelected={!!selectedWorldId}
+          onSelect={() => {}}
+        />
+      )}
 
       <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
         <div>X: {Math.round(gameState.ship.x)}</div>
