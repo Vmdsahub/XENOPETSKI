@@ -640,6 +640,7 @@ export const useGameStore = create<GameStore>()(
       language: "pt-BR",
       currentScreen: "pet",
       currentPlanet: null,
+      isWorldEditMode: false,
       achievements: [],
       collectibles: [],
       quests: [],
