@@ -1023,7 +1023,7 @@ export const SpaceMap: React.FC = () => {
     getWrappedDistance,
     normalizeCoord,
     drawPureLightStar,
-    updateShipState,
+    saveShipState,
   ]);
 
   return (
