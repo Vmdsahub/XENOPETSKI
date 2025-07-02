@@ -99,6 +99,7 @@ export const SpaceMap: React.FC = () => {
   const radarPulsesRef = useRef<RadarPulse[]>([]);
   const lastShootingStarTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
+  const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
