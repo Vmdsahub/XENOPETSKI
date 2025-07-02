@@ -1698,7 +1698,20 @@ export const SpaceMap: React.FC = () => {
 
             {isDragging && (
               <button
-                onClick={() => {
+                onClick={async () => {
+                  // Save final position to database
+                  if (selectedWorldId) {
+                    const planet = planetsRef.current.find(
+                      (p) => p.id === selectedWorldId,
+                    );
+                    if (planet) {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        x: planet.x,
+                        y: planet.y,
+                      });
+                    }
+                  }
+
                   setIsDragging(false);
                   setDragOffset({ x: 0, y: 0 });
                 }}
