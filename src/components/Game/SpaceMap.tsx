@@ -1017,6 +1017,16 @@ export const SpaceMap: React.FC = () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
+      // Force save final state when component unmounts
+      forceSaveShipState({
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        angle: gameState.ship.angle,
+        vx: gameState.ship.vx,
+        vy: gameState.ship.vy,
+        cameraX: gameState.camera.x,
+        cameraY: gameState.camera.y,
+      });
     };
   }, [
     gameState,
