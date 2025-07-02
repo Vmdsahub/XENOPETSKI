@@ -93,45 +93,120 @@ export const SpaceMap: React.FC = () => {
 
   // Initialize game objects once
   useEffect(() => {
-    // Generate stars with different layers
+    // Generate stars with different layers and enhanced cosmic effects
     const stars: Star[] = [];
+    const starColors = [
+      "#ffffff",
+      "#ffe4b5",
+      "#ffd700",
+      "#87ceeb",
+      "#ff69b4",
+      "#98fb98",
+      "#dda0dd",
+      "#f0e68c",
+    ];
 
-    // Background stars (far)
-    for (let i = 0; i < 80; i++) {
+    // Distant background stars (cosmic dust)
+    for (let i = 0; i < 200; i++) {
+      const isColored = Math.random() < 0.15; // 15% chance of colored star
+      const isBright = Math.random() < 0.1; // 10% chance of bright star
+
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1 + 0.5,
+        size: Math.random() * 0.8 + 0.3,
+        opacity: Math.random() * 0.4 + 0.2,
+        speed: Math.random() * 0.008 + 0.003,
+        parallax: 0.1,
+        twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.002,
+          y: (Math.random() - 0.5) * 0.002,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
+      });
+    }
+
+    // Mid-distance stars
+    for (let i = 0; i < 150; i++) {
+      const isColored = Math.random() < 0.2; // 20% chance of colored star
+      const isBright = Math.random() < 0.15; // 15% chance of bright star
+
+      stars.push({
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
+        size: Math.random() * 1.2 + 0.5,
         opacity: Math.random() * 0.5 + 0.3,
-        speed: Math.random() * 0.01 + 0.005,
-        parallax: 0.2,
+        speed: Math.random() * 0.012 + 0.008,
+        parallax: 0.4,
         twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.001,
+          y: (Math.random() - 0.5) * 0.001,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
       });
     }
 
-    // Mid stars
-    for (let i = 0; i < 60; i++) {
+    // Close foreground stars
+    for (let i = 0; i < 80; i++) {
+      const isColored = Math.random() < 0.25; // 25% chance of colored star
+      const isBright = Math.random() < 0.2; // 20% chance of bright star
+
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.2 + 0.7,
-        opacity: Math.random() * 0.4 + 0.4,
-        speed: Math.random() * 0.015 + 0.01,
-        parallax: 0.5,
+        size: Math.random() * 1.8 + 0.8,
+        opacity: Math.random() * 0.4 + 0.25,
+        speed: Math.random() * 0.018 + 0.012,
+        parallax: 1.0,
         twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.0008,
+          y: (Math.random() - 0.5) * 0.0008,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
       });
     }
 
-    // Foreground stars (close)
-    for (let i = 0; i < 30; i++) {
+    // Very close bright stars
+    for (let i = 0; i < 40; i++) {
+      const isColored = Math.random() < 0.3; // 30% chance of colored star
+      const isBright = Math.random() < 0.4; // 40% chance of bright star
+
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.5 + 1,
-        opacity: Math.random() * 0.3 + 0.2,
-        speed: Math.random() * 0.02 + 0.015,
-        parallax: 1.3,
+        size: Math.random() * 2.2 + 1.2,
+        opacity: Math.random() * 0.3 + 0.15,
+        speed: Math.random() * 0.025 + 0.015,
+        parallax: 1.5,
         twinkle: Math.random() * 100,
+        color: isColored
+          ? starColors[Math.floor(Math.random() * starColors.length)]
+          : "#ffffff",
+        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        drift: {
+          x: (Math.random() - 0.5) * 0.0005,
+          y: (Math.random() - 0.5) * 0.0005,
+        },
+        pulse: Math.random() * 100,
+        sparkle: Math.random() * 100,
       });
     }
 
