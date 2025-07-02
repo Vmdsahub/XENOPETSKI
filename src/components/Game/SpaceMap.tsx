@@ -517,6 +517,45 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
+      // Render warp transition effect
+      if (gameState.warpTransition.active) {
+        const fadeAlpha =
+          Math.sin(gameState.warpTransition.progress * Math.PI * 2) * 0.1 +
+          0.05;
+
+        // Subtle fade overlay to mask the transition
+        ctx.save();
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = "#0a0a2e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        // Add subtle warp effect around screen edges
+        const warpIntensity =
+          Math.sin(gameState.warpTransition.progress * Math.PI) * 0.3;
+
+        if (warpIntensity > 0) {
+          ctx.save();
+          ctx.globalAlpha = warpIntensity;
+
+          // Create gradient from edges
+          const gradient = ctx.createRadialGradient(
+            centerX,
+            centerY,
+            0,
+            centerX,
+            centerY,
+            Math.max(canvas.width, canvas.height) * 0.7,
+          );
+          gradient.addColorStop(0, "rgba(10, 10, 46, 0)");
+          gradient.addColorStop(1, "rgba(0, 255, 255, 0.1)");
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        }
+      }
+
       // Final reset to ensure clean state
       ctx.globalAlpha = 1;
 
