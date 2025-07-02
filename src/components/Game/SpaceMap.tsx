@@ -870,12 +870,33 @@ export const SpaceMap: React.FC = () => {
           screenY > -100 &&
           screenY < canvas.height + 100
         ) {
+          // Check if ship is within interaction radius for visual feedback
+          const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
+          const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
+          const shipToPlanetDistance = Math.sqrt(
+            shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+          );
+          const isInRange = shipToPlanetDistance <= planet.interactionRadius;
+
+          // Render interaction circle
+          ctx.save();
+          ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+          ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+          ctx.lineWidth = isInRange ? 3 : 1;
+          ctx.setLineDash(isInRange ? [] : [5, 5]);
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+
+          // Render planet
           ctx.globalAlpha = 1;
           ctx.fillStyle = planet.color;
           ctx.beginPath();
           ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
           ctx.fill();
 
+          // Planet highlight
           ctx.globalAlpha = 0.3;
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
