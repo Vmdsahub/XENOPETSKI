@@ -1709,7 +1709,7 @@ export const SpaceMap: React.FC = () => {
                   180) /
                   Math.PI,
               )}
-              °
+              ��
             </label>
             <input
               type="range"
@@ -1730,18 +1730,21 @@ export const SpaceMap: React.FC = () => {
                     : planet,
                 );
 
-                // Save to database
-                if (selectedWorldId) {
-                  try {
-                    await gameService.updateWorldPosition(selectedWorldId, {
-                      rotation: newRotation,
-                    });
-                    // Reload planets from database to ensure consistency
-                    await loadWorldPositions();
-                  } catch (error) {
-                    console.error("Failed to update world rotation:", error);
+                // Save to database with throttling to avoid too many calls
+                clearTimeout((window as any).worldRotationTimeout);
+                (window as any).worldRotationTimeout = setTimeout(async () => {
+                  if (selectedWorldId) {
+                    try {
+                      await gameService.updateWorldPosition(selectedWorldId, {
+                        rotation: newRotation,
+                      });
+                      // Reload planets from database to ensure consistency
+                      await loadWorldPositions();
+                    } catch (error) {
+                      console.error("Failed to update world rotation:", error);
+                    }
                   }
-                }
+                }, 300);
               }}
               className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
             />
