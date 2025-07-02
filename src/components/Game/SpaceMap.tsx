@@ -101,8 +101,8 @@ export const SpaceMap: React.FC = () => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
 
-  // Helper function to draw a glowing star without cross shapes
-  const drawGlowingStar = useCallback(
+  // Helper function to draw pure light points
+  const drawPureLightStar = useCallback(
     (
       ctx: CanvasRenderingContext2D,
       x: number,
@@ -120,45 +120,26 @@ export const SpaceMap: React.FC = () => {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
       };
 
-      // Main star core with soft glow
+      // Main star core - pure light point
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
 
-      // Enhanced glow effect for larger/brighter stars
-      if (size > 0.8 || type === "bright" || type === "giant") {
-        const glowRadius = type === "giant" ? size * 4 : size * 2.5;
+      // Subtle glow effect only for larger stars
+      if (size > 1.0) {
+        const glowRadius = size * 2;
         const glowIntensity =
-          type === "giant" ? 0.9 : type === "bright" ? 0.7 : 0.5;
+          type === "giant" ? 0.6 : type === "bright" ? 0.4 : 0.3;
 
         ctx.beginPath();
         ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
         gradient.addColorStop(0, hexToRgba(color, intensity * glowIntensity));
-        gradient.addColorStop(0.6, hexToRgba(color, intensity * 0.3));
+        gradient.addColorStop(0.8, hexToRgba(color, intensity * 0.1));
         gradient.addColorStop(1, hexToRgba(color, 0));
         ctx.fillStyle = gradient;
         ctx.fill();
-      }
-
-      // Diamond sparkle effect for bright/giant stars (no crosses)
-      if (type === "bright" || type === "giant") {
-        const sparkleSize = size * (type === "giant" ? 2.5 : 1.8);
-        const originalAlpha = ctx.globalAlpha;
-        ctx.globalAlpha = intensity * 0.4;
-        ctx.fillStyle = hexToRgba(color, 0.6);
-
-        // Draw diamond shape instead of cross
-        ctx.beginPath();
-        ctx.moveTo(x, y - sparkleSize);
-        ctx.lineTo(x + sparkleSize * 0.3, y);
-        ctx.lineTo(x, y + sparkleSize);
-        ctx.lineTo(x - sparkleSize * 0.3, y);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.globalAlpha = originalAlpha;
       }
     },
     [],
@@ -190,15 +171,15 @@ export const SpaceMap: React.FC = () => {
       "#f8f8ff", // Purples
     ];
 
-    // Layer 1: Deep background (depth 0.1-0.2) - ABAIXO do jogador
+    // Layer 1: Deep background (parallax 0.1) - ABAIXO do jogador
     for (let i = 0; i < 800; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.4 + Math.random() * 0.6,
         opacity: 0.2 + Math.random() * 0.3,
-        speed: Math.random() * 0.008 + 0.002,
-        parallax: 0.1 + Math.random() * 0.1, // Strong parallax difference
+        speed: Math.random() * 0.015 + 0.005,
+        parallax: 0.1, // Camada mais distante
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.85
@@ -206,22 +187,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.015, // Strong cosmic dust movement
-          y: (Math.random() - 0.5) * 0.015,
+          x: (Math.random() - 0.5) * 0.08, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.08,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Layer 2: Mid background (depth 0.3-0.4) - ABAIXO do jogador
+    // Layer 2: Mid background (parallax 0.3) - ABAIXO do jogador
     for (let i = 0; i < 700; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
-        speed: Math.random() * 0.012 + 0.004,
-        parallax: 0.3 + Math.random() * 0.1, // Strong parallax
+        speed: Math.random() * 0.018 + 0.007,
+        parallax: 0.3, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.8
@@ -229,22 +210,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.1 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.012, // Strong cosmic dust movement
-          y: (Math.random() - 0.5) * 0.012,
+          x: (Math.random() - 0.5) * 0.06, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.06,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Layer 3: Near background (depth 0.6-0.7) - ABAIXO do jogador
+    // Layer 3: Near background (parallax 0.6) - ABAIXO do jogador
     for (let i = 0; i < 600; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
-        speed: Math.random() * 0.016 + 0.006,
-        parallax: 0.6 + Math.random() * 0.1, // Strong parallax
+        speed: Math.random() * 0.022 + 0.009,
+        parallax: 0.6, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.75
@@ -252,22 +233,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.01, // Strong cosmic dust movement
-          y: (Math.random() - 0.5) * 0.01,
+          x: (Math.random() - 0.5) * 0.045, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.045,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Layer 4: Close background (depth 0.8-0.9) - ABAIXO do jogador
+    // Layer 4: Close background (parallax 0.9) - ABAIXO do jogador
     for (let i = 0; i < 500; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.0 + Math.random() * 1.5,
         opacity: 0.45 + Math.random() * 0.4,
-        speed: Math.random() * 0.02 + 0.008,
-        parallax: 0.8 + Math.random() * 0.1, // Strong parallax
+        speed: Math.random() * 0.025 + 0.012,
+        parallax: 0.9, // Paralaxe distinta
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.7
@@ -275,22 +256,22 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.008, // Strong cosmic dust movement
-          y: (Math.random() - 0.5) * 0.008,
+          x: (Math.random() - 0.5) * 0.035, // Movimento forte de balanço
+          y: (Math.random() - 0.5) * 0.035,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Layer 5: Cosmic dust foreground (depth 1.1-1.3) - ACIMA do jogador
+    // Layer 5: Cosmic dust foreground (parallax 1.2) - ACIMA do jogador
     for (let i = 0; i < 400; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 1.5 + Math.random() * 2.0,
-        opacity: 0.25 + Math.random() * 0.3, // More subtle for dust effect
-        speed: Math.random() * 0.025 + 0.012,
-        parallax: 1.1 + Math.random() * 0.2, // Strong foreground parallax
+        opacity: 0.25 + Math.random() * 0.3,
+        speed: Math.random() * 0.03 + 0.015,
+        parallax: 1.2, // Paralaxe de primeiro plano
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.6
@@ -303,22 +284,22 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.006, // Strong cosmic dust drift
-          y: (Math.random() - 0.5) * 0.006,
+          x: (Math.random() - 0.5) * 0.025, // Movimento de poeira cósmica
+          y: (Math.random() - 0.5) * 0.025,
         },
         pulse: Math.random() * 100,
       });
     }
 
-    // Layer 6: Close cosmic dust (depth 1.4-1.7) - ACIMA do jogador
+    // Layer 6: Close cosmic dust (parallax 1.6) - ACIMA do jogador
     for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
         size: 2.0 + Math.random() * 3.0,
-        opacity: 0.15 + Math.random() * 0.2, // Very subtle for close dust
-        speed: Math.random() * 0.035 + 0.015,
-        parallax: 1.4 + Math.random() * 0.3, // Maximum parallax movement
+        opacity: 0.15 + Math.random() * 0.2,
+        speed: Math.random() * 0.035 + 0.018,
+        parallax: 1.6, // Máximo paralaxe
         twinkle: Math.random() * 100,
         color:
           Math.random() < 0.5
@@ -331,8 +312,8 @@ export const SpaceMap: React.FC = () => {
               ? "giant"
               : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.004, // Enhanced cosmic dust drift
-          y: (Math.random() - 0.5) * 0.004,
+          x: (Math.random() - 0.5) * 0.015, // Movimento sutil de poeira próxima
+          y: (Math.random() - 0.5) * 0.015,
         },
         pulse: Math.random() * 100,
       });
@@ -610,7 +591,7 @@ export const SpaceMap: React.FC = () => {
           const star = batch[i];
           ctx.save();
           ctx.globalAlpha = star.alpha;
-          drawGlowingStar(
+          drawPureLightStar(
             ctx,
             star.x,
             star.y,
