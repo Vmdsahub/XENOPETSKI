@@ -14,6 +14,7 @@ import { OtherUserAchievementsScreen } from "./components/Screens/OtherUserAchie
 import { OtherUserCollectiblesScreen } from "./components/Screens/OtherUserCollectiblesScreen";
 import { AdminPanel } from "./components/Admin/AdminPanel";
 import { SpaceMap } from "./components/Game/SpaceMap";
+import { PlanetScreen } from "./components/Screens/PlanetScreen";
 import { useAuthStore } from "./store/authStore";
 import { useGameStore } from "./store/gameStore";
 import { preloadAllSounds } from "./utils/soundManager";
@@ -138,6 +139,8 @@ function App() {
         return <OtherUserAchievementsScreen />;
       case "otherUserCollectibles":
         return <OtherUserCollectiblesScreen />;
+      case "planet":
+        return <PlanetScreen />;
       default:
         return <PetScreen />;
     }

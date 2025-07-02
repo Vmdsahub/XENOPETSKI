@@ -21,6 +21,12 @@ interface GameStore extends GameState {
   setCurrentScreen: (screen: string) => void;
   setViewedUserId: (userId: string | null) => void;
 
+  // Planet management
+  currentPlanet: { id: string; name: string; color: string } | null;
+  setCurrentPlanet: (
+    planet: { id: string; name: string; color: string } | null,
+  ) => void;
+
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
@@ -629,6 +635,7 @@ export const useGameStore = create<GameStore>()(
       notifications: [],
       language: "pt-BR",
       currentScreen: "pet",
+      currentPlanet: null,
       achievements: [],
       collectibles: [],
       quests: [],
@@ -717,6 +724,7 @@ export const useGameStore = create<GameStore>()(
       setActivePet: (pet) => set({ activePet: pet }),
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
+      setCurrentPlanet: (planet) => set({ currentPlanet: planet }),
 
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>
@@ -1713,6 +1721,7 @@ export const useGameStore = create<GameStore>()(
         notifications: state.notifications,
         language: state.language,
         currentScreen: state.currentScreen,
+        currentPlanet: state.currentPlanet,
         achievements: state.achievements,
         collectibles: state.collectibles,
         redeemCodes: state.redeemCodes,
