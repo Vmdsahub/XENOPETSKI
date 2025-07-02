@@ -215,9 +215,13 @@ export const SpaceMap: React.FC = () => {
 
     // Layer 2: Mid background (parallax 0.3) - ABAIXO do jogador
     for (let i = 0; i < 700; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.6 + Math.random() * 0.8,
         opacity: 0.3 + Math.random() * 0.35,
         speed: Math.random() * 0.018 + 0.007,
@@ -229,18 +233,30 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.1 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.06, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.06,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 6 + 1.5,
+          y: Math.random() * 6 + 1.5,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 3: Near background (parallax 0.6) - ABAIXO do jogador
     for (let i = 0; i < 600; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 0.8 + Math.random() * 1.2,
         opacity: 0.4 + Math.random() * 0.4,
         speed: Math.random() * 0.022 + 0.009,
@@ -252,18 +268,30 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.15 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.045, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.045,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 4 + 1,
+          y: Math.random() * 4 + 1,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
     // Layer 4: Close background (parallax 0.9) - ABAIXO do jogador
     for (let i = 0; i < 500; i++) {
+      const baseX = Math.random() * WORLD_SIZE;
+      const baseY = Math.random() * WORLD_SIZE;
       stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         size: 1.0 + Math.random() * 1.5,
         opacity: 0.45 + Math.random() * 0.4,
         speed: Math.random() * 0.025 + 0.012,
@@ -275,10 +303,18 @@ export const SpaceMap: React.FC = () => {
             : starColors[Math.floor(Math.random() * starColors.length)],
         type: Math.random() < 0.2 ? "bright" : "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.035, // Movimento forte de balanço
-          y: (Math.random() - 0.5) * 0.035,
+          x: 0,
+          y: 0,
         },
         pulse: Math.random() * 100,
+        floatAmplitude: {
+          x: Math.random() * 3 + 0.5,
+          y: Math.random() * 3 + 0.5,
+        },
+        floatPhase: {
+          x: Math.random() * Math.PI * 2,
+          y: Math.random() * Math.PI * 2,
+        },
       });
     }
 
