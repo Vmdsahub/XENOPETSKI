@@ -600,6 +600,7 @@ export const SpaceMap: React.FC = () => {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+      hasMouseMoved.current = true;
     },
     [],
   );
