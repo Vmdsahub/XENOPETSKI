@@ -15,7 +15,7 @@ interface Star {
   type: "normal" | "bright" | "giant";
   drift: { x: number; y: number };
   pulse: number;
-  baseX: number; // Posiç��o base para movimento oscilatório
+  baseX: number; // Posição base para movimento oscilatório
   baseY: number; // Posição base para movimento oscilatório
   floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutuação
   floatPhase: { x: number; y: number }; // Fase do movimento senoidal
@@ -1226,18 +1226,11 @@ export const SpaceMap: React.FC = () => {
           ctx.stroke();
           ctx.restore();
 
-          // Render planet image with rotation
+          // Render planet image
           const img = planetImagesRef.current.get(planet.id);
           if (img && img.complete) {
             ctx.save();
             ctx.globalAlpha = 1;
-
-            // Apply rotation if planet has rotation
-            if (planet.rotation && planet.rotation !== 0) {
-              ctx.translate(screenX, screenY);
-              ctx.rotate(planet.rotation);
-              ctx.translate(-screenX, -screenY);
-            }
 
             const imageSize = planet.size * 2; // Use diameter as image size
             const drawX = screenX - imageSize / 2;
