@@ -91,8 +91,14 @@ const BARRIER_RADIUS = 600;
 const RENDER_BUFFER = 200;
 
 export const SpaceMap: React.FC = () => {
-  const { getShipState, setCurrentScreen, setCurrentPlanet, isWorldEditMode } =
-    useGameStore();
+  const {
+    getShipState,
+    setCurrentScreen,
+    setCurrentPlanet,
+    isWorldEditMode,
+    setWorldEditMode,
+    user,
+  } = useGameStore();
   const { saveShipState, forceSaveShipState } = useShipStatePersistence();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
