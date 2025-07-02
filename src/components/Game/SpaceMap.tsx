@@ -273,8 +273,8 @@ export const SpaceMap: React.FC = () => {
         },
         pulse: Math.random() * 100,
         floatAmplitude: {
-          x: Math.random() * 4 + 1,
-          y: Math.random() * 4 + 1,
+          x: Math.random() * 2 + 0.6,
+          y: Math.random() * 2 + 0.6,
         },
         floatPhase: {
           x: Math.random() * Math.PI * 2,
