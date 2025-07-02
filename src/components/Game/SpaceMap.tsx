@@ -29,6 +29,7 @@ interface Planet {
   color: string;
   name: string;
   interactionRadius: number;
+  imageUrl: string;
 }
 
 interface Projectile {
@@ -54,7 +55,6 @@ interface ShootingStar {
 
 interface RadarPulse {
   planetId: string;
-  angle: number;
   radius: number;
   maxRadius: number;
   life: number;
@@ -101,6 +101,7 @@ export const SpaceMap: React.FC = () => {
   const lastShootingStarTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
+  const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
@@ -180,6 +181,60 @@ export const SpaceMap: React.FC = () => {
   const normalizeCoord = useCallback((coord: number) => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
+
+  // Function to check if click is on visible pixel of planet image
+  const isClickOnPlanetPixel = useCallback(
+    (
+      planet: Planet,
+      clickWorldX: number,
+      clickWorldY: number,
+      canvas: HTMLCanvasElement,
+    ): boolean => {
+      const img = planetImagesRef.current.get(planet.id);
+      if (!img || !img.complete) {
+        // Fallback to circle detection if image not loaded
+        const dx = getWrappedDistance(planet.x, clickWorldX);
+        const dy = getWrappedDistance(planet.y, clickWorldY);
+        return Math.sqrt(dx * dx + dy * dy) <= planet.size;
+      }
+
+      // Create temporary canvas to check pixel data
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      if (!tempCtx) return false;
+
+      const imageSize = planet.size * 2; // Diameter
+      tempCanvas.width = imageSize;
+      tempCanvas.height = imageSize;
+
+      // Draw the image on temp canvas
+      tempCtx.drawImage(img, 0, 0, imageSize, imageSize);
+
+      // Calculate relative position within the image
+      const dx = getWrappedDistance(planet.x, clickWorldX);
+      const dy = getWrappedDistance(planet.y, clickWorldY);
+
+      // Convert to image coordinates (center the image)
+      const imgX = dx + imageSize / 2;
+      const imgY = dy + imageSize / 2;
+
+      // Check if within image bounds
+      if (imgX < 0 || imgX >= imageSize || imgY < 0 || imgY >= imageSize) {
+        return false;
+      }
+
+      // Get pixel data at the click position
+      try {
+        const pixelData = tempCtx.getImageData(imgX, imgY, 1, 1).data;
+        const alpha = pixelData[3]; // Alpha channel
+        return alpha > 50; // Consider pixel visible if alpha > 50
+      } catch (e) {
+        // Fallback to circle detection if there's an error
+        return Math.sqrt(dx * dx + dy * dy) <= planet.size;
+      }
+    },
+    [getWrappedDistance],
+  );
 
   // Create shooting star
   const createShootingStar = useCallback((canvas: HTMLCanvasElement) => {
@@ -293,26 +348,18 @@ export const SpaceMap: React.FC = () => {
   );
 
   // Create radar pulse towards planet
-  const createRadarPulse = useCallback(
-    (planet: Planet, shipX: number, shipY: number) => {
-      const dx = getWrappedDistance(planet.x, shipX);
-      const dy = getWrappedDistance(planet.y, shipY);
-      const angle = Math.atan2(dy, dx);
+  const createRadarPulse = useCallback((planet: Planet) => {
+    const newPulse: RadarPulse = {
+      planetId: planet.id,
+      radius: 8, // Raio inicial original
+      maxRadius: 40, // Expansão menor
+      life: 160, // Vida mais longa para compensar expansão lenta
+      maxLife: 160,
+      opacity: 1.2, // Opacidade muito alta para verde ser mais visível
+    };
 
-      const newPulse: RadarPulse = {
-        planetId: planet.id,
-        angle,
-        radius: 8, // Raio inicial original
-        maxRadius: 40, // Expansão menor
-        life: 160, // Vida mais longa para compensar expansão lenta
-        maxLife: 160,
-        opacity: 1.2, // Opacidade muito alta para verde ser mais visível
-      };
-
-      radarPulsesRef.current.push(newPulse);
-    },
-    [getWrappedDistance],
-  );
+    radarPulsesRef.current.push(newPulse);
+  }, []);
 
   // Helper function to draw directional radar pulse
   const drawRadarPulse = useCallback(
@@ -321,7 +368,18 @@ export const SpaceMap: React.FC = () => {
       pulse: RadarPulse,
       shipScreenX: number,
       shipScreenY: number,
+      currentShipX: number,
+      currentShipY: number,
     ) => {
+      // Buscar o planeta correspondente a este pulse
+      const planet = planetsRef.current.find((p) => p.id === pulse.planetId);
+      if (!planet) return;
+
+      // Calcular ângulo dinamicamente baseado na posição atual da nave
+      const dx = getWrappedDistance(planet.x, currentShipX);
+      const dy = getWrappedDistance(planet.y, currentShipY);
+      const dynamicAngle = Math.atan2(dy, dx);
+
       const fadeRatio = pulse.life / pulse.maxLife;
       const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
 
@@ -347,8 +405,8 @@ export const SpaceMap: React.FC = () => {
 
       // Arco original
       const arcWidth = Math.PI / 3; // 60 graus original
-      const startAngle = pulse.angle - arcWidth / 2;
-      const endAngle = pulse.angle + arcWidth / 2;
+      const startAngle = dynamicAngle - arcWidth / 2;
+      const endAngle = dynamicAngle + arcWidth / 2;
 
       // Linha principal mais fina
       ctx.globalAlpha = currentOpacity;
@@ -371,7 +429,7 @@ export const SpaceMap: React.FC = () => {
 
       ctx.restore();
     },
-    [],
+    [getWrappedDistance],
   );
 
   // Helper function to draw pure light points
@@ -672,6 +730,24 @@ export const SpaceMap: React.FC = () => {
       "#dda0dd",
     ];
 
+    const planetImages = [
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
+      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
+    ];
+
+    const planetNames = [
+      "Estação Galáctica",
+      "Base Orbital",
+      "Mundo Alienígena",
+      "Terra Verdejante",
+      "Reino Gelado",
+      "Vila Ancestral",
+    ];
+
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
       const radius = 250;
@@ -679,12 +755,23 @@ export const SpaceMap: React.FC = () => {
         id: `planet-${i}`,
         x: CENTER_X + Math.cos(angle) * radius,
         y: CENTER_Y + Math.sin(angle) * radius,
-        size: 35,
+        size: 60, // Aumentado para acomodar as imagens
         color: colors[i],
-        name: `Planet ${i + 1}`,
-        interactionRadius: 80, // Zona de interação ao redor do planeta
+        name: planetNames[i],
+        interactionRadius: 90, // Aumentado junto com o tamanho
+        imageUrl: planetImages[i],
       });
     }
+
+    // Preload planet images
+    planetImages.forEach((imageUrl, index) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = imageUrl;
+      img.onload = () => {
+        planetImagesRef.current.set(`planet-${index}`, img);
+      };
+    });
 
     planetsRef.current = planets;
   }, [generateRichStarField]);
@@ -744,15 +831,8 @@ export const SpaceMap: React.FC = () => {
 
         // Only check for planet click if ship is within interaction radius
         if (shipToPlanetDistance <= planet.interactionRadius) {
-          // Check if the click was specifically on the planet image
-          const clickToPlanetX = getWrappedDistance(planet.x, worldClickX);
-          const clickToPlanetY = getWrappedDistance(planet.y, worldClickY);
-          const clickToPlanetDistance = Math.sqrt(
-            clickToPlanetX * clickToPlanetX + clickToPlanetY * clickToPlanetY,
-          );
-
-          // Only interact if click was within planet's visual size
-          if (clickToPlanetDistance <= planet.size) {
+          // Check if the click was specifically on a visible pixel of the planet image
+          if (isClickOnPlanetPixel(planet, worldClickX, worldClickY, canvas)) {
             setSelectedPlanet(planet);
             setShowLandingModal(true);
             clickedOnPlanet = true;
@@ -923,11 +1003,7 @@ export const SpaceMap: React.FC = () => {
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
           if (currentTime - lastPulseTime >= 1200) {
             // 1.2 seconds = 1200ms for slower spacing
-            createRadarPulse(
-              planet,
-              currentShipState.ship.x,
-              currentShipState.ship.y,
-            );
+            createRadarPulse(planet);
             lastRadarPulseTime.current.set(planet.id, currentTime);
           }
         } else {
@@ -1141,26 +1217,41 @@ export const SpaceMap: React.FC = () => {
           ctx.stroke();
           ctx.restore();
 
-          // Render planet
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = planet.color;
-          ctx.beginPath();
-          ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
-          ctx.fill();
+          // Render planet image
+          const img = planetImagesRef.current.get(planet.id);
+          if (img && img.complete) {
+            ctx.save();
+            ctx.globalAlpha = 1;
 
-          // Planet highlight
-          ctx.globalAlpha = 0.3;
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(
-            screenX - planet.size * 0.2,
-            screenY - planet.size * 0.2,
-            planet.size * 0.3,
-            0,
-            Math.PI * 2,
-          );
-          ctx.fill();
-          ctx.globalAlpha = 1;
+            const imageSize = planet.size * 2; // Use diameter as image size
+            const drawX = screenX - imageSize / 2;
+            const drawY = screenY - imageSize / 2;
+
+            // Draw the planet image
+            ctx.drawImage(img, drawX, drawY, imageSize, imageSize);
+            ctx.restore();
+          } else {
+            // Fallback to colored circle if image not loaded
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = planet.color;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Planet highlight
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(
+              screenX - planet.size * 0.2,
+              screenY - planet.size * 0.2,
+              planet.size * 0.3,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          }
         }
       });
 
@@ -1226,7 +1317,14 @@ export const SpaceMap: React.FC = () => {
 
       // Render radar pulses
       radarPulsesRef.current.forEach((pulse) => {
-        drawRadarPulse(ctx, pulse, shipScreenX, shipScreenY);
+        drawRadarPulse(
+          ctx,
+          pulse,
+          shipScreenX,
+          shipScreenY,
+          gameState.ship.x,
+          gameState.ship.y,
+        );
       });
 
       gameLoopRef.current = requestAnimationFrame(gameLoop);
@@ -1258,6 +1356,11 @@ export const SpaceMap: React.FC = () => {
     forceSaveShipState,
     createRadarPulse,
     drawRadarPulse,
+    showLandingModal,
+    mouseInWindow,
+    createShootingStar,
+    drawShootingStar,
+    isClickOnPlanetPixel,
   ]);
 
   return (
