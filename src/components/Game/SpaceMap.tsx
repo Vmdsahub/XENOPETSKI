@@ -1473,7 +1473,13 @@ export const SpaceMap: React.FC = () => {
       {user?.isAdmin && (
         <div className="absolute top-2 right-2">
           <button
-            onClick={() => setWorldEditMode(!isWorldEditMode)}
+            onClick={() => {
+              setWorldEditMode(!isWorldEditMode);
+              if (isWorldEditMode) {
+                setSelectedWorldId(null);
+                setIsDragging(false);
+              }
+            }}
             className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
               isWorldEditMode
                 ? "bg-red-600 text-white hover:bg-red-700"
@@ -1482,6 +1488,84 @@ export const SpaceMap: React.FC = () => {
           >
             {isWorldEditMode ? "Sair Edição" : "Editar Mundos"}
           </button>
+        </div>
+      )}
+
+      {/* World Controls when selected */}
+      {isWorldEditMode && selectedWorldId && (
+        <div className="absolute top-14 right-2 bg-white rounded-lg p-3 shadow-lg border border-gray-200 w-64">
+          <h4 className="text-sm font-bold text-gray-900 mb-3">
+            Mundo:{" "}
+            {planetsRef.current.find((p) => p.id === selectedWorldId)?.name}
+          </h4>
+
+          {/* Size Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Tamanho:{" "}
+              {planetsRef.current.find((p) => p.id === selectedWorldId)?.size ||
+                60}
+            </label>
+            <input
+              type="range"
+              min="20"
+              max="150"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.size || 60
+              }
+              onChange={(e) => {
+                const newSize = Number(e.target.value);
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? {
+                        ...planet,
+                        size: newSize,
+                        interactionRadius: Math.max(90, newSize + 30),
+                      }
+                    : planet,
+                );
+              }}
+              className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Rotation Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Rotação:{" "}
+              {Math.round(
+                ((planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.rotation || 0) *
+                  180) /
+                  Math.PI,
+              )}
+              °
+            </label>
+            <input
+              type="range"
+              min="0"
+              max={Math.PI * 2}
+              step="0.1"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.rotation || 0
+              }
+              onChange={(e) => {
+                const newRotation = Number(e.target.value);
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? { ...planet, rotation: newRotation }
+                    : planet,
+                );
+              }}
+              className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <p className="text-xs text-gray-500">
+            Arraste o mundo para reposicionar
+          </p>
         </div>
       )}
 
