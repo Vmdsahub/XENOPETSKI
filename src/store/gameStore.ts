@@ -21,10 +21,6 @@ interface GameStore extends GameState {
   setCurrentScreen: (screen: string) => void;
   setViewedUserId: (userId: string | null) => void;
 
-  // Selected world for detail view
-  selectedWorld: any | null;
-  setSelectedWorld: (world: any | null) => void;
-
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
@@ -660,9 +656,6 @@ export const useGameStore = create<GameStore>()(
       isHatchingInProgress: false,
       hatchingEgg: null,
 
-      // Selected world state
-      selectedWorld: null,
-
       // Core actions
       setUser: (user) => {
         const state = get();
@@ -703,9 +696,6 @@ export const useGameStore = create<GameStore>()(
       setActivePet: (pet) => set({ activePet: pet }),
       setCurrentScreen: (screen) => set({ currentScreen: screen }),
       setViewedUserId: (userId) => set({ viewedUserId: userId }),
-
-      // Selected world actions
-      setSelectedWorld: (world) => set({ selectedWorld: world }),
 
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>

@@ -907,87 +907,6 @@ export class GameService {
     }
   }
 
-  // Galaxy worlds operations
-  async getGalaxyWorlds(): Promise<GalaxyWorld[]> {
-    try {
-      const { data, error } = await supabase
-        .from("galaxy_worlds")
-        .select("*")
-        .eq("is_active", true)
-        .order("order_index", { ascending: true });
-
-      if (error) throw error;
-
-      return data.map(this.mapDatabaseWorldToGalaxyWorld);
-    } catch (error) {
-      console.error("Error fetching galaxy worlds:", error);
-      return [];
-    }
-  }
-
-  async updateGalaxyWorldPosition(
-    worldId: string,
-    x: number,
-    y: number,
-    scale: number = 1.0,
-  ): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from("galaxy_worlds")
-        .update({
-          x_position: Math.max(0, Math.min(100, x)),
-          y_position: Math.max(0, Math.min(100, y)),
-          scale: Math.max(0.1, Math.min(5.0, scale)),
-        })
-        .eq("id", worldId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error("Error updating galaxy world position:", error);
-      return false;
-    }
-  }
-
-  async updateGalaxyWorld(
-    worldId: string,
-    updates: Partial<{
-      name: string;
-      imageUrl: string;
-      x: number;
-      y: number;
-      scale: number;
-      isActive: boolean;
-    }>,
-  ): Promise<boolean> {
-    try {
-      const updateData: any = {};
-
-      if (updates.name !== undefined) updateData.name = updates.name;
-      if (updates.imageUrl !== undefined)
-        updateData.image_url = updates.imageUrl;
-      if (updates.x !== undefined)
-        updateData.x_position = Math.max(0, Math.min(100, updates.x));
-      if (updates.y !== undefined)
-        updateData.y_position = Math.max(0, Math.min(100, updates.y));
-      if (updates.scale !== undefined)
-        updateData.scale = Math.max(0.1, Math.min(5.0, updates.scale));
-      if (updates.isActive !== undefined)
-        updateData.is_active = updates.isActive;
-
-      const { error } = await supabase
-        .from("galaxy_worlds")
-        .update(updateData)
-        .eq("id", worldId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error("Error updating galaxy world:", error);
-      return false;
-    }
-  }
-
   // Helper methods
   private mapDatabasePetToPet(dbPet: any): Pet {
     return {
@@ -1019,22 +938,6 @@ export class GameService {
       lastInteraction: new Date(dbPet.last_interaction),
       createdAt: new Date(dbPet.created_at),
       updatedAt: new Date(dbPet.updated_at),
-    };
-  }
-
-  private mapDatabaseWorldToGalaxyWorld(dbWorld: any): GalaxyWorld {
-    return {
-      id: dbWorld.id,
-      name: dbWorld.name,
-      imageUrl: dbWorld.image_url,
-      x: dbWorld.x_position,
-      y: dbWorld.y_position,
-      scale: dbWorld.scale,
-      orderIndex: dbWorld.order_index,
-      isActive: dbWorld.is_active,
-      unlockRequirement: dbWorld.unlock_requirement || {},
-      createdAt: new Date(dbWorld.created_at),
-      updatedAt: new Date(dbWorld.updated_at),
     };
   }
 }

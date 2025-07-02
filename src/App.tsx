@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthScreen } from "./components/Auth/AuthScreen";
+
 import { TopBar } from "./components/Layout/TopBar";
 import { BottomNavigation } from "./components/Layout/BottomNavigation";
+
 import { PetScreen } from "./components/Screens/PetScreen";
-import { WorldScreen } from "./components/Screens/WorldScreen";
-import { WorldDetailScreen } from "./components/Screens/WorldDetailScreen";
 import { StoreScreen } from "./components/Store/StoreScreen";
 import { InventoryScreen } from "./components/Screens/InventoryScreen";
 import { ProfileScreen } from "./components/Screens/ProfileScreen";
@@ -13,6 +13,7 @@ import { OtherUserInventoryScreen } from "./components/Screens/OtherUserInventor
 import { OtherUserAchievementsScreen } from "./components/Screens/OtherUserAchievementsScreen";
 import { OtherUserCollectiblesScreen } from "./components/Screens/OtherUserCollectiblesScreen";
 import { AdminPanel } from "./components/Admin/AdminPanel";
+import { SpaceMap } from "./components/Game/SpaceMap";
 import { useAuthStore } from "./store/authStore";
 import { useGameStore } from "./store/gameStore";
 import { preloadAllSounds } from "./utils/soundManager";
@@ -111,9 +112,18 @@ function App() {
       case "pet":
         return <PetScreen />;
       case "world":
-        return <WorldScreen />;
-      case "worldDetail":
-        return <WorldDetailScreen />;
+        return (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-xl p-4 min-h-[80vh]">
+              <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+                Mapa Galáctico
+              </h1>
+              <div className="w-full h-[70vh] relative">
+                <SpaceMap />
+              </div>
+            </div>
+          </div>
+        );
       case "store":
         return <StoreScreen />;
       case "inventory":
