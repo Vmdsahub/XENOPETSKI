@@ -87,20 +87,13 @@ const PLANETS = [
 
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({
-    width: 400,
-    height: 400,
-  });
 
   // Player position and movement
   const [playerPosition, setPlayerPosition] = useState({
     x: CENTER_X,
     y: CENTER_Y,
   });
-  const [mousePosition, setMousePosition] = useState({
-    x: 200,
-    y: 200,
-  });
+  const [mousePosition, setMousePosition] = useState({ x: 200, y: 200 });
   const [isMouseInside, setIsMouseInside] = useState(false);
   const [projectiles, setProjectiles] = useState<
     Array<{
@@ -137,75 +130,70 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return value;
   };
 
-  // Update container size
-  useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerSize({ width: rect.width, height: rect.height });
-      }
-    };
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
-
   // Update camera when player moves
   useEffect(() => {
-    cameraX.set(-(playerPosition.x - containerSize.width / 2));
-    cameraY.set(-(playerPosition.y - containerSize.height / 2));
-  }, [playerPosition, containerSize, cameraX, cameraY]);
-
-  // Start continuous movement when mouse enters and position is tracked
-  useEffect(() => {
-    if (isMouseInside) {
-      animationFrameRef.current = requestAnimationFrame(moveShip);
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      cameraX.set(-(playerPosition.x - rect.width / 2));
+      cameraY.set(-(playerPosition.y - rect.height / 2));
     }
+  }, [playerPosition, cameraX, cameraY]);
+
+  // Movement loop
+  useEffect(() => {
+    let animationId: number;
+
+    const moveShip = () => {
+      if (!isMouseInside || !containerRef.current) {
+        animationId = requestAnimationFrame(moveShip);
+        return;
+      }
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const shipScreenX = rect.width / 2;
+      const shipScreenY = rect.height / 2;
+
+      // Calculate distance from mouse to ship on screen
+      const dx = mousePosition.x - shipScreenX;
+      const dy = mousePosition.y - shipScreenY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Dead zone - if mouse is too close to ship, don't move
+      const deadZone = 30;
+      if (distance > deadZone) {
+        // Calculate rotation
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        rotation.set(angle);
+
+        // Calculate speed based on distance (further = faster)
+        const maxDistance = 300;
+        const maxSpeed = 4;
+        const speedMultiplier = Math.min(distance / maxDistance, 1);
+        const speed = speedMultiplier * maxSpeed;
+
+        // Move ship in world coordinates
+        const moveX = (dx / distance) * speed;
+        const moveY = (dy / distance) * speed;
+
+        setPlayerPosition((prev) => ({
+          x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
+          y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
+        }));
+      }
+
+      animationId = requestAnimationFrame(moveShip);
+    };
+
+    if (isMouseInside) {
+      animationId = requestAnimationFrame(moveShip);
+    }
+
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
       }
     };
-  }, [isMouseInside, moveShip]);
-
-  // Continuous movement loop
-  const moveShip = useCallback(() => {
-    if (!isMouseInside) return;
-
-    // Calculate screen center where ship appears
-    const shipScreenX = containerSize.width / 2;
-    const shipScreenY = containerSize.height / 2;
-
-    // Calculate distance from mouse to ship on screen
-    const dx = mousePosition.x - shipScreenX;
-    const dy = mousePosition.y - shipScreenY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // Dead zone - if mouse is too close to ship, don't move
-    const deadZone = 30;
-    if (distance < deadZone) return;
-
-    // Calculate rotation
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    rotation.set(angle);
-
-    // Calculate speed based on distance (further = faster)
-    const maxDistance = 300; // Max distance for full speed
-    const maxSpeed = 4; // Max speed in pixels per frame
-    const speedMultiplier = Math.min(distance / maxDistance, 1);
-    const speed = speedMultiplier * maxSpeed;
-
-    // Move ship in world coordinates
-    const moveX = (dx / distance) * speed;
-    const moveY = (dy / distance) * speed;
-
-    setPlayerPosition((prev) => ({
-      x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
-      y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
-    }));
-
-    animationFrameRef.current = requestAnimationFrame(moveShip);
-  }, [mousePosition, isMouseInside, containerSize, rotation]);
+  }, [isMouseInside, mousePosition, rotation]);
 
   // Handle mouse movement (only track position)
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
@@ -223,9 +211,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
 
   const handleMouseLeave = useCallback(() => {
     setIsMouseInside(false);
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
   }, []);
 
   // Handle shooting
@@ -409,8 +394,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 />
               </div>
               <div
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
-                            bg-black/80 text-white text-xs px-2 py-1 rounded
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
+                            bg-black/80 text-white text-xs px-2 py-1 rounded 
                             opacity-0 group-hover:opacity-100 transition-opacity
                             pointer-events-none whitespace-nowrap"
               >
