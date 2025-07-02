@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useGameStore } from "../../store/gameStore";
+import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 
 interface Star {
   x: number;
