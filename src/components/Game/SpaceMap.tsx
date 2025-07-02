@@ -174,12 +174,6 @@ export const SpaceMap: React.FC = () => {
   const [showLandingModal, setShowLandingModal] = useState(false);
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
 
-  // World editing state
-  const [worldPositions, setWorldPositions] = useState<WorldPosition[]>([]);
-  const [selectedWorldId, setSelectedWorldId] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
     (coord: number, cameraCoord: number) => {
