@@ -219,10 +219,11 @@ export const SpaceMap: React.FC = () => {
 
         newState.ship.angle = Math.atan2(dy, dx);
 
-        if (distance > 5) {
-          const speed = Math.min(distance * 0.02, SHIP_MAX_SPEED);
-          newState.ship.vx += (dx / distance) * speed * 0.1;
-          newState.ship.vy += (dy / distance) * speed * 0.1;
+        if (distance > 10) {
+          const speedMultiplier = Math.min(distance / 300, 1);
+          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
         }
 
         newState.ship.vx *= FRICTION;
