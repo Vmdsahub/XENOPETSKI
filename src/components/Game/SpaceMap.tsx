@@ -9,10 +9,21 @@ interface Star {
   parallax: number;
   twinkle: number;
   color: string;
-  type: "normal" | "colored" | "bright";
+  type: "normal" | "colored" | "bright" | "giant" | "binary" | "pulsar";
   drift: { x: number; y: number };
   pulse: number;
   sparkle: number;
+  constellation?: string;
+}
+
+interface Nebula {
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  opacity: number;
+  rotation: number;
+  type: "emission" | "reflection" | "dark";
 }
 
 interface Planet {
@@ -58,6 +69,7 @@ export const SpaceMap: React.FC = () => {
   const gameLoopRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
   const starsRef = useRef<Star[]>([]);
+  const nebulaeRef = useRef<Nebula[]>([]);
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
 
@@ -85,6 +97,11 @@ export const SpaceMap: React.FC = () => {
     },
     [],
   );
+
+  // Helper function to normalize coordinates within world bounds
+  const normalizeCoord = useCallback((coord: number) => {
+    return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
+  }, []);
 
   // Helper function to draw a star shape instead of circle
   const drawStar = useCallback(
@@ -122,312 +139,282 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
-  // Helper function to normalize coordinates within world bounds
-  const normalizeCoord = useCallback((coord: number) => {
-    return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
-  }, []);
-
-  // Initialize game objects once
-  useEffect(() => {
-    // Generate stars with different layers and enhanced cosmic effects
+  // Generate realistic galactic distribution
+  const generateGalacticField = useCallback(() => {
     const stars: Star[] = [];
-    const starColors = [
-      "#ffffff",
-      "#ffe4b5",
-      "#ffd700",
-      "#87ceeb",
-      "#ff69b4",
-      "#98fb98",
-      "#dda0dd",
-      "#f0e68c",
+    const nebulae: Nebula[] = [];
+
+    // Define galactic center and arms
+    const galacticCenter = { x: CENTER_X, y: CENTER_Y };
+    const armCount = 4;
+    const armLength = WORLD_SIZE * 0.4;
+
+    // Color palettes for different regions
+    const coreColors = ["#ffeb3b", "#ffc107", "#ff9800", "#ff5722"];
+    const armColors = ["#2196f3", "#03a9f4", "#00bcd4", "#009688"];
+    const haloColors = ["#e1f5fe", "#f3e5f5", "#fff3e0", "#ffffff"];
+    const nebulaColors = [
+      "#e91e63",
+      "#9c27b0",
+      "#673ab7",
+      "#3f51b5",
+      "#2196f3",
+      "#00bcd4",
+      "#4caf50",
+      "#8bc34a",
     ];
 
-    // Ultra distant cosmic dust (barely visible)
-    for (let i = 0; i < 800; i++) {
-      const isColored = Math.random() < 0.05;
+    // Generate nebulae first (background)
+    for (let i = 0; i < 25; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * WORLD_SIZE * 0.6;
+      const nebulaType =
+        Math.random() < 0.6
+          ? "emission"
+          : Math.random() < 0.8
+            ? "reflection"
+            : "dark";
 
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 0.3 + 0.1,
-        opacity: Math.random() * 0.2 + 0.05,
-        speed: Math.random() * 0.004 + 0.001,
-        parallax: 0.02,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.002,
-          y: (Math.random() - 0.5) * 0.002,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
+      nebulae.push({
+        x: galacticCenter.x + Math.cos(angle) * distance,
+        y: galacticCenter.y + Math.sin(angle) * distance,
+        size: 300 + Math.random() * 800,
+        color: nebulaColors[Math.floor(Math.random() * nebulaColors.length)],
+        opacity: 0.05 + Math.random() * 0.1,
+        rotation: Math.random() * Math.PI * 2,
+        type: nebulaType,
       });
     }
 
-    // Very distant background stars (cosmic dust)
-    for (let i = 0; i < 1000; i++) {
-      const isColored = Math.random() < 0.08;
-      const isBright = Math.random() < 0.03;
+    // Generate galactic core (dense, bright stars)
+    for (let i = 0; i < 1200; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * Math.random() * 800; // Concentrated in center
 
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 0.5 + 0.15,
-        opacity: Math.random() * 0.25 + 0.1,
-        speed: Math.random() * 0.005 + 0.002,
-        parallax: 0.05,
+      const star: Star = {
+        x: galacticCenter.x + Math.cos(angle) * distance,
+        y: galacticCenter.y + Math.sin(angle) * distance,
+        size: 0.8 + Math.random() * 2.5,
+        opacity: 0.4 + Math.random() * 0.6,
+        speed: Math.random() * 0.01 + 0.005,
+        parallax: 0.1 + Math.random() * 0.3,
         twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0018,
-          y: (Math.random() - 0.5) * 0.0018,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Distant background stars
-    for (let i = 0; i < 900; i++) {
-      const isColored = Math.random() < 0.12;
-      const isBright = Math.random() < 0.08;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 0.7 + 0.2,
-        opacity: Math.random() * 0.35 + 0.15,
-        speed: Math.random() * 0.007 + 0.003,
-        parallax: 0.1,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0016,
-          y: (Math.random() - 0.5) * 0.0016,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Medium distant stars
-    for (let i = 0; i < 800; i++) {
-      const isColored = Math.random() < 0.15;
-      const isBright = Math.random() < 0.1;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 0.9 + 0.3,
-        opacity: Math.random() * 0.4 + 0.2,
-        speed: Math.random() * 0.009 + 0.004,
-        parallax: 0.2,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0014,
-          y: (Math.random() - 0.5) * 0.0014,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Mid-distance stars
-    for (let i = 0; i < 700; i++) {
-      const isColored = Math.random() < 0.18;
-      const isBright = Math.random() < 0.12;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.1 + 0.4,
-        opacity: Math.random() * 0.45 + 0.25,
-        speed: Math.random() * 0.011 + 0.006,
-        parallax: 0.35,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0012,
-          y: (Math.random() - 0.5) * 0.0012,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Closer stars
-    for (let i = 0; i < 600; i++) {
-      const isColored = Math.random() < 0.22;
-      const isBright = Math.random() < 0.15;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.4 + 0.6,
-        opacity: Math.random() * 0.5 + 0.3,
-        speed: Math.random() * 0.014 + 0.008,
-        parallax: 0.5,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        color: coreColors[Math.floor(Math.random() * coreColors.length)],
+        type:
+          Math.random() < 0.3
+            ? "giant"
+            : Math.random() < 0.1
+              ? "binary"
+              : "bright",
         drift: {
           x: (Math.random() - 0.5) * 0.001,
           y: (Math.random() - 0.5) * 0.001,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
-      });
+        constellation: "Core",
+      };
+
+      stars.push(star);
     }
 
-    // Near stars
-    for (let i = 0; i < 500; i++) {
-      const isColored = Math.random() < 0.25;
-      const isBright = Math.random() < 0.18;
+    // Generate spiral arms
+    for (let arm = 0; arm < armCount; arm++) {
+      const armAngle = (arm / armCount) * Math.PI * 2;
 
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 1.7 + 0.8,
-        opacity: Math.random() * 0.4 + 0.25,
-        speed: Math.random() * 0.017 + 0.01,
-        parallax: 0.7,
+      // Each arm has different density regions
+      for (let segment = 0; segment < 8; segment++) {
+        const segmentLength = armLength / 8;
+        const segmentDistance = segment * segmentLength;
+        const spiralAngle =
+          armAngle + (segmentDistance / armLength) * Math.PI * 1.5;
+
+        const armX = galacticCenter.x + Math.cos(spiralAngle) * segmentDistance;
+        const armY = galacticCenter.y + Math.sin(spiralAngle) * segmentDistance;
+
+        // Dense star clusters along arms
+        const clusterSize = 200 - segment * 20; // Smaller clusters further out
+        const starCount = 150 - segment * 15; // Fewer stars further out
+
+        for (let i = 0; i < starCount; i++) {
+          const clusterAngle = Math.random() * Math.PI * 2;
+          const clusterRadius = Math.random() * clusterSize;
+
+          const star: Star = {
+            x: normalizeCoord(armX + Math.cos(clusterAngle) * clusterRadius),
+            y: normalizeCoord(armY + Math.sin(clusterAngle) * clusterRadius),
+            size: 0.5 + Math.random() * 2,
+            opacity: 0.3 + Math.random() * 0.5,
+            speed: Math.random() * 0.015 + 0.008,
+            parallax: 0.2 + Math.random() * 0.6,
+            twinkle: Math.random() * 100,
+            color:
+              Math.random() < 0.7
+                ? "#ffffff"
+                : armColors[Math.floor(Math.random() * armColors.length)],
+            type:
+              Math.random() < 0.05
+                ? "giant"
+                : Math.random() < 0.02
+                  ? "pulsar"
+                  : "normal",
+            drift: {
+              x: (Math.random() - 0.5) * 0.0008,
+              y: (Math.random() - 0.5) * 0.0008,
+            },
+            pulse: Math.random() * 100,
+            sparkle: Math.random() * 100,
+            constellation: `Arm-${arm + 1}`,
+          };
+
+          stars.push(star);
+        }
+      }
+    }
+
+    // Generate star-forming regions (bright clusters)
+    for (let i = 0; i < 12; i++) {
+      const regionX = Math.random() * WORLD_SIZE;
+      const regionY = Math.random() * WORLD_SIZE;
+      const regionSize = 100 + Math.random() * 200;
+
+      // Hot young stars
+      for (let j = 0; j < 80; j++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * regionSize;
+
+        const star: Star = {
+          x: normalizeCoord(regionX + Math.cos(angle) * distance),
+          y: normalizeCoord(regionY + Math.sin(angle) * distance),
+          size: 1 + Math.random() * 3,
+          opacity: 0.6 + Math.random() * 0.4,
+          speed: Math.random() * 0.02 + 0.01,
+          parallax: 0.5 + Math.random() * 0.8,
+          twinkle: Math.random() * 100,
+          color: ["#87ceeb", "#b0e0e6", "#add8e6", "#ffffff"][
+            Math.floor(Math.random() * 4)
+          ],
+          type: Math.random() < 0.4 ? "bright" : "giant",
+          drift: {
+            x: (Math.random() - 0.5) * 0.0005,
+            y: (Math.random() - 0.5) * 0.0005,
+          },
+          pulse: Math.random() * 100,
+          sparkle: Math.random() * 100,
+          constellation: `Cluster-${i + 1}`,
+        };
+
+        stars.push(star);
+      }
+    }
+
+    // Generate globular clusters (old stars)
+    for (let i = 0; i < 8; i++) {
+      const clusterAngle = Math.random() * Math.PI * 2;
+      const clusterDistance =
+        WORLD_SIZE * 0.3 + Math.random() * WORLD_SIZE * 0.2;
+      const clusterX =
+        galacticCenter.x + Math.cos(clusterAngle) * clusterDistance;
+      const clusterY =
+        galacticCenter.y + Math.sin(clusterAngle) * clusterDistance;
+
+      for (let j = 0; j < 120; j++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * Math.random() * 150; // Dense center
+
+        const star: Star = {
+          x: normalizeCoord(clusterX + Math.cos(angle) * distance),
+          y: normalizeCoord(clusterY + Math.sin(angle) * distance),
+          size: 0.4 + Math.random() * 1.5,
+          opacity: 0.5 + Math.random() * 0.4,
+          speed: Math.random() * 0.008 + 0.003,
+          parallax: 0.3 + Math.random() * 0.4,
+          twinkle: Math.random() * 100,
+          color: ["#ffd700", "#ffeb3b", "#fff8e1", "#fffde7"][
+            Math.floor(Math.random() * 4)
+          ],
+          type: "normal",
+          drift: {
+            x: (Math.random() - 0.5) * 0.0003,
+            y: (Math.random() - 0.5) * 0.0003,
+          },
+          pulse: Math.random() * 100,
+          sparkle: Math.random() * 100,
+          constellation: `Globular-${i + 1}`,
+        };
+
+        stars.push(star);
+      }
+    }
+
+    // Generate halo stars (sparse, old, distant)
+    for (let i = 0; i < 2000; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = WORLD_SIZE * 0.2 + Math.random() * WORLD_SIZE * 0.4;
+
+      const star: Star = {
+        x: normalizeCoord(galacticCenter.x + Math.cos(angle) * distance),
+        y: normalizeCoord(galacticCenter.y + Math.sin(angle) * distance),
+        size: 0.2 + Math.random() * 0.8,
+        opacity: 0.2 + Math.random() * 0.3,
+        speed: Math.random() * 0.005 + 0.001,
+        parallax: 0.05 + Math.random() * 0.15,
         twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        color: haloColors[Math.floor(Math.random() * haloColors.length)],
+        type: "normal",
         drift: {
-          x: (Math.random() - 0.5) * 0.0008,
-          y: (Math.random() - 0.5) * 0.0008,
+          x: (Math.random() - 0.5) * 0.0015,
+          y: (Math.random() - 0.5) * 0.0015,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
-      });
+        constellation: "Halo",
+      };
+
+      stars.push(star);
     }
 
-    // Close stars
-    for (let i = 0; i < 400; i++) {
-      const isColored = Math.random() < 0.28;
-      const isBright = Math.random() < 0.2;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 2.0 + 1.0,
-        opacity: Math.random() * 0.35 + 0.2,
-        speed: Math.random() * 0.02 + 0.012,
-        parallax: 0.9,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0006,
-          y: (Math.random() - 0.5) * 0.0006,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Foreground stars (same layer as player)
+    // Generate foreground bright stars for depth
     for (let i = 0; i < 300; i++) {
-      const isColored = Math.random() < 0.32;
-      const isBright = Math.random() < 0.25;
-
-      stars.push({
+      const star: Star = {
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 2.4 + 1.2,
-        opacity: Math.random() * 0.3 + 0.15,
-        speed: Math.random() * 0.024 + 0.015,
-        parallax: 1.1,
+        size: 1.5 + Math.random() * 3.5,
+        opacity: 0.3 + Math.random() * 0.4,
+        speed: Math.random() * 0.025 + 0.015,
+        parallax: 1.2 + Math.random() * 0.6,
         twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0004,
-          y: (Math.random() - 0.5) * 0.0004,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
-    }
-
-    // Very close bright stars (above player)
-    for (let i = 0; i < 250; i++) {
-      const isColored = Math.random() < 0.35;
-      const isBright = Math.random() < 0.3;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 3.0 + 1.5,
-        opacity: Math.random() * 0.25 + 0.1,
-        speed: Math.random() * 0.028 + 0.018,
-        parallax: 1.4,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
+        color:
+          Math.random() < 0.6
+            ? "#ffffff"
+            : ["#ff69b4", "#87ceeb", "#98fb98", "#dda0dd"][
+                Math.floor(Math.random() * 4)
+              ],
+        type:
+          Math.random() < 0.3
+            ? "bright"
+            : Math.random() < 0.05
+              ? "binary"
+              : "normal",
         drift: {
           x: (Math.random() - 0.5) * 0.0002,
           y: (Math.random() - 0.5) * 0.0002,
         },
         pulse: Math.random() * 100,
         sparkle: Math.random() * 100,
-      });
-    }
+        constellation: "Foreground",
+      };
 
-    // Ultra close massive stars (front layer)
-    for (let i = 0; i < 150; i++) {
-      const isColored = Math.random() < 0.4;
-      const isBright = Math.random() < 0.35;
-
-      stars.push({
-        x: Math.random() * WORLD_SIZE,
-        y: Math.random() * WORLD_SIZE,
-        size: Math.random() * 3.5 + 2.0,
-        opacity: Math.random() * 0.2 + 0.08,
-        speed: Math.random() * 0.032 + 0.02,
-        parallax: 1.8,
-        twinkle: Math.random() * 100,
-        color: isColored
-          ? starColors[Math.floor(Math.random() * starColors.length)]
-          : "#ffffff",
-        type: isBright ? "bright" : isColored ? "colored" : "normal",
-        drift: {
-          x: (Math.random() - 0.5) * 0.0001,
-          y: (Math.random() - 0.5) * 0.0001,
-        },
-        pulse: Math.random() * 100,
-        sparkle: Math.random() * 100,
-      });
+      stars.push(star);
     }
 
     starsRef.current = stars;
+    nebulaeRef.current = nebulae;
+  }, [normalizeCoord]);
+
+  // Initialize game objects once
+  useEffect(() => {
+    generateGalacticField();
 
     // Generate planets
     const planets: Planet[] = [];
@@ -454,7 +441,7 @@ export const SpaceMap: React.FC = () => {
     }
 
     planetsRef.current = planets;
-  }, []);
+  }, [generateGalacticField]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
@@ -515,10 +502,9 @@ export const SpaceMap: React.FC = () => {
     let lastTime = 0;
 
     const gameLoop = (currentTime: number) => {
-      const deltaTime = Math.min(currentTime - lastTime, 16.67); // Cap at 60fps
+      const deltaTime = Math.min(currentTime - lastTime, 16.67);
       lastTime = currentTime;
 
-      // Resize canvas if needed
       if (
         canvas.width !== canvas.offsetWidth ||
         canvas.height !== canvas.offsetHeight
@@ -534,11 +520,9 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Calculate world mouse position using wrapped distance
         const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
         const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-        // Update ship
         const dx = getWrappedDistance(worldMouseX, newState.ship.x);
         const dy = getWrappedDistance(worldMouseY, newState.ship.y);
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -554,40 +538,36 @@ export const SpaceMap: React.FC = () => {
 
         newState.ship.vx *= FRICTION;
         newState.ship.vy *= FRICTION;
-
         newState.ship.x += newState.ship.vx;
         newState.ship.y += newState.ship.vy;
 
-        // Normalize ship position for seamless wrapping
         newState.ship.x = normalizeCoord(newState.ship.x);
         newState.ship.y = normalizeCoord(newState.ship.y);
 
-        // Update camera with seamless wrapping awareness
         const cameraFollowSpeed = 0.08;
-
         const deltaX = getWrappedDistance(newState.ship.x, newState.camera.x);
         const deltaY = getWrappedDistance(newState.ship.y, newState.camera.y);
 
         newState.camera.x += deltaX * cameraFollowSpeed;
         newState.camera.y += deltaY * cameraFollowSpeed;
 
-        // Normalize camera position
         newState.camera.x = normalizeCoord(newState.camera.x);
         newState.camera.y = normalizeCoord(newState.camera.y);
 
         return newState;
       });
 
-      // Update stars with cosmic drift
+      // Update stars and nebulae
       starsRef.current.forEach((star) => {
-        // Update star position with subtle drift
         star.x = normalizeCoord(star.x + star.drift.x);
         star.y = normalizeCoord(star.y + star.drift.y);
-
-        // Update animation properties
         star.twinkle += star.speed;
         star.pulse += star.speed * 0.8;
         star.sparkle += star.speed * 1.2;
+      });
+
+      nebulaeRef.current.forEach((nebula) => {
+        nebula.rotation += 0.001;
       });
 
       // Update projectiles
@@ -600,85 +580,195 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
-      // Clear canvas
-      ctx.fillStyle = "#0a0a2e";
+      // Clear canvas with deep space background
+      const gradient = ctx.createRadialGradient(
+        centerX,
+        centerY,
+        0,
+        centerX,
+        centerY,
+        Math.max(canvas.width, canvas.height),
+      );
+      gradient.addColorStop(0, "#0a0a2e");
+      gradient.addColorStop(0.5, "#16213e");
+      gradient.addColorStop(1, "#0e1b2e");
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render background and mid stars with enhanced effects
-      starsRef.current.forEach((star) => {
-        if (star.parallax < 1) {
-          const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
-          const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
+      // Render nebulae
+      nebulaeRef.current.forEach((nebula) => {
+        const wrappedDeltaX = getWrappedDistance(nebula.x, gameState.camera.x);
+        const wrappedDeltaY = getWrappedDistance(nebula.y, gameState.camera.y);
+        const screenX = centerX + wrappedDeltaX * 0.1;
+        const screenY = centerY + wrappedDeltaY * 0.1;
 
-          const parallaxX = wrappedDeltaX * star.parallax;
-          const parallaxY = wrappedDeltaY * star.parallax;
-          const screenX = centerX + parallaxX;
-          const screenY = centerY + parallaxY;
+        if (
+          screenX > -nebula.size &&
+          screenX < canvas.width + nebula.size &&
+          screenY > -nebula.size &&
+          screenY < canvas.height + nebula.size
+        ) {
+          ctx.save();
+          ctx.globalAlpha = nebula.opacity;
+          ctx.translate(screenX, screenY);
+          ctx.rotate(nebula.rotation);
 
-          if (
-            screenX > -50 &&
-            screenX < canvas.width + 50 &&
-            screenY > -50 &&
-            screenY < canvas.height + 50
-          ) {
-            // Calculate twinkling and pulsing effects
-            const twinkleAlpha = Math.sin(star.twinkle) * 0.3 + 0.7;
-            const pulseSize = Math.sin(star.pulse) * 0.2 + 1;
-            const sparkleIntensity = Math.sin(star.sparkle) * 0.4 + 0.6;
+          const nebulaGradient = ctx.createRadialGradient(
+            0,
+            0,
+            0,
+            0,
+            0,
+            nebula.size,
+          );
+          nebulaGradient.addColorStop(0, nebula.color);
+          nebulaGradient.addColorStop(0.5, nebula.color + "40");
+          nebulaGradient.addColorStop(1, "transparent");
 
-            let finalAlpha = star.opacity * twinkleAlpha * sparkleIntensity;
-            let finalSize = star.size * pulseSize;
+          ctx.fillStyle = nebulaGradient;
+          ctx.fillRect(
+            -nebula.size,
+            -nebula.size,
+            nebula.size * 2,
+            nebula.size * 2,
+          );
+          ctx.restore();
+        }
+      });
 
-            // Enhance bright stars
-            if (star.type === "bright") {
-              finalAlpha *= 1.4;
-              finalSize *= 1.2;
-            }
+      // Render stars by parallax layers
+      const parallaxLayers = [
+        0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4,
+        1.6, 1.8,
+      ];
 
-            ctx.save();
-            ctx.fillStyle = star.color;
-            ctx.globalAlpha = finalAlpha;
+      parallaxLayers.forEach((targetParallax) => {
+        starsRef.current.forEach((star) => {
+          if (Math.abs(star.parallax - targetParallax) < 0.05) {
+            const wrappedDeltaX = getWrappedDistance(
+              star.x,
+              gameState.camera.x,
+            );
+            const wrappedDeltaY = getWrappedDistance(
+              star.y,
+              gameState.camera.y,
+            );
 
-            if (star.size < 1) {
-              // Small stars as points
-              ctx.beginPath();
-              ctx.arc(
-                Math.round(screenX),
-                Math.round(screenY),
-                finalSize,
-                0,
-                Math.PI * 2,
-              );
-              ctx.fill();
-            } else {
-              // Larger stars as star shapes
-              drawStar(
-                ctx,
-                Math.round(screenX),
-                Math.round(screenY),
-                finalSize,
-              );
-              ctx.fill();
+            const parallaxX = wrappedDeltaX * star.parallax;
+            const parallaxY = wrappedDeltaY * star.parallax;
+            const screenX = centerX + parallaxX;
+            const screenY = centerY + parallaxY;
 
-              // Add glow effect for bright and colored stars
-              if (star.type === "bright" || star.type === "colored") {
-                ctx.shadowColor = star.color;
-                ctx.shadowBlur = finalSize * 2;
-                ctx.globalAlpha = finalAlpha * 0.5;
+            const margin = star.parallax > 1 ? 100 : 50;
+            if (
+              screenX > -margin &&
+              screenX < canvas.width + margin &&
+              screenY > -margin &&
+              screenY < canvas.height + margin
+            ) {
+              // Enhanced effects based on star type
+              let twinkleAlpha = Math.sin(star.twinkle) * 0.3 + 0.7;
+              let pulseSize = 1;
+              let finalAlpha = star.opacity * twinkleAlpha;
+              let finalSize = star.size;
+
+              switch (star.type) {
+                case "giant":
+                  pulseSize = Math.sin(star.pulse * 0.5) * 0.4 + 1.2;
+                  finalAlpha *= 1.5;
+                  finalSize *= 1.8;
+                  break;
+                case "binary":
+                  twinkleAlpha = Math.sin(star.twinkle * 2) * 0.4 + 0.6;
+                  finalAlpha *= 1.2;
+                  break;
+                case "pulsar":
+                  twinkleAlpha = Math.sin(star.twinkle * 4) * 0.8 + 0.2;
+                  finalAlpha *= 2;
+                  break;
+                case "bright":
+                  finalAlpha *= 1.3;
+                  finalSize *= 1.3;
+                  break;
+              }
+
+              finalSize *= pulseSize;
+
+              ctx.save();
+              ctx.fillStyle = star.color;
+              ctx.globalAlpha = finalAlpha;
+
+              if (finalSize < 1) {
+                // Small distant stars as points
+                ctx.beginPath();
+                ctx.arc(
+                  Math.round(screenX),
+                  Math.round(screenY),
+                  finalSize,
+                  0,
+                  Math.PI * 2,
+                );
+                ctx.fill();
+              } else {
+                // Larger stars as star shapes
                 drawStar(
                   ctx,
                   Math.round(screenX),
                   Math.round(screenY),
-                  finalSize * 0.8,
+                  finalSize,
+                  4,
                 );
                 ctx.fill();
-                ctx.shadowBlur = 0;
-              }
-            }
 
-            ctx.restore();
+                // Enhanced glow for special stars
+                if (star.type !== "normal") {
+                  ctx.shadowColor = star.color;
+                  ctx.shadowBlur = finalSize * (star.type === "giant" ? 4 : 2);
+                  ctx.globalAlpha = finalAlpha * 0.3;
+                  drawStar(
+                    ctx,
+                    Math.round(screenX),
+                    Math.round(screenY),
+                    finalSize * 1.2,
+                    4,
+                  );
+                  ctx.fill();
+                  ctx.shadowBlur = 0;
+
+                  // Special effects for different star types
+                  if (star.type === "binary") {
+                    // Secondary companion star
+                    ctx.globalAlpha = finalAlpha * 0.6;
+                    drawStar(
+                      ctx,
+                      Math.round(screenX + finalSize),
+                      Math.round(screenY),
+                      finalSize * 0.7,
+                      4,
+                    );
+                    ctx.fill();
+                  }
+
+                  if (star.type === "pulsar" && finalSize > 2) {
+                    // Pulsar beams
+                    ctx.globalAlpha = finalAlpha * 0.5;
+                    ctx.strokeStyle = star.color;
+                    ctx.lineWidth = 1;
+                    const beamLength = finalSize * 6;
+                    ctx.beginPath();
+                    ctx.moveTo(screenX - beamLength, screenY);
+                    ctx.lineTo(screenX + beamLength, screenY);
+                    ctx.moveTo(screenX, screenY - beamLength);
+                    ctx.lineTo(screenX, screenY + beamLength);
+                    ctx.stroke();
+                  }
+                }
+              }
+
+              ctx.restore();
+            }
           }
-        }
+        });
       });
 
       // Render barrier circle
@@ -717,14 +807,12 @@ export const SpaceMap: React.FC = () => {
           screenY > -100 &&
           screenY < canvas.height + 100
         ) {
-          // Planet body
           ctx.globalAlpha = 1;
           ctx.fillStyle = planet.color;
           ctx.beginPath();
           ctx.arc(screenX, screenY, planet.size, 0, Math.PI * 2);
           ctx.fill();
 
-          // Simple highlight
           ctx.globalAlpha = 0.3;
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
@@ -736,8 +824,6 @@ export const SpaceMap: React.FC = () => {
             Math.PI * 2,
           );
           ctx.fill();
-
-          // Reset alpha
           ctx.globalAlpha = 1;
         }
       });
@@ -774,7 +860,6 @@ export const SpaceMap: React.FC = () => {
       ctx.rotate(gameState.ship.angle);
       ctx.globalAlpha = 1;
 
-      // Ship body
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#00aaff";
       ctx.lineWidth = 2;
@@ -787,7 +872,6 @@ export const SpaceMap: React.FC = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Engines
       ctx.fillStyle = "#ff4400";
       ctx.beginPath();
       ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
@@ -797,87 +881,6 @@ export const SpaceMap: React.FC = () => {
       ctx.fill();
 
       ctx.restore();
-
-      // Render foreground stars with enhanced effects
-      starsRef.current.forEach((star) => {
-        if (star.parallax >= 1) {
-          const wrappedDeltaX = getWrappedDistance(star.x, gameState.camera.x);
-          const wrappedDeltaY = getWrappedDistance(star.y, gameState.camera.y);
-
-          const parallaxX = wrappedDeltaX * star.parallax;
-          const parallaxY = wrappedDeltaY * star.parallax;
-          const screenX = centerX + parallaxX;
-          const screenY = centerY + parallaxY;
-
-          if (
-            screenX > -30 &&
-            screenX < canvas.width + 30 &&
-            screenY > -30 &&
-            screenY < canvas.height + 30
-          ) {
-            // Calculate enhanced effects for foreground stars
-            const twinkleAlpha = Math.sin(star.twinkle) * 0.4 + 0.6;
-            const pulseSize = Math.sin(star.pulse) * 0.3 + 1;
-            const sparkleIntensity = Math.sin(star.sparkle) * 0.5 + 0.5;
-
-            let finalAlpha = star.opacity * twinkleAlpha * sparkleIntensity;
-            let finalSize = star.size * pulseSize;
-
-            // Enhance bright stars even more
-            if (star.type === "bright") {
-              finalAlpha *= 1.6;
-              finalSize *= 1.3;
-            }
-
-            ctx.save();
-            ctx.fillStyle = star.color;
-            ctx.globalAlpha = finalAlpha;
-
-            // All foreground stars as star shapes
-            drawStar(
-              ctx,
-              Math.round(screenX),
-              Math.round(screenY),
-              finalSize,
-              4,
-            );
-            ctx.fill();
-
-            // Enhanced glow for foreground stars
-            if (star.type === "bright" || star.type === "colored") {
-              ctx.shadowColor = star.color;
-              ctx.shadowBlur = finalSize * 3;
-              ctx.globalAlpha = finalAlpha * 0.3;
-              drawStar(
-                ctx,
-                Math.round(screenX),
-                Math.round(screenY),
-                finalSize * 1.2,
-                4,
-              );
-              ctx.fill();
-              ctx.shadowBlur = 0;
-
-              // Add sparkle rays for very bright stars
-              if (star.type === "bright" && finalSize > 1.5) {
-                ctx.globalAlpha = finalAlpha * 0.6;
-                ctx.strokeStyle = star.color;
-                ctx.lineWidth = 0.5;
-                ctx.beginPath();
-                ctx.moveTo(screenX - finalSize * 2, screenY);
-                ctx.lineTo(screenX + finalSize * 2, screenY);
-                ctx.moveTo(screenX, screenY - finalSize * 2);
-                ctx.lineTo(screenX, screenY + finalSize * 2);
-                ctx.stroke();
-              }
-            }
-
-            ctx.restore();
-          }
-        }
-      });
-
-      // Final reset to ensure clean state
       ctx.globalAlpha = 1;
 
       gameLoopRef.current = requestAnimationFrame(gameLoop);
@@ -890,7 +893,7 @@ export const SpaceMap: React.FC = () => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState, getWrappedDistance, normalizeCoord]);
+  }, [gameState, getWrappedDistance, normalizeCoord, drawStar]);
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
