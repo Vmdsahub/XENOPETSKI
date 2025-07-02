@@ -297,11 +297,11 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 8,
-        maxRadius: 35, // Even shorter waves
-        life: 30, // 0.5 seconds at 60fps
-        maxLife: 30,
-        opacity: 0.9,
+        radius: 15,
+        maxRadius: 50, // Adjust for better wave spacing
+        life: 40, // Slightly longer for smoother animation
+        maxLife: 40,
+        opacity: 1.0,
       };
 
       radarPulsesRef.current.push(newPulse);
@@ -571,7 +571,7 @@ export const SpaceMap: React.FC = () => {
         y: baseY,
         baseX,
         baseY,
-        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira c��smica
+        size: 0.3 + Math.random() * 0.7, // Tamanhos menores para poeira cósmica
         opacity: 0.2 + Math.random() * 0.25,
         speed: Math.random() * 0.01 + 0.005, // Velocidade reduzida
         parallax: 1.2, // Paralaxe de primeiro plano
