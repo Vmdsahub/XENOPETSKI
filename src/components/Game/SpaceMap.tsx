@@ -1384,30 +1384,28 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full"
         style={{
-          cursor: isWorldEditMode
-            ? isDragging
-              ? "grabbing"
-              : "grab"
-            : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
+          cursor: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
-        onMouseUp={handleMouseUp}
       />
 
-      {/* World Editor in edit mode */}
-      {isWorldEditMode && worldPositions.length > 0 && (
-        <WorldEditor
-          world={
-            worldPositions.find((w) => w.id === selectedWorldId) ||
-            worldPositions[0]
-          }
-          onUpdate={handleWorldUpdate}
-          isSelected={!!selectedWorldId}
-          onSelect={() => {}}
-        />
+      {/* Simple Admin Button for World Editing */}
+      {user?.isAdmin && (
+        <div className="absolute top-2 right-2">
+          <button
+            onClick={() => setWorldEditMode(!isWorldEditMode)}
+            className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
+              isWorldEditMode
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
+          >
+            {isWorldEditMode ? "Sair Edição" : "Editar Mundos"}
+          </button>
+        </div>
       )}
 
       <div className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
