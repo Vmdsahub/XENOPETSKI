@@ -836,6 +836,49 @@ export const SpaceMap: React.FC = () => {
         return newState;
       });
 
+      // Check for planets in range and create radar pulses
+      const currentShipState = gameState;
+      const currentPlanetsInRange = new Set<string>();
+
+      planetsRef.current.forEach((planet) => {
+        const shipToPlanetX = getWrappedDistance(
+          planet.x,
+          currentShipState.ship.x,
+        );
+        const shipToPlanetY = getWrappedDistance(
+          planet.y,
+          currentShipState.ship.y,
+        );
+        const shipToPlanetDistance = Math.sqrt(
+          shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
+        );
+
+        if (shipToPlanetDistance <= planet.interactionRadius) {
+          currentPlanetsInRange.add(planet.id);
+
+          // If this planet wasn't in range before, create a radar pulse
+          if (!lastRadarCheckRef.current.has(planet.id)) {
+            createRadarPulse(
+              planet,
+              currentShipState.ship.x,
+              currentShipState.ship.y,
+            );
+          }
+        }
+      });
+
+      // Update the tracking set
+      lastRadarCheckRef.current = currentPlanetsInRange;
+
+      // Update radar pulses
+      radarPulsesRef.current = radarPulsesRef.current
+        .map((pulse) => ({
+          ...pulse,
+          radius: pulse.radius + 3, // Expand radar pulse
+          life: pulse.life - 1,
+        }))
+        .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
+
       // Update stars with floating motion
       const stars = starsRef.current;
       const time = currentTime * 0.002; // Increased time for visible movement
