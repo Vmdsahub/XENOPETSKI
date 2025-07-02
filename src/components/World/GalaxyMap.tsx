@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 
 interface GalaxyMapProps {}
 
@@ -88,20 +88,12 @@ const PLANETS = [
 export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Ultra-smooth player position with springs
-  const playerX = useSpring(CENTER_X, {
-    stiffness: 100,
-    damping: 20,
-    mass: 0.5,
+  // Simple player position state
+  const [playerPosition, setPlayerPosition] = useState({
+    x: CENTER_X,
+    y: CENTER_Y,
   });
-  const playerY = useSpring(CENTER_Y, {
-    stiffness: 100,
-    damping: 20,
-    mass: 0.5,
-  });
-
-  // Mouse tracking
-  const [mousePos, setMousePos] = useState({ x: 200, y: 200 });
+  const [mousePosition, setMousePosition] = useState({ x: 200, y: 200 });
   const [isMouseInside, setIsMouseInside] = useState(false);
   const [containerSize, setContainerSize] = useState({
     width: 400,
@@ -116,16 +108,15 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
       y: number;
       targetX: number;
       targetY: number;
-      startTime: number;
     }>
   >([]);
 
-  // Ultra-smooth camera with springs
-  const cameraX = useSpring(0, { stiffness: 150, damping: 25, mass: 0.3 });
-  const cameraY = useSpring(0, { stiffness: 150, damping: 25, mass: 0.3 });
+  // Simple camera position
+  const cameraX = useMotionValue(0);
+  const cameraY = useMotionValue(0);
 
   // Ship rotation
-  const rotation = useSpring(0, { stiffness: 200, damping: 30, mass: 0.2 });
+  const rotation = useMotionValue(0);
 
   // Generate stars once
   const [starLayers] = useState(() =>
@@ -155,86 +146,73 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Ultra-smooth movement system
+  // Update camera to follow player
+  useEffect(() => {
+    cameraX.set(-(playerPosition.x - containerSize.width / 2));
+    cameraY.set(-(playerPosition.y - containerSize.height / 2));
+  }, [playerPosition, containerSize, cameraX, cameraY]);
+
+  // Smooth movement system
   useEffect(() => {
     let animationId: number;
 
-    const updateMovement = () => {
-      if (!isMouseInside) {
-        animationId = requestAnimationFrame(updateMovement);
-        return;
+    const animate = () => {
+      if (isMouseInside) {
+        const shipScreenX = containerSize.width / 2;
+        const shipScreenY = containerSize.height / 2;
+
+        // Calculate direction from ship center to mouse
+        const dx = mousePosition.x - shipScreenX;
+        const dy = mousePosition.y - shipScreenY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Dead zone
+        const deadZone = 20;
+
+        if (distance > deadZone) {
+          // Calculate rotation (ship points up by default, so add 90°)
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+          rotation.set(angle);
+
+          // Calculate smooth movement speed based on distance
+          const maxDistance = 200;
+          const speedMultiplier = Math.min(distance / maxDistance, 1);
+          const baseSpeed = 1.5;
+          const speed = baseSpeed * speedMultiplier;
+
+          // Move ship smoothly
+          const moveX = (dx / distance) * speed;
+          const moveY = (dy / distance) * speed;
+
+          setPlayerPosition((prev) => ({
+            x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
+            y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
+          }));
+        } else {
+          // Still rotate even when not moving
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+          rotation.set(angle);
+        }
       }
 
-      const shipScreenX = containerSize.width / 2;
-      const shipScreenY = containerSize.height / 2;
-
-      // Calculate direction and distance to mouse
-      const dx = mousePos.x - shipScreenX;
-      const dy = mousePos.y - shipScreenY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      // Dead zone for stopping
-      const deadZone = 25;
-
-      if (distance > deadZone) {
-        // Calculate target position with smooth interpolation
-        const maxDistance = 150;
-        const speedMultiplier = Math.min(distance / maxDistance, 1);
-        const moveSpeed = speedMultiplier * 2.5;
-
-        // Get current positions
-        const currentX = playerX.get();
-        const currentY = playerY.get();
-
-        // Calculate new target positions
-        const moveX = (dx / distance) * moveSpeed;
-        const moveY = (dy / distance) * moveSpeed;
-
-        const newX = wrapCoordinate(currentX + moveX, MAP_SIZE);
-        const newY = wrapCoordinate(currentY + moveY, MAP_SIZE);
-
-        // Set smooth targets
-        playerX.set(newX);
-        playerY.set(newY);
-      }
-
-      // Always rotate to point at mouse
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-      rotation.set(angle);
-
-      // Update camera to follow player smoothly
-      const targetCameraX = -(playerX.get() - containerSize.width / 2);
-      const targetCameraY = -(playerY.get() - containerSize.height / 2);
-      cameraX.set(targetCameraX);
-      cameraY.set(targetCameraY);
-
-      animationId = requestAnimationFrame(updateMovement);
+      animationId = requestAnimationFrame(animate);
     };
 
-    animationId = requestAnimationFrame(updateMovement);
+    animationId = requestAnimationFrame(animate);
 
     return () => {
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
     };
-  }, [
-    isMouseInside,
-    mousePos,
-    containerSize,
-    playerX,
-    playerY,
-    rotation,
-    cameraX,
-    cameraY,
-  ]);
+  }, [isMouseInside, mousePosition, containerSize, rotation]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-    setMousePos({ x: mouseX, y: mouseY });
+    setMousePosition({ x: mouseX, y: mouseY });
   }, []);
 
   // Handle mouse enter/leave
@@ -246,54 +224,54 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     setIsMouseInside(false);
   }, []);
 
-  // Handle shooting - shoot towards MOUSE position, not ship direction
+  // Handle shooting towards mouse
   const handleShoot = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault();
 
-      if (!containerRef.current) return;
-
-      const rect = containerRef.current.getBoundingClientRect();
+      // Get mouse position in world coordinates
+      const rect = event.currentTarget.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
 
-      // Calculate world position of mouse click
+      // Convert to world coordinates
       const worldMouseX = mouseX - cameraX.get();
       const worldMouseY = mouseY - cameraY.get();
 
-      // Shoot from ship position towards mouse world position
-      const shipX = playerX.get();
-      const shipY = playerY.get();
-
       // Calculate direction from ship to mouse
-      const dx = worldMouseX - shipX;
-      const dy = worldMouseY - shipY;
+      const dx = worldMouseX - playerPosition.x;
+      const dy = worldMouseY - playerPosition.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < 10) return; // Don't shoot if too close
 
-      // Calculate target position (extend line from ship through mouse)
-      const range = 500;
-      const targetX = wrapCoordinate(shipX + (dx / distance) * range, MAP_SIZE);
-      const targetY = wrapCoordinate(shipY + (dy / distance) * range, MAP_SIZE);
+      // Calculate target position
+      const range = 600;
+      const targetX = wrapCoordinate(
+        playerPosition.x + (dx / distance) * range,
+        MAP_SIZE,
+      );
+      const targetY = wrapCoordinate(
+        playerPosition.y + (dy / distance) * range,
+        MAP_SIZE,
+      );
 
       const newProjectile = {
         id: `proj-${Date.now()}-${Math.random()}`,
-        x: shipX,
-        y: shipY,
+        x: playerPosition.x,
+        y: playerPosition.y,
         targetX,
         targetY,
-        startTime: Date.now(),
       };
 
       setProjectiles((prev) => [...prev, newProjectile]);
 
-      // Remove projectile after travel time
+      // Remove projectile after animation
       setTimeout(() => {
         setProjectiles((prev) => prev.filter((p) => p.id !== newProjectile.id));
-      }, 800);
+      }, 1000);
     },
-    [playerX, playerY, cameraX, cameraY],
+    [playerPosition, cameraX, cameraY],
   );
 
   // Handle planet clicks
@@ -474,38 +452,30 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
               y: projectile.targetY - projectile.y,
             }}
             transition={{
-              duration: 0.8,
+              duration: 1,
               ease: "linear",
             }}
           />
         ))}
 
-        {/* Player Ship */}
-        <motion.div
+        {/* Player Ship - ALWAYS VISIBLE */}
+        <div
           className="absolute z-20"
           style={{
-            left: playerX,
-            top: playerY,
-            x: -20,
-            y: -20,
+            left: playerPosition.x - 20,
+            top: playerPosition.y - 20,
+            width: 40,
+            height: 40,
           }}
         >
           <motion.div
-            className="w-10 h-10"
+            className="w-10 h-10 relative"
             style={{
               rotate: rotation,
             }}
-            animate={{
-              y: [0, -0.3, 0, 0.3, 0],
-            }}
-            transition={{
-              duration: 1.2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
           >
             <img
-              src="https://cdn.builder.io/api/v1/image/assets%2F4d288afc148aaaf0f73eedbc53e2b%2F01991177d397420f9f7b55d6a6283724?format=webp&width=800"
+              src="https://cdn.builder.io/api/v1/image/assets%2F4d288afc418148aaaf0f73eedbc53e2b%2F01991177d397420f9f7b55d6a6283724?format=webp&width=800"
               alt="Spaceship"
               className="w-full h-full object-contain drop-shadow-lg"
             />
@@ -527,14 +497,26 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 ease: "easeInOut",
               }}
             />
+            {/* Subtle floating animation */}
+            <motion.div
+              className="absolute inset-0"
+              animate={{
+                y: [0, -0.5, 0, 0.5, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* UI */}
       <div className="absolute top-4 left-4 text-white text-sm font-mono z-30">
-        <div>X: {playerX.get().toFixed(0)}</div>
-        <div>Y: {playerY.get().toFixed(0)}</div>
+        <div>X: {playerPosition.x.toFixed(0)}</div>
+        <div>Y: {playerPosition.y.toFixed(0)}</div>
         <div>R: {rotation.get().toFixed(0)}°</div>
       </div>
     </div>
