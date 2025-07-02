@@ -3,15 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AuthScreen } from "./components/Auth/AuthScreen";
 
 import { BottomNavigation } from "./components/Layout/BottomNavigation";
-import { PetScreen } from "./components/Screens/PetScreen";
 
-import { StoreScreen } from "./components/Store/StoreScreen";
-import { InventoryScreen } from "./components/Screens/InventoryScreen";
-import { ProfileScreen } from "./components/Screens/ProfileScreen";
-import { OtherUserInventoryScreen } from "./components/Screens/OtherUserInventoryScreen";
-import { OtherUserAchievementsScreen } from "./components/Screens/OtherUserAchievementsScreen";
-import { OtherUserCollectiblesScreen } from "./components/Screens/OtherUserCollectiblesScreen";
-import { AdminPanel } from "./components/Admin/AdminPanel";
 import { useAuthStore } from "./store/authStore";
 import { useGameStore } from "./store/gameStore";
 import { preloadAllSounds } from "./utils/soundManager";
