@@ -191,6 +191,19 @@ export type ItemRarity =
   | "Legendary"
   | "Unique";
 
+export interface WorldPosition {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  size: number;
+  rotation: number;
+  color: string;
+  imageUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface GameState {
   user: User | null;
   activePet: Pet | null;
