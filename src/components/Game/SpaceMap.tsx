@@ -1599,10 +1599,18 @@ export const SpaceMap: React.FC = () => {
       </div>
 
       <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
-        <div>• Mouse: Mover nave</div>
-        <div>• Click: Atirar/Planeta</div>
-        {isWorldEditMode && (
-          <div className="text-yellow-400 mt-1">🔧 Modo Edição Ativo</div>
+        {isWorldEditMode ? (
+          <>
+            <div className="text-yellow-400 font-bold mb-1">🔧 MODO EDIÇÃO</div>
+            <div>• Click: Selecionar mundo</div>
+            <div>• Arrastar: Mover mundo</div>
+            <div>• Painel: Tamanho/Rotação</div>
+          </>
+        ) : (
+          <>
+            <div>• Mouse: Mover nave</div>
+            <div>• Click: Atirar/Planeta</div>
+          </>
         )}
       </div>
     </div>
