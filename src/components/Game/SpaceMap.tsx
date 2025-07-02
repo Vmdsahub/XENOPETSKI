@@ -729,6 +729,33 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
+      // Create shooting stars periodically
+      if (
+        currentTime - lastShootingStarTime.current >
+        8000 + Math.random() * 12000
+      ) {
+        // Every 8-20 seconds
+        createShootingStar(canvas);
+        lastShootingStarTime.current = currentTime;
+      }
+
+      // Update shooting stars
+      shootingStarsRef.current = shootingStarsRef.current
+        .map((star) => ({
+          ...star,
+          x: star.x + star.vx,
+          y: star.y + star.vy,
+          life: star.life - 1,
+        }))
+        .filter(
+          (star) =>
+            star.life > 0 &&
+            star.x > -100 &&
+            star.x < canvas.width + 100 &&
+            star.y > -100 &&
+            star.y < canvas.height + 100,
+        );
+
       // Clear canvas with solid black background
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
