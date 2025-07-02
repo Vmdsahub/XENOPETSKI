@@ -366,7 +366,7 @@ export const SpaceMap: React.FC = () => {
     const newPulse: RadarPulse = {
       planetId: planet.id,
       radius: 8, // Raio inicial original
-      maxRadius: 40, // Expans��o menor
+      maxRadius: 40, // Expansão menor
       life: 160, // Vida mais longa para compensar expansão lenta
       maxLife: 160,
       opacity: 1.2, // Opacidade muito alta para verde ser mais visível
@@ -774,7 +774,6 @@ export const SpaceMap: React.FC = () => {
 
   // Generate default planets (fallback)
   const generateDefaultPlanets = useCallback(() => {
-    // Generate planets (restored original logic)
     const planets: Planet[] = [];
     const colors = [
       "#ff6b6b",
@@ -830,7 +829,13 @@ export const SpaceMap: React.FC = () => {
     });
 
     planetsRef.current = planets;
-  }, [generateRichStarField]);
+  }, []);
+
+  // Initialize game objects once
+  useEffect(() => {
+    generateRichStarField();
+    loadWorldPositions();
+  }, [generateRichStarField, loadWorldPositions]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
