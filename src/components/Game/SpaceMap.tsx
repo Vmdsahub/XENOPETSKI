@@ -75,6 +75,7 @@ const BARRIER_RADIUS = 600;
 const RENDER_BUFFER = 200;
 
 export const SpaceMap: React.FC = () => {
+  const { shipState, updateShipState, getShipState } = useGameStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameLoopRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
@@ -84,19 +85,40 @@ export const SpaceMap: React.FC = () => {
   const shootingStarsRef = useRef<ShootingStar[]>([]);
   const lastShootingStarTime = useRef(0);
 
-  const [gameState, setGameState] = useState<GameState>({
-    ship: {
-      x: CENTER_X,
-      y: CENTER_Y + 200,
-      angle: 0,
-      vx: 0,
-      vy: 0,
-    },
-    camera: {
-      x: CENTER_X,
-      y: CENTER_Y + 200,
-    },
-  });
+  // Initialize state from store or use defaults
+  const getInitialGameState = useCallback((): GameState => {
+    const savedState = getShipState();
+    if (savedState) {
+      return {
+        ship: {
+          x: savedState.x,
+          y: savedState.y,
+          angle: savedState.angle,
+          vx: savedState.vx,
+          vy: savedState.vy,
+        },
+        camera: {
+          x: savedState.cameraX,
+          y: savedState.cameraY,
+        },
+      };
+    }
+    return {
+      ship: {
+        x: CENTER_X,
+        y: CENTER_Y + 200,
+        angle: 0,
+        vx: 0,
+        vy: 0,
+      },
+      camera: {
+        x: CENTER_X,
+        y: CENTER_Y + 200,
+      },
+    };
+  }, [getShipState]);
+
+  const [gameState, setGameState] = useState<GameState>(getInitialGameState);
 
   // FPS tracking
   const [fps, setFps] = useState(0);
