@@ -12,6 +12,10 @@ interface Star {
   type: "normal" | "bright" | "giant";
   drift: { x: number; y: number };
   pulse: number;
+  baseX: number; // Posição base para movimento oscilatório
+  baseY: number; // Posição base para movimento oscilatório
+  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutuação
+  floatPhase: { x: number; y: number }; // Fase do movimento senoidal
 }
 
 interface Planet {
