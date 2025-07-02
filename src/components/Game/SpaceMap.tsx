@@ -1187,6 +1187,8 @@ export const SpaceMap: React.FC = () => {
     drawPureLightStar,
     saveShipState,
     forceSaveShipState,
+    createRadarPulse,
+    drawRadarPulse,
   ]);
 
   return (
