@@ -797,13 +797,39 @@ export const SpaceMap: React.FC = () => {
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
+      const newMousePos = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
+
+      // Handle world dragging in edit mode
+      if (isWorldEditMode && isDragging && selectedWorldId) {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        const worldX =
+          newMousePos.x - centerX + gameState.camera.x - dragOffset.x;
+        const worldY =
+          newMousePos.y - centerY + gameState.camera.y - dragOffset.y;
+
+        // Update world position immediately for responsive feedback
+        planetsRef.current = planetsRef.current.map((planet) =>
+          planet.id === selectedWorldId
+            ? { ...planet, x: worldX, y: worldY }
+            : planet,
+        );
+      }
+
+      mouseRef.current = newMousePos;
       hasMouseMoved.current = true;
     },
-    [],
+    [
+      isWorldEditMode,
+      isDragging,
+      selectedWorldId,
+      gameState.camera,
+      dragOffset,
+    ],
   );
 
   // Handle mouse leaving canvas
