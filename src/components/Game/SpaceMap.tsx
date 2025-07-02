@@ -161,6 +161,10 @@ export const SpaceMap: React.FC = () => {
   // Mouse state tracking
   const [mouseInWindow, setMouseInWindow] = useState(true);
 
+  // Modal state
+  const [showLandingModal, setShowLandingModal] = useState(false);
+  const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
     (coord: number, cameraCoord: number) => {
