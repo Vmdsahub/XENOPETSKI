@@ -865,6 +865,15 @@ export const SpaceMap: React.FC = () => {
             ? { ...planet, x: worldX, y: worldY }
             : planet,
         );
+
+        // Save to database with throttling
+        clearTimeout((window as any).worldDragTimeout);
+        (window as any).worldDragTimeout = setTimeout(async () => {
+          await gameService.updateWorldPosition(selectedWorldId, {
+            x: worldX,
+            y: worldY,
+          });
+        }, 200);
       }
 
       mouseRef.current = newMousePos;
