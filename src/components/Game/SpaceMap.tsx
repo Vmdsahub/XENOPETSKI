@@ -817,7 +817,7 @@ export const SpaceMap: React.FC = () => {
     setMouseInWindow(true);
   }, []);
 
-  // Handle shooting
+  // Handle shooting and world editing
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -832,6 +832,29 @@ export const SpaceMap: React.FC = () => {
       // Convert click position to world coordinates
       const worldClickX = clickX - centerX + gameState.camera.x;
       const worldClickY = clickY - centerY + gameState.camera.y;
+
+      // World editing mode
+      if (isWorldEditMode) {
+        let worldClicked = false;
+
+        planetsRef.current.forEach((planet) => {
+          const dx = getWrappedDistance(planet.x, worldClickX);
+          const dy = getWrappedDistance(planet.y, worldClickY);
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance <= planet.size) {
+            setSelectedWorldId(planet.id);
+            setIsDragging(true);
+            setDragOffset({ x: dx, y: dy });
+            worldClicked = true;
+          }
+        });
+
+        if (!worldClicked) {
+          setSelectedWorldId(null);
+        }
+        return;
+      }
 
       // Check if click was on a planet first
       let clickedOnPlanet = false;
