@@ -297,11 +297,11 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 15,
-        maxRadius: 70, // Longer range to see all 3 waves
-        life: 60, // Longer life to maintain 3 visible waves
-        maxLife: 60,
-        opacity: 1.0,
+        radius: 8, // Smaller starting radius
+        maxRadius: 35, // Much smaller max radius
+        life: 90, // Longer life for smoother animation
+        maxLife: 90,
+        opacity: 0.8, // Slightly more transparent
       };
 
       radarPulsesRef.current.push(newPulse);
@@ -318,29 +318,49 @@ export const SpaceMap: React.FC = () => {
       shipScreenY: number,
     ) => {
       const fadeRatio = pulse.life / pulse.maxLife;
-      const currentOpacity = pulse.opacity * fadeRatio;
+      const expandRatio = (pulse.maxRadius - pulse.radius) / pulse.maxRadius;
+
+      // Smooth fade out as it expands
+      const currentOpacity =
+        pulse.opacity * fadeRatio * (0.3 + expandRatio * 0.7);
 
       ctx.save();
-      ctx.globalAlpha = currentOpacity;
-      ctx.strokeStyle = "#00ff00";
-      ctx.fillStyle = "#00ff0015";
 
-      // Draw single expanding wave arc
-      const arcRadius = pulse.radius;
-      const lineWidth = 6;
-      const arcOpacity = currentOpacity;
+      // Create gradient for more modern look
+      const gradient = ctx.createRadialGradient(
+        shipScreenX,
+        shipScreenY,
+        0,
+        shipScreenX,
+        shipScreenY,
+        pulse.radius,
+      );
+      gradient.addColorStop(0, `rgba(0, 255, 255, ${currentOpacity * 0.8})`); // Cyan center
+      gradient.addColorStop(0.7, `rgba(0, 200, 255, ${currentOpacity * 0.6})`); // Blue-cyan
+      gradient.addColorStop(1, `rgba(0, 150, 255, ${currentOpacity * 0.2})`); // Blue edge
 
-      ctx.globalAlpha = arcOpacity;
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = "round";
-
-      // Draw wide curved arc like sonar signal
-      const arcWidth = Math.PI / 2; // 90 degrees for good curve
+      // Draw refined arc with smaller width for more elegant look
+      const arcWidth = Math.PI / 3; // 60 degrees for more focused beam
       const startAngle = pulse.angle - arcWidth / 2;
       const endAngle = pulse.angle + arcWidth / 2;
 
+      // Main pulse arc with gradient
+      ctx.globalAlpha = currentOpacity;
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 3; // Thinner line for more refined look
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
       ctx.beginPath();
-      ctx.arc(shipScreenX, shipScreenY, arcRadius, startAngle, endAngle);
+      ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
+      ctx.stroke();
+
+      // Add subtle inner glow
+      ctx.globalAlpha = currentOpacity * 0.6;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${currentOpacity * 0.8})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(shipScreenX, shipScreenY, pulse.radius, startAngle, endAngle);
       ctx.stroke();
 
       ctx.restore();
@@ -693,16 +713,22 @@ export const SpaceMap: React.FC = () => {
   // Handle shooting
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const newProjectile: Projectile = {
-        x: gameState.ship.x,
-        y: gameState.ship.y,
-        vx: Math.cos(gameState.ship.angle) * 10,
-        vy: Math.sin(gameState.ship.angle) * 10,
-        life: 80,
-      };
-      projectilesRef.current.push(newProjectile);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-      // Check planet interactions - only if ship is within interaction radius
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      // Convert click position to world coordinates
+      const worldClickX = clickX - centerX + gameState.camera.x;
+      const worldClickY = clickY - centerY + gameState.camera.y;
+
+      // Check if click was on a planet first
+      let clickedOnPlanet = false;
+
       planetsRef.current.forEach((planet) => {
         const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
         const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
@@ -710,10 +736,34 @@ export const SpaceMap: React.FC = () => {
           shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
         );
 
+        // Only check for planet click if ship is within interaction radius
         if (shipToPlanetDistance <= planet.interactionRadius) {
-          alert(`Explorando ${planet.name}!`);
+          // Check if the click was specifically on the planet image
+          const clickToPlanetX = getWrappedDistance(planet.x, worldClickX);
+          const clickToPlanetY = getWrappedDistance(planet.y, worldClickY);
+          const clickToPlanetDistance = Math.sqrt(
+            clickToPlanetX * clickToPlanetX + clickToPlanetY * clickToPlanetY,
+          );
+
+          // Only interact if click was within planet's visual size
+          if (clickToPlanetDistance <= planet.size) {
+            alert(`Explorando ${planet.name}!`);
+            clickedOnPlanet = true;
+          }
         }
       });
+
+      // Only shoot if we didn't click on a planet
+      if (!clickedOnPlanet) {
+        const newProjectile: Projectile = {
+          x: gameState.ship.x,
+          y: gameState.ship.y,
+          vx: Math.cos(gameState.ship.angle) * 10,
+          vy: Math.sin(gameState.ship.angle) * 10,
+          life: 80,
+        };
+        projectilesRef.current.push(newProjectile);
+      }
     },
     [gameState, getWrappedDistance],
   );
@@ -844,10 +894,10 @@ export const SpaceMap: React.FC = () => {
         if (shipToPlanetDistance <= planet.interactionRadius) {
           currentPlanetsInRange.add(planet.id);
 
-          // Create radar pulse every 300ms for perfect 3-wave spacing
+          // Create radar pulse every 600ms for smoother, more spaced waves
           const lastPulseTime = lastRadarPulseTime.current.get(planet.id) || 0;
-          if (currentTime - lastPulseTime >= 300) {
-            // 0.3 second = 300ms for 3 visible waves
+          if (currentTime - lastPulseTime >= 600) {
+            // 0.6 second = 600ms for smoother spacing
             createRadarPulse(
               planet,
               currentShipState.ship.x,
@@ -868,7 +918,7 @@ export const SpaceMap: React.FC = () => {
       radarPulsesRef.current = radarPulsesRef.current
         .map((pulse) => ({
           ...pulse,
-          radius: pulse.radius + 1.2, // Slower expansion for better spacing
+          radius: pulse.radius + 0.6, // Much slower expansion for smooth animation
           life: pulse.life - 1,
         }))
         .filter((pulse) => pulse.life > 0 && pulse.radius <= pulse.maxRadius);
