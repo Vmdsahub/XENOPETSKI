@@ -608,6 +608,7 @@ export const SpaceMap: React.FC = () => {
   // Handle mouse leaving canvas
   const handleMouseLeave = useCallback(() => {
     setMouseInWindow(false);
+    hasMouseMoved.current = false; // Reset mouse movement flag
   }, []);
 
   // Handle mouse entering canvas
