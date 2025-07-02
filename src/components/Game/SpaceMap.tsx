@@ -769,6 +769,32 @@ export const SpaceMap: React.FC = () => {
     loadWorldPositions();
   }, [generateRichStarField, loadWorldPositions]);
 
+  // Handle world updates in edit mode
+  const handleWorldUpdate = useCallback(
+    (worldId: string, updates: Partial<WorldPosition>) => {
+      setWorldPositions((prev) =>
+        prev.map((world) =>
+          world.id === worldId ? { ...world, ...updates } : world,
+        ),
+      );
+
+      // Update planets ref for rendering
+      planetsRef.current = planetsRef.current.map((planet) =>
+        planet.id === worldId
+          ? {
+              ...planet,
+              size: updates.size ?? planet.size,
+              rotation: updates.rotation ?? planet.rotation,
+              interactionRadius: updates.size
+                ? Math.max(90, updates.size + 30)
+                : planet.interactionRadius,
+            }
+          : planet,
+      );
+    },
+    [],
+  );
+
   // Handle mouse movement
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
