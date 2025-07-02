@@ -21,6 +21,12 @@ interface GameStore extends GameState {
   setCurrentScreen: (screen: string) => void;
   setViewedUserId: (userId: string | null) => void;
 
+  // Planet management
+  currentPlanet: { id: string; name: string; color: string } | null;
+  setCurrentPlanet: (
+    planet: { id: string; name: string; color: string } | null,
+  ) => void;
+
   // Egg selection and hatching state
   selectedEggForHatching: any | null;
   isHatchingInProgress: boolean;
