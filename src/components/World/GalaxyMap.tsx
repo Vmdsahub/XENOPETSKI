@@ -152,7 +152,7 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     cameraY.set(-(playerPosition.y - containerSize.height / 2));
   }, [playerPosition, containerSize, cameraX, cameraY]);
 
-  // Smooth movement system
+  // Smooth movement system with better interpolation
   useEffect(() => {
     let animationId: number;
 
@@ -166,21 +166,21 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
         const dy = mousePosition.y - shipScreenY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Dead zone
-        const deadZone = 20;
+        // Always rotate to point at mouse
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        rotation.set(angle);
+
+        // Dead zone for movement
+        const deadZone = 25;
 
         if (distance > deadZone) {
-          // Calculate rotation (ship points up by default, so add 90°)
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-          rotation.set(angle);
-
-          // Calculate smooth movement speed based on distance
-          const maxDistance = 200;
+          // Smoother speed calculation
+          const maxDistance = 180;
           const speedMultiplier = Math.min(distance / maxDistance, 1);
-          const baseSpeed = 1.5;
+          const baseSpeed = 2.2;
           const speed = baseSpeed * speedMultiplier;
 
-          // Move ship smoothly
+          // Smooth interpolation movement
           const moveX = (dx / distance) * speed;
           const moveY = (dy / distance) * speed;
 
@@ -188,10 +188,6 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
             x: wrapCoordinate(prev.x + moveX, MAP_SIZE),
             y: wrapCoordinate(prev.y + moveY, MAP_SIZE),
           }));
-        } else {
-          // Still rotate even when not moving
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-          rotation.set(angle);
         }
       }
 
@@ -422,8 +418,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 />
               </div>
               <div
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 
-                            bg-black/80 text-white text-xs px-2 py-1 rounded 
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
+                            bg-black/80 text-white text-xs px-2 py-1 rounded
                             opacity-0 group-hover:opacity-100 transition-opacity
                             pointer-events-none whitespace-nowrap"
               >
@@ -458,18 +454,24 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
           />
         ))}
 
-        {/* Player Ship - ALWAYS VISIBLE */}
-        <div
+        {/* Player Ship */}
+        <motion.div
           className="absolute z-20"
           style={{
             left: playerPosition.x - 20,
             top: playerPosition.y - 20,
-            width: 40,
-            height: 40,
+          }}
+          animate={{
+            y: [0, -0.3, 0, 0.3, 0],
+          }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            ease: "easeInOut",
           }}
         >
           <motion.div
-            className="w-10 h-10 relative"
+            className="w-10 h-10"
             style={{
               rotate: rotation,
             }}
@@ -497,20 +499,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
                 ease: "easeInOut",
               }}
             />
-            {/* Subtle floating animation */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{
-                y: [0, -0.5, 0, 0.5, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
           </motion.div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* UI */}
