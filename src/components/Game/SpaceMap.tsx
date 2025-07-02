@@ -85,6 +85,9 @@ export const SpaceMap: React.FC = () => {
     frameTimes: [] as number[],
   });
 
+  // Mouse state tracking
+  const [mouseInWindow, setMouseInWindow] = useState(true);
+
   // Helper function for seamless wrapping distance calculation
   const getWrappedDistance = useCallback(
     (coord: number, cameraCoord: number) => {
@@ -368,6 +371,16 @@ export const SpaceMap: React.FC = () => {
     [],
   );
 
+  // Handle mouse leaving canvas
+  const handleMouseLeave = useCallback(() => {
+    setMouseInWindow(false);
+  }, []);
+
+  // Handle mouse entering canvas
+  const handleMouseEnter = useCallback(() => {
+    setMouseInWindow(true);
+  }, []);
+
   // Handle shooting
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -454,20 +467,23 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
-        const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
+        // Only respond to mouse if it's inside the window
+        if (mouseInWindow) {
+          const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
+          const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
-        const dx = getWrappedDistance(worldMouseX, newState.ship.x);
-        const dy = getWrappedDistance(worldMouseY, newState.ship.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+          const dx = getWrappedDistance(worldMouseX, newState.ship.x);
+          const dy = getWrappedDistance(worldMouseY, newState.ship.y);
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-        newState.ship.angle = Math.atan2(dy, dx);
+          newState.ship.angle = Math.atan2(dy, dx);
 
-        if (distance > 10) {
-          const speedMultiplier = Math.min(distance / 300, 1);
-          const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
-          newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
-          newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          if (distance > 10) {
+            const speedMultiplier = Math.min(distance / 300, 1);
+            const targetSpeed = SHIP_MAX_SPEED * speedMultiplier;
+            newState.ship.vx += (dx / distance) * targetSpeed * 0.04;
+            newState.ship.vy += (dy / distance) * targetSpeed * 0.04;
+          }
         }
 
         newState.ship.vx *= FRICTION;
@@ -511,7 +527,7 @@ export const SpaceMap: React.FC = () => {
         }))
         .filter((proj) => proj.life > 0);
 
-      // Clear canvas with deep space gradient
+      // Clear canvas with pure deep space gradient
       const gradient = ctx.createRadialGradient(
         centerX,
         centerY,
@@ -520,10 +536,10 @@ export const SpaceMap: React.FC = () => {
         centerY,
         Math.max(canvas.width, canvas.height) * 0.8,
       );
-      gradient.addColorStop(0, "#0a0a2e");
-      gradient.addColorStop(0.3, "#16213e");
-      gradient.addColorStop(0.7, "#0e1b2e");
-      gradient.addColorStop(1, "#080820");
+      gradient.addColorStop(0, "#0a0a0a");
+      gradient.addColorStop(0.3, "#141414");
+      gradient.addColorStop(0.7, "#0e0e0e");
+      gradient.addColorStop(1, "#060606");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -734,6 +750,8 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full cursor-crosshair"
         onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleMouseEnter}
         onClick={handleClick}
       />
 
