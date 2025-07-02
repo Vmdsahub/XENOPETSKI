@@ -46,6 +46,7 @@ const SHIP_MAX_SPEED = 2;
 const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
+const BARRIER_RADIUS = 600;
 
 export const SpaceMap: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
