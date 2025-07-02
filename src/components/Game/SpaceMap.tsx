@@ -343,39 +343,77 @@ export const SpaceMap: React.FC = () => {
       ctx.fillStyle = "#0a0a2e";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Render background stars
+      // Render background stars with seamless wrapping
+      const renderStar = (
+        star: Star,
+        offsetX: number = 0,
+        offsetY: number = 0,
+      ) => {
+        const parallaxX =
+          (star.x - gameState.camera.x + offsetX) * star.parallax;
+        const parallaxY =
+          (star.y - gameState.camera.y + offsetY) * star.parallax;
+        const screenX = centerX + parallaxX;
+        const screenY = centerY + parallaxY;
+
+        // Only render stars that are on screen (with margin)
+        if (
+          screenX > -50 &&
+          screenX < canvas.width + 50 &&
+          screenY > -50 &&
+          screenY < canvas.height + 50
+        ) {
+          // Subtle twinkling
+          star.twinkle += star.speed;
+          const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.arc(
+            Math.round(screenX),
+            Math.round(screenY),
+            star.size,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+          ctx.restore();
+        }
+      };
+
       ctx.fillStyle = "#ffffff";
-      starsRef.current.forEach((star, i) => {
+      starsRef.current.forEach((star) => {
         if (star.parallax < 1) {
           // Background stars only
-          const parallaxX = (star.x - gameState.camera.x) * star.parallax;
-          const parallaxY = (star.y - gameState.camera.y) * star.parallax;
-          const screenX = centerX + parallaxX;
-          const screenY = centerY + parallaxY;
+          renderStar(star);
 
-          // Only render stars that are on screen (with margin)
+          // Render wrapped duplicates for seamless transitions
+          const STAR_EDGE_THRESHOLD = canvas.width * 2;
+
           if (
-            screenX > -50 &&
-            screenX < canvas.width + 50 &&
-            screenY > -50 &&
-            screenY < canvas.height + 50
+            (star.x - gameState.camera.x) * star.parallax <
+            STAR_EDGE_THRESHOLD
           ) {
-            // Subtle twinkling
-            star.twinkle += star.speed;
-            const alpha = star.opacity * (Math.sin(star.twinkle) * 0.1 + 0.9);
-
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(
-              Math.round(screenX),
-              Math.round(screenY),
-              star.size,
-              0,
-              Math.PI * 2,
-            );
-            ctx.fill();
-            ctx.restore();
+            renderStar(star, WORLD_SIZE, 0);
+          }
+          if (
+            (star.x - gameState.camera.x) * star.parallax >
+            -STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, -WORLD_SIZE, 0);
+          }
+          if (
+            (star.y - gameState.camera.y) * star.parallax <
+            STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, 0, WORLD_SIZE);
+          }
+          if (
+            (star.y - gameState.camera.y) * star.parallax >
+            -STAR_EDGE_THRESHOLD
+          ) {
+            renderStar(star, 0, -WORLD_SIZE);
           }
         }
       });
