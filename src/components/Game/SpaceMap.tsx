@@ -239,8 +239,8 @@ export const SpaceMap: React.FC = () => {
         if (newState.ship.y > WORLD_SIZE) newState.ship.y -= WORLD_SIZE;
 
         // Update camera
-        newState.camera.x += (newState.ship.x - newState.camera.x) * 0.1;
-        newState.camera.y += (newState.ship.y - newState.camera.y) * 0.1;
+        newState.camera.x += (newState.ship.x - newState.camera.x) * 0.08;
+        newState.camera.y += (newState.ship.y - newState.camera.y) * 0.08;
 
         return newState;
       });
