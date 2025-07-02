@@ -297,8 +297,8 @@ export const SpaceMap: React.FC = () => {
       const newPulse: RadarPulse = {
         planetId: planet.id,
         angle,
-        radius: 10,
-        maxRadius: 50, // Much shorter waves like sound waves
+        radius: 8,
+        maxRadius: 35, // Even shorter waves
         life: 30, // 0.5 seconds at 60fps
         maxLife: 30,
         opacity: 0.9,
