@@ -1016,7 +1016,13 @@ export const SpaceMap: React.FC = () => {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [gameState, getWrappedDistance, normalizeCoord, drawPureLightStar]);
+  }, [
+    gameState,
+    getWrappedDistance,
+    normalizeCoord,
+    drawPureLightStar,
+    updateShipState,
+  ]);
 
   return (
     <div className="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
