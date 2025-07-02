@@ -51,6 +51,16 @@ interface ShootingStar {
   tailLength: number;
 }
 
+interface RadarPulse {
+  planetId: string;
+  angle: number;
+  radius: number;
+  maxRadius: number;
+  life: number;
+  maxLife: number;
+  opacity: number;
+}
+
 interface GameState {
   ship: {
     x: number;
