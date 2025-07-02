@@ -98,8 +98,8 @@ export const GalaxyMap: React.FC<GalaxyMapProps> = () => {
     y: CENTER_Y,
   });
   const [mousePosition, setMousePosition] = useState({
-    x: containerSize.width / 2,
-    y: containerSize.height / 2,
+    x: 200,
+    y: 200,
   });
   const [isMouseInside, setIsMouseInside] = useState(false);
   const [projectiles, setProjectiles] = useState<
