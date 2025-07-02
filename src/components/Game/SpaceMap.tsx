@@ -8,6 +8,11 @@ interface Star {
   speed: number;
   parallax: number;
   twinkle: number;
+  color: string;
+  type: "normal" | "colored" | "bright";
+  drift: { x: number; y: number };
+  pulse: number;
+  sparkle: number;
 }
 
 interface Planet {
