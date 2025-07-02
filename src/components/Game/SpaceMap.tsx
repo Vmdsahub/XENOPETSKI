@@ -79,6 +79,8 @@ export const SpaceMap: React.FC = () => {
   const starsRef = useRef<Star[]>([]);
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
+  const shootingStarsRef = useRef<ShootingStar[]>([]);
+  const lastShootingStarTime = useRef(0);
 
   const [gameState, setGameState] = useState<GameState>({
     ship: {
