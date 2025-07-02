@@ -857,25 +857,33 @@ export const SpaceMap: React.FC = () => {
   // Save any pending changes when component unmounts
   useEffect(() => {
     return () => {
-      // Clear any pending timeouts and save immediately if dragging
-      if ((window as any).worldDragTimeout) {
-        clearTimeout((window as any).worldDragTimeout);
+      // Clear any pending timeouts and save immediately if editing
+      const timeouts = [
+        (window as any).worldDragTimeout,
+        (window as any).worldSizeTimeout,
+        (window as any).worldRotationTimeout,
+      ];
 
-        if (isDragging && selectedWorldId) {
-          const planet = planetsRef.current.find(
-            (p) => p.id === selectedWorldId,
-          );
-          if (planet) {
-            // Fire and forget - save immediately on unmount
-            gameService.updateWorldPosition(selectedWorldId, {
-              x: planet.x,
-              y: planet.y,
-            });
-          }
+      timeouts.forEach((timeout) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+      });
+
+      if (selectedWorldId) {
+        const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
+        if (planet) {
+          // Fire and forget - save immediately on unmount
+          gameService.updateWorldPosition(selectedWorldId, {
+            x: planet.x,
+            y: planet.y,
+            size: planet.size,
+            rotation: planet.rotation,
+          });
         }
       }
     };
-  }, [isDragging, selectedWorldId]);
+  }, [selectedWorldId]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
