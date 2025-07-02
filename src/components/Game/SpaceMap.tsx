@@ -726,66 +726,48 @@ export const SpaceMap: React.FC = () => {
     starsRef.current = stars;
   }, []);
 
+  // Load world positions from database
+  const loadWorldPositions = useCallback(async () => {
+    try {
+      const positions = await gameService.getWorldPositions();
+      setWorldPositions(positions);
+
+      // Convert to planets format for rendering
+      const planets: Planet[] = positions.map((position) => ({
+        id: position.id,
+        x: position.x,
+        y: position.y,
+        size: position.size,
+        rotation: position.rotation,
+        color: position.color,
+        name: position.name,
+        interactionRadius: Math.max(90, position.size + 30),
+        imageUrl: position.imageUrl || "",
+      }));
+
+      // Preload planet images
+      positions.forEach((position) => {
+        if (position.imageUrl) {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.src = position.imageUrl;
+          img.onload = () => {
+            planetImagesRef.current.set(position.id, img);
+          };
+        }
+      });
+
+      planetsRef.current = planets;
+    } catch (error) {
+      console.error("Failed to load world positions:", error);
+    }
+  }, []);
+
   // Initialize game objects once
   useEffect(() => {
     generateRichStarField();
-
-    // Generate planets
-    const planets: Planet[] = [];
-    const colors = [
-      "#ff6b6b",
-      "#4ecdc4",
-      "#45b7d1",
-      "#96ceb4",
-      "#ffeaa7",
-      "#dda0dd",
-    ];
-
-    const planetImages = [
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
-      "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
-    ];
-
-    const planetNames = [
-      "Estação Galáctica",
-      "Base Orbital",
-      "Mundo Alienígena",
-      "Terra Verdejante",
-      "Reino Gelado",
-      "Vila Ancestral",
-    ];
-
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
-      const radius = 250;
-      planets.push({
-        id: `planet-${i}`,
-        x: CENTER_X + Math.cos(angle) * radius,
-        y: CENTER_Y + Math.sin(angle) * radius,
-        size: 60, // Aumentado para acomodar as imagens
-        color: colors[i],
-        name: planetNames[i],
-        interactionRadius: 90, // Aumentado junto com o tamanho
-        imageUrl: planetImages[i],
-      });
-    }
-
-    // Preload planet images
-    planetImages.forEach((imageUrl, index) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = imageUrl;
-      img.onload = () => {
-        planetImagesRef.current.set(`planet-${index}`, img);
-      };
-    });
-
-    planetsRef.current = planets;
-  }, [generateRichStarField]);
+    loadWorldPositions();
+  }, [generateRichStarField, loadWorldPositions]);
 
   // Handle mouse movement
   const handleMouseMove = useCallback(
