@@ -96,7 +96,9 @@ export const SpaceMap: React.FC = () => {
   const planetsRef = useRef<Planet[]>([]);
   const projectilesRef = useRef<Projectile[]>([]);
   const shootingStarsRef = useRef<ShootingStar[]>([]);
+  const radarPulsesRef = useRef<RadarPulse[]>([]);
   const lastShootingStarTime = useRef(0);
+  const lastRadarCheckRef = useRef<Set<string>>(new Set());
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
