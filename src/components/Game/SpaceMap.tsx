@@ -87,6 +87,7 @@ const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
 const BARRIER_RADIUS = 600;
 const PROJECTILE_SPEED = 400; // pixels per second (consistent across all FPS)
+const PROJECTILE_LIFETIME = 2.5; // seconds
 
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
@@ -219,8 +220,8 @@ export const SpaceMap: React.FC = () => {
         y: gameState.ship.y,
         vx: Math.cos(gameState.ship.angle) * PROJECTILE_SPEED,
         vy: Math.sin(gameState.ship.angle) * PROJECTILE_SPEED,
-        life: 134,
-        maxLife: 134,
+        life: PROJECTILE_LIFETIME,
+        maxLife: PROJECTILE_LIFETIME,
       };
       projectilesRef.current.push(newProjectile);
       lastShootTime.current = currentTime;
@@ -1349,7 +1350,7 @@ export const SpaceMap: React.FC = () => {
           ...proj,
           x: normalizeCoord(proj.x + proj.vx * projectileDeltaTime),
           y: normalizeCoord(proj.y + proj.vy * projectileDeltaTime),
-          life: proj.life - 1,
+          life: proj.life - projectileDeltaTime,
         }))
         .filter((proj) => proj.life > 0);
 
