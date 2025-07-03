@@ -1709,6 +1709,21 @@ export const useGameStore = create<GameStore>()(
         set({ worldPositions: positions });
       },
 
+      updateWorldPosition: (
+        worldId: string,
+        updates: Partial<WorldPosition>,
+      ) => {
+        const state = get();
+        const updatedPositions = state.worldPositions.map((world) =>
+          world.id === worldId
+            ? { ...world, ...updates, updatedAt: new Date() }
+            : world,
+        );
+
+        console.log("📍 Updating world position:", { worldId, updates });
+        set({ worldPositions: updatedPositions });
+      },
+
       loadWorldPositions: async () => {
         const state = get();
 
