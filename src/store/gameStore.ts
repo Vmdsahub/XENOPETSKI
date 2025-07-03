@@ -143,6 +143,10 @@ interface GameStore extends GameState {
   worldPositions: WorldPosition[];
   worldPositionsSubscriptionId?: string;
   setWorldPositions: (positions: WorldPosition[]) => void;
+  updateWorldPosition: (
+    worldId: string,
+    updates: Partial<WorldPosition>,
+  ) => void;
   loadWorldPositions: () => Promise<void>;
   subscribeToWorldPositions: () => void;
   unsubscribeFromWorldPositions: () => void;
