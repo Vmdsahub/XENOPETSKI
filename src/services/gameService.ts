@@ -1148,40 +1148,14 @@ export class GameService {
     try {
       console.log("🔄 Syncing current world positions to database:", planets);
 
-      // Check current user and admin status
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      console.log(
-        "🔐 Sync - Current user:",
-        user?.user?.id,
-        "Error:",
-        userError,
-      );
-
-      let currentUserId = user?.user?.id;
-
+      // Ensure user is authenticated
+      const currentUserId = await this.ensureAuthenticated();
       if (!currentUserId) {
-        console.error(
-          "❌ No authenticated user for sync - trying to refresh session...",
-        );
-
-        // Try to refresh the session
-        const { data: refreshData, error: refreshError } =
-          await supabase.auth.refreshSession();
-        console.log(
-          "🔄 Sync - Session refresh result:",
-          refreshData?.user?.id,
-          "Error:",
-          refreshError,
-        );
-
-        if (!refreshData?.user?.id) {
-          console.error("❌ Could not authenticate user for sync");
-          return false;
-        }
-
-        currentUserId = refreshData.user.id;
+        console.error("❌ Could not authenticate user for sync");
+        return false;
       }
 
+      // Check if user is admin
       const { data: profile } = await supabase
         .from("profiles")
         .select("is_admin")
@@ -1269,7 +1243,7 @@ export class GameService {
         .eq("id", currentUserId)
         .single();
 
-      console.log("��� User admin status:", profile?.is_admin);
+      console.log("👮 User admin status:", profile?.is_admin);
 
       if (!profile?.is_admin) {
         throw new Error("User is not admin");
