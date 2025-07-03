@@ -1827,25 +1827,17 @@ export const useGameStore = create<GameStore>()(
       },
 
       subscribeToWorldPositions: () => {
-        const worldSubscriptionId = gameService.subscribeToWorldPositions(
-          (payload) => {
-            console.log("World positions changed:", payload);
-
-            // Reload world positions when changes occur
-            get().loadWorldPositions();
-          },
+        // No need for real-time subscriptions with localStorage
+        console.log(
+          "📍 World positions using localStorage - no subscription needed",
         );
-
-        // Store subscription ID for cleanup
-        set({ worldPositionsSubscriptionId: worldSubscriptionId });
       },
 
       unsubscribeFromWorldPositions: () => {
-        const state = get();
-        if (state.worldPositionsSubscriptionId) {
-          gameService.unsubscribe(state.worldPositionsSubscriptionId);
-          set({ worldPositionsSubscriptionId: undefined });
-        }
+        // No need for real-time subscriptions with localStorage
+        console.log(
+          "📍 World positions using localStorage - no unsubscription needed",
+        );
       },
 
       subscribeToRealtimeUpdates: () => {
