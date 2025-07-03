@@ -2023,17 +2023,6 @@ export const SpaceMap: React.FC = () => {
         }
       }
 
-      const shipWrappedDeltaX = getWrappedDistance(
-        shipWorldX,
-        gameState.camera.x,
-      );
-      const shipWrappedDeltaY = getWrappedDistance(
-        shipWorldY,
-        gameState.camera.y,
-      );
-      const shipScreenX = centerX + shipWrappedDeltaX;
-      const shipScreenY = centerY + shipWrappedDeltaY;
-
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
       ctx.rotate(shipAngle);
