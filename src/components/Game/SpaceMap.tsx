@@ -1419,7 +1419,8 @@ export const SpaceMap: React.FC = () => {
             shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
           );
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
-          const isSelected = isWorldEditMode && selectedWorldId === planet.id;
+          const isSelected =
+            user?.isAdmin && isWorldEditMode && selectedWorldId === planet.id;
 
           // Render interaction circle (only visible to admins)
           if (user?.isAdmin) {
