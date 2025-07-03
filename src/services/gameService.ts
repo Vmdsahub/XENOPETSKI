@@ -955,36 +955,59 @@ export class GameService {
 
       console.log("📡 Raw world positions data:", data);
 
-      // If table is empty, seed it with default data
+      // If table is empty, try to seed it with default data (only if user is admin)
       if (!data || data.length === 0) {
-        console.log(
-          "🌱 Table is empty, seeding with default world positions...",
-        );
-        await this.seedDefaultWorldPositions();
+        console.log("🌱 Table is empty, checking if we can seed...");
 
-        // Fetch again after seeding
-        const { data: seededData, error: seededError } = await supabase
-          .from("world_positions")
-          .select("*")
-          .order("created_at", { ascending: true });
+        // Check if current user is admin before seeding
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", (await supabase.auth.getUser()).data.user?.id)
+          .single();
 
-        if (seededError) throw seededError;
+        if (profile?.is_admin) {
+          console.log(
+            "🌱 User is admin, seeding with default world positions...",
+          );
+          try {
+            await this.seedDefaultWorldPositions();
 
-        const mappedSeededData = seededData.map((world) => ({
-          id: world.id,
-          name: world.name,
-          x: world.x,
-          y: world.y,
-          size: world.size,
-          rotation: world.rotation,
-          color: world.color,
-          imageUrl: world.image_url,
-          createdAt: new Date(world.created_at),
-          updatedAt: new Date(world.updated_at),
-        }));
+            // Fetch again after seeding
+            const { data: seededData, error: seededError } = await supabase
+              .from("world_positions")
+              .select("*")
+              .order("created_at", { ascending: true });
 
-        console.log("🌱 Seeded world positions:", mappedSeededData);
-        return mappedSeededData;
+            if (seededError) throw seededError;
+
+            const mappedSeededData = seededData.map((world) => ({
+              id: world.id,
+              name: world.name,
+              x: world.x,
+              y: world.y,
+              size: world.size,
+              rotation: world.rotation,
+              color: world.color,
+              imageUrl: world.image_url,
+              createdAt: new Date(world.created_at),
+              updatedAt: new Date(world.updated_at),
+            }));
+
+            console.log(
+              "🌱 Seeded world positions successfully:",
+              mappedSeededData,
+            );
+            return mappedSeededData;
+          } catch (seedError) {
+            console.error("❌ Failed to seed world positions:", seedError);
+            // Continue with empty array if seeding fails
+          }
+        } else {
+          console.log(
+            "🌱 User is not admin, cannot seed. Returning empty array.",
+          );
+        }
       }
 
       const mappedData = data.map((world) => ({
