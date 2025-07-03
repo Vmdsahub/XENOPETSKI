@@ -1799,8 +1799,8 @@ export const SpaceMap: React.FC = () => {
           // Ship points in trajectory direction (tangent to the orbit)
           shipAngle = angleProgress + Math.PI / 2; // Tangent is perpendicular to radius
 
-          // Scale down as landing progresses
-          shipScale = 1 - progress * 0.7; // Ship gets 70% smaller
+          // Scale down as landing progresses, becoming completely invisible
+          shipScale = Math.max(0, 1 - progress * 1.2); // Ship becomes completely invisible
         }
       }
 
