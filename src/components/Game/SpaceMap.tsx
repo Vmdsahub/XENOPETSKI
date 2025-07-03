@@ -1775,25 +1775,28 @@ export const SpaceMap: React.FC = () => {
         } else {
           // Calculate orbital animation
           const planet = landingAnimationData.planet;
-          const orbitRadius = 80; // Distance from planet center
+
+          // Calculate initial distance from player to planet
+          const initialDx = landingAnimationData.initialShipX - planet.x;
+          const initialDy = landingAnimationData.initialShipY - planet.y;
+          const initialRadius = Math.sqrt(
+            initialDx * initialDx + initialDy * initialDy,
+          );
+
           const orbitSpeed = 1; // Only 1 orbit per animation
 
           // Calculate initial angle based on player's starting position relative to planet
-          const initialAngle = Math.atan2(
-            landingAnimationData.initialShipY - planet.y,
-            landingAnimationData.initialShipX - planet.x,
-          );
+          const initialAngle = Math.atan2(initialDy, initialDx);
 
           const angleProgress =
             initialAngle + progress * orbitSpeed * Math.PI * 2;
 
+          // Gradually spiral inward from initial radius to planet center
+          const currentRadius = initialRadius * (1 - progress * 0.9); // Spiral 90% closer
+
           // Calculate orbital position around planet
-          shipWorldX =
-            planet.x +
-            Math.cos(angleProgress) * orbitRadius * (1 - progress * 0.6);
-          shipWorldY =
-            planet.y +
-            Math.sin(angleProgress) * orbitRadius * (1 - progress * 0.6);
+          shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
+          shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
 
           // Ship points in trajectory direction (tangent to the orbit)
           shipAngle = angleProgress + Math.PI / 2; // Tangent is perpendicular to radius
