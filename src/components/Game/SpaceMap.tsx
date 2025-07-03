@@ -1046,16 +1046,10 @@ export const SpaceMap: React.FC = () => {
       // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
-        try {
-          await gameService.updateWorldPosition(selectedWorldId, {
-            x: planet.x,
-            y: planet.y,
-          });
-        } catch (error) {
-          console.error("Failed to update world position on mouse up:", error);
-          // Reload on error to revert to database state
-          loadWorldPositions();
-        }
+        updateWorldPosition(selectedWorldId, {
+          x: planet.x,
+          y: planet.y,
+        });
       }
 
       setIsDragging(false);
