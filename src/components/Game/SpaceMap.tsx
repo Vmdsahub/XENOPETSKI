@@ -1431,6 +1431,36 @@ export const SpaceMap: React.FC = () => {
           newState.ship.y = normalizeCoord(newState.ship.y);
         }
 
+        return newState;
+      });
+
+      // Create trail points after ship position update
+      const currentShipVelocity = Math.sqrt(
+        gameState.ship.vx * gameState.ship.vx +
+          gameState.ship.vy * gameState.ship.vy,
+      );
+
+      // Only create trail points if ship is moving and enough time has passed
+      if (
+        currentShipVelocity > 0.1 &&
+        currentTime - lastTrailTime.current > 50
+      ) {
+        createTrailPoint(
+          gameState.ship.x,
+          gameState.ship.y,
+          currentTime,
+          currentShipVelocity,
+        );
+        lastTrailTime.current = currentTime;
+      }
+
+      // Update trail points
+      updateTrailPoints(deltaTime);
+
+      // Continue with game state update
+      setGameState((prevState) => {
+        const newState = { ...prevState };
+
         // Camera follows ship (use current ship position for landing animation)
         const targetX =
           isLandingAnimationActive && landingAnimationData
