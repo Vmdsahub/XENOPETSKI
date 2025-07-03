@@ -971,7 +971,7 @@ export const SpaceMap: React.FC = () => {
       const worldClickY = clickY - centerY + gameState.camera.y;
 
       // World editing mode
-      if (isWorldEditMode) {
+      if (user?.isAdmin && isWorldEditMode) {
         let worldClicked = false;
 
         planetsRef.current.forEach((planet) => {
