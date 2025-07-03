@@ -186,6 +186,17 @@ export const SpaceMap: React.FC = () => {
   const [showLandingModal, setShowLandingModal] = useState(false);
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
 
+  // Landing animation state
+  const [isLandingAnimationActive, setIsLandingAnimationActive] =
+    useState(false);
+  const [landingAnimationData, setLandingAnimationData] = useState<{
+    planet: Planet;
+    startTime: number;
+    duration: number;
+    initialShipX: number;
+    initialShipY: number;
+  } | null>(null);
+
   // World editing state
   const [selectedWorldId, setSelectedWorldId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
