@@ -1649,27 +1649,6 @@ export const SpaceMap: React.FC = () => {
           >
             {isWorldEditMode ? "Sair Edição" : "Editar Mundos"}
           </button>
-          <button
-            onClick={async () => {
-              console.log(
-                "🔄 Syncing current planets to database:",
-                planetsRef.current,
-              );
-              const result = await gameService.syncCurrentWorldPositions(
-                planetsRef.current,
-              );
-              if (result) {
-                alert("✅ Mundos sincronizados com sucesso!");
-                // Reload from database to confirm
-                loadWorldPositions();
-              } else {
-                alert("❌ Erro ao sincronizar mundos.");
-              }
-            }}
-            className="block w-full px-3 py-1 text-xs bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all"
-          >
-            Sincronizar
-          </button>
         </div>
       )}
 
