@@ -1638,7 +1638,7 @@ export const SpaceMap: React.FC = () => {
 
       {/* Simple Admin Button for World Editing */}
       {user?.isAdmin && (
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 space-y-2">
           <button
             onClick={() => {
               console.log("🔧 Toggling edit mode. Current user:", user);
@@ -1650,13 +1650,34 @@ export const SpaceMap: React.FC = () => {
                 setIsDragging(false);
               }
             }}
-            className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
+            className={`block w-full px-3 py-1 text-xs rounded-lg font-medium transition-all ${
               isWorldEditMode
                 ? "bg-red-600 text-white hover:bg-red-700"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}
           >
             {isWorldEditMode ? "Sair Edição" : "Editar Mundos"}
+          </button>
+          <button
+            onClick={async () => {
+              console.log(
+                "🔄 Syncing current planets to database:",
+                planetsRef.current,
+              );
+              const result = await gameService.syncCurrentWorldPositions(
+                planetsRef.current,
+              );
+              if (result) {
+                alert("✅ Mundos sincronizados com sucesso!");
+                // Reload from database to confirm
+                loadWorldPositions();
+              } else {
+                alert("❌ Erro ao sincronizar mundos.");
+              }
+            }}
+            className="block w-full px-3 py-1 text-xs bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all"
+          >
+            Sincronizar
           </button>
         </div>
       )}
