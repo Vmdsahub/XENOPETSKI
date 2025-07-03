@@ -115,6 +115,8 @@ export const SpaceMap: React.FC = () => {
   const lastShootingStarTime = useRef(0);
   const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
+  const shootingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
