@@ -862,6 +862,7 @@ export const SpaceMap: React.FC = () => {
         (window as any).worldDragTimeout,
         (window as any).worldSizeTimeout,
         (window as any).worldRotationTimeout,
+        (window as any).worldInteractionTimeout,
       ];
 
       timeouts.forEach((timeout) => {
