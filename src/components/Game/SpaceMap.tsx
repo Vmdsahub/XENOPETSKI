@@ -1283,9 +1283,50 @@ export const SpaceMap: React.FC = () => {
           newState.ship.y = normalizeCoord(newState.ship.y);
         }
 
+        // Camera follows ship (use current ship position for landing animation)
+        const targetX =
+          isLandingAnimationActive && landingAnimationData
+            ? (function () {
+                const currentTime = performance.now();
+                const elapsed = currentTime - landingAnimationData.startTime;
+                const progress = Math.min(
+                  elapsed / landingAnimationData.duration,
+                  1,
+                );
+                const planet = landingAnimationData.planet;
+                const orbitRadius = 80;
+                const orbitSpeed = 4;
+                const angleProgress = progress * orbitSpeed * Math.PI * 2;
+                return (
+                  planet.x +
+                  Math.cos(angleProgress) * orbitRadius * (1 - progress * 0.6)
+                );
+              })()
+            : newState.ship.x;
+
+        const targetY =
+          isLandingAnimationActive && landingAnimationData
+            ? (function () {
+                const currentTime = performance.now();
+                const elapsed = currentTime - landingAnimationData.startTime;
+                const progress = Math.min(
+                  elapsed / landingAnimationData.duration,
+                  1,
+                );
+                const planet = landingAnimationData.planet;
+                const orbitRadius = 80;
+                const orbitSpeed = 4;
+                const angleProgress = progress * orbitSpeed * Math.PI * 2;
+                return (
+                  planet.y +
+                  Math.sin(angleProgress) * orbitRadius * (1 - progress * 0.6)
+                );
+              })()
+            : newState.ship.y;
+
         const cameraFollowSpeed = 0.08;
-        const deltaX = getWrappedDistance(newState.ship.x, newState.camera.x);
-        const deltaY = getWrappedDistance(newState.ship.y, newState.camera.y);
+        const deltaX = getWrappedDistance(targetX, newState.camera.x);
+        const deltaY = getWrappedDistance(targetY, newState.camera.y);
 
         newState.camera.x += deltaX * cameraFollowSpeed;
         newState.camera.y += deltaY * cameraFollowSpeed;
@@ -1512,7 +1553,7 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#888888"; // Cinza
       ctx.lineWidth = 2;
 
-      // Rotação lenta baseada no tempo
+      // Rotaç��o lenta baseada no tempo
       const rotationTime = currentTime * 0.0005; // Muito lenta
       const dashOffset = (rotationTime * 50) % 20; // Offset dos traços para simular rotação
 
