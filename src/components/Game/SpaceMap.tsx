@@ -1461,7 +1461,7 @@ export const SpaceMap: React.FC = () => {
       // Only create trail points if ship is moving and enough time has passed
       if (
         currentShipVelocity > 0.1 &&
-        currentTime - lastTrailTime.current > 50
+        currentTime - lastTrailTime.current > 35
       ) {
         createTrailPoint(
           gameState.ship.x,
