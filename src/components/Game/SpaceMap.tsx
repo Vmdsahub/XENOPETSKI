@@ -1033,7 +1033,7 @@ export const SpaceMap: React.FC = () => {
       // Only shoot if we didn't click on a planet
       if (!clickedOnPlanet) {
         const currentTime = Date.now();
-        const SHOOT_COOLDOWN = 200; // 200ms entre tiros
+        const SHOOT_COOLDOWN = 333; // 333ms entre tiros (3 tiros/segundo)
 
         // Verificar cooldown
         if (currentTime - lastShootTime.current >= SHOOT_COOLDOWN) {
@@ -1516,7 +1516,7 @@ export const SpaceMap: React.FC = () => {
 
         const lifeRatio = proj.life / proj.maxLife;
         const angle = Math.atan2(proj.vy, proj.vx);
-        const length = 2;
+        const length = 8;
 
         // Calcular pontos da linha do tracinho
         const endX = screenX + Math.cos(angle) * length;
