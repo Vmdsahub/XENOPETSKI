@@ -3,6 +3,7 @@ import { useGameStore } from "../../store/gameStore";
 import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 import { PlanetLandingModal } from "./PlanetLandingModal";
 import { gameService } from "../../services/gameService";
+import { playLaserShootSound } from "../../utils/soundManager";
 
 interface Star {
   x: number;
@@ -40,6 +41,7 @@ interface Projectile {
   vx: number;
   vy: number;
   life: number;
+  maxLife: number;
 }
 
 interface ShootingStar {
@@ -111,7 +113,10 @@ export const SpaceMap: React.FC = () => {
   const shootingStarsRef = useRef<ShootingStar[]>([]);
   const radarPulsesRef = useRef<RadarPulse[]>([]);
   const lastShootingStarTime = useRef(0);
+  const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
+  const shootingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
 
@@ -199,6 +204,34 @@ export const SpaceMap: React.FC = () => {
   const normalizeCoord = useCallback((coord: number) => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
+
+  // Função de tiro que pode ser reutilizada
+  const shootProjectile = useCallback(() => {
+    const currentTime = Date.now();
+    const SHOOT_COOLDOWN = 333; // 333ms entre tiros (3 tiros/segundo)
+
+    // Verificar cooldown
+    if (currentTime - lastShootTime.current >= SHOOT_COOLDOWN) {
+      const newProjectile: Projectile = {
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        vx: Math.cos(gameState.ship.angle) * 12,
+        vy: Math.sin(gameState.ship.angle) * 12,
+        life: 134,
+        maxLife: 134,
+      };
+      projectilesRef.current.push(newProjectile);
+      lastShootTime.current = currentTime;
+
+      // Tocar som de laser
+      playLaserShootSound().catch(() => {
+        // Som não é crítico, ignora erro
+      });
+
+      return true; // Tiro disparado
+    }
+    return false; // Cooldown ainda ativo
+  }, [gameState.ship.x, gameState.ship.y, gameState.ship.angle]);
 
   // Function to check if click is on visible pixel of planet image
   const isClickOnPlanetPixel = useCallback(
@@ -900,7 +933,7 @@ export const SpaceMap: React.FC = () => {
       };
 
       // Handle world dragging in edit mode
-      if (isWorldEditMode && isDragging && selectedWorldId) {
+      if (user?.isAdmin && isWorldEditMode && isDragging && selectedWorldId) {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
 
@@ -971,7 +1004,7 @@ export const SpaceMap: React.FC = () => {
       const worldClickY = clickY - centerY + gameState.camera.y;
 
       // World editing mode
-      if (isWorldEditMode) {
+      if (user?.isAdmin && isWorldEditMode) {
         let worldClicked = false;
 
         planetsRef.current.forEach((planet) => {
@@ -1029,23 +1062,45 @@ export const SpaceMap: React.FC = () => {
 
       // Only shoot if we didn't click on a planet
       if (!clickedOnPlanet) {
-        const newProjectile: Projectile = {
-          x: gameState.ship.x,
-          y: gameState.ship.y,
-          vx: Math.cos(gameState.ship.angle) * 10,
-          vy: Math.sin(gameState.ship.angle) * 10,
-          life: 80,
-        };
-        projectilesRef.current.push(newProjectile);
+        shootProjectile();
       }
     },
     [gameState, getWrappedDistance, isClickOnPlanetPixel, isWorldEditMode],
   );
 
   // Handle mouse up to stop dragging
-  const handleMouseUp = useCallback(async () => {
-    if (isWorldEditMode && isDragging && selectedWorldId) {
-      // Get final position and save to database
+  // Handler para mousedown - inicia tiro contínuo
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!user?.isAdmin || !isWorldEditMode) {
+        setIsMousePressed(true);
+
+        // Primeiro tiro imediato
+        shootProjectile();
+
+        // Iniciar timer para tiros contínuos
+        if (shootingIntervalRef.current) {
+          clearInterval(shootingIntervalRef.current);
+        }
+
+        shootingIntervalRef.current = setInterval(() => {
+          shootProjectile();
+        }, 333); // 3 tiros por segundo
+      }
+    },
+    [user?.isAdmin, isWorldEditMode, shootProjectile],
+  );
+
+  const handleMouseUp = useCallback(() => {
+    // Parar tiro contínuo
+    setIsMousePressed(false);
+    if (shootingIntervalRef.current) {
+      clearInterval(shootingIntervalRef.current);
+      shootingIntervalRef.current = null;
+    }
+
+    // Lógica original de edição de mundos
+    if (user?.isAdmin && isWorldEditMode && isDragging && selectedWorldId) {
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
         updateWorldPosition(selectedWorldId, {
@@ -1057,12 +1112,12 @@ export const SpaceMap: React.FC = () => {
       setIsDragging(false);
       setDragOffset({ x: 0, y: 0 });
     }
-  }, [isWorldEditMode, isDragging, selectedWorldId]);
+  }, [user?.isAdmin, isWorldEditMode, isDragging, selectedWorldId]);
 
   // Handle ESC key to cancel editing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isWorldEditMode) {
+      if (e.key === "Escape" && user?.isAdmin && isWorldEditMode) {
         setSelectedWorldId(null);
         setIsDragging(false);
         setDragOffset({ x: 0, y: 0 });
@@ -1071,7 +1126,7 @@ export const SpaceMap: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isWorldEditMode]);
+  }, [user?.isAdmin, isWorldEditMode]);
 
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
@@ -1089,6 +1144,25 @@ export const SpaceMap: React.FC = () => {
     // Force reset mouse state to ensure ship responds immediately
     hasMouseMoved.current = true;
     setMouseInWindow(true);
+  }, []);
+
+  // Cleanup do timer de tiro quando componente desmonta
+  useEffect(() => {
+    return () => {
+      if (shootingIntervalRef.current) {
+        clearInterval(shootingIntervalRef.current);
+        shootingIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  // Parar tiro quando mouse sai da área do canvas
+  const handleMouseLeaveCanvas = useCallback(() => {
+    setIsMousePressed(false);
+    if (shootingIntervalRef.current) {
+      clearInterval(shootingIntervalRef.current);
+      shootingIntervalRef.current = null;
+    }
   }, []);
 
   // Optimized game loop with pre-rendering considerations
@@ -1419,7 +1493,8 @@ export const SpaceMap: React.FC = () => {
             shipToPlanetX * shipToPlanetX + shipToPlanetY * shipToPlanetY,
           );
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
-          const isSelected = isWorldEditMode && selectedWorldId === planet.id;
+          const isSelected =
+            user?.isAdmin && isWorldEditMode && selectedWorldId === planet.id;
 
           // Render interaction circle (only visible to admins)
           if (user?.isAdmin) {
@@ -1488,18 +1563,73 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render projectiles
-      ctx.fillStyle = "#ffff00";
+      // Render projectiles as bright energy beams
       projectilesRef.current.forEach((proj) => {
         const wrappedDeltaX = getWrappedDistance(proj.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(proj.y, gameState.camera.y);
         const screenX = centerX + wrappedDeltaX;
         const screenY = centerY + wrappedDeltaY;
+
         ctx.save();
-        ctx.globalAlpha = proj.life / 80;
+
+        const lifeRatio = proj.life / proj.maxLife;
+        const angle = Math.atan2(proj.vy, proj.vx);
+        const length = 8;
+        const time = Date.now() * 0.01; // Para efeito pulsante
+        const pulse = 0.8 + 0.2 * Math.sin(time);
+
+        // Calcular pontos da linha do tracinho
+        const endX = screenX + Math.cos(angle) * length;
+        const endY = screenY + Math.sin(angle) * length;
+
+        // Glow externo muito brilhante (aura de energia amarela)
+        ctx.globalAlpha = lifeRatio * 0.3 * pulse;
+        ctx.strokeStyle = "#ffdd00";
+        ctx.lineWidth = 12;
+        ctx.lineCap = "round";
+        ctx.shadowColor = "#ffdd00";
+        ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Glow médio amarelo-dourado
+        ctx.globalAlpha = lifeRatio * 0.7;
+        ctx.strokeStyle = "#ffee44";
+        ctx.lineWidth = 6;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Core energético amarelo puro
+        ctx.globalAlpha = lifeRatio * 0.9 * pulse;
+        ctx.strokeStyle = "#ffff00";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "#ffff00";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Centro ultra brilhante amarelo-branco
+        ctx.globalAlpha = lifeRatio;
+        ctx.strokeStyle = "#ffffa0";
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "#ffffa0";
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Reset shadow para não afetar outros elementos
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+
         ctx.restore();
       });
 
@@ -1608,16 +1738,21 @@ export const SpaceMap: React.FC = () => {
         ref={canvasRef}
         className="w-full h-full"
         style={{
-          cursor: isWorldEditMode
-            ? isDragging
-              ? "grabbing"
-              : "grab"
-            : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
+          cursor:
+            user?.isAdmin && isWorldEditMode
+              ? isDragging
+                ? "grabbing"
+                : "grab"
+              : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
         }}
         onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={(e) => {
+          handleMouseLeave(e);
+          handleMouseLeaveCanvas();
+        }}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
+        onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       />
 
@@ -1626,9 +1761,6 @@ export const SpaceMap: React.FC = () => {
         <div className="absolute top-2 right-2 space-y-2">
           <button
             onClick={() => {
-              console.log("🔧 Toggling edit mode. Current user:", user);
-              console.log("🔧 Is admin:", user?.isAdmin);
-              console.log("🔧 Current edit mode:", isWorldEditMode);
               setWorldEditMode(!isWorldEditMode);
               if (isWorldEditMode) {
                 setSelectedWorldId(null);
@@ -1647,7 +1779,7 @@ export const SpaceMap: React.FC = () => {
       )}
 
       {/* World Controls when selected */}
-      {isWorldEditMode && selectedWorldId && (
+      {user?.isAdmin && isWorldEditMode && selectedWorldId && (
         <div className="absolute top-14 right-2 bg-white rounded-lg p-3 shadow-lg border border-gray-200 w-64">
           <h4 className="text-sm font-bold text-gray-900 mb-3">
             Mundo:{" "}
@@ -1879,9 +2011,11 @@ export const SpaceMap: React.FC = () => {
       </div>
 
       <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
-        {isWorldEditMode ? (
+        {user?.isAdmin && isWorldEditMode ? (
           <>
-            <div className="text-yellow-400 font-bold mb-1">🔧 MODO EDIÇÃO</div>
+            <div className="text-yellow-400 font-bold mb-1">
+              ��� MODO EDIÇÃO
+            </div>
             <div>• 1º Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
