@@ -35,6 +35,11 @@ export const AdminPanel: React.FC = () => {
   } = useGameStore();
 
   const [activeTab, setActiveTab] = useState("codes");
+
+  // Load world positions when component mounts
+  useEffect(() => {
+    loadWorldPositions();
+  }, [loadWorldPositions]);
   const [showCreateCodeModal, setShowCreateCodeModal] = useState(false);
   const [editingCode, setEditingCode] = useState<RedeemCode | null>(null);
   const [newCodeData, setNewCodeData] = useState({
@@ -231,7 +236,7 @@ export const AdminPanel: React.FC = () => {
         {allCodes.length === 0 ? (
           <div className="text-center py-8">
             <Ticket className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">Nenhum código criado ainda.</p>
+            <p className="text-gray-600">Nenhum c��digo criado ainda.</p>
           </div>
         ) : (
           <div className="space-y-4">
