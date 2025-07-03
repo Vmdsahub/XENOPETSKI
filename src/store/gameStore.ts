@@ -692,6 +692,9 @@ export const useGameStore = create<GameStore>()(
       viewedUserId: null,
       shipState: null,
 
+      // World positions state
+      worldPositions: [],
+
       // Egg selection and hatching state
       selectedEggForHatching: null,
       isHatchingInProgress: false,
