@@ -1957,7 +1957,7 @@ export const SpaceMap: React.FC = () => {
           shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
 
           // Create trail points during landing animation with high intensity
-          if (currentTime - lastTrailTime.current > 40) {
+          if (currentTime - lastTrailTime.current > 25) {
             // More frequent during landing
             createTrailPoint(shipWorldX, shipWorldY, currentTime, 1.5); // High intensity
             lastTrailTime.current = currentTime;
