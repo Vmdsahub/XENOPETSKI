@@ -1177,6 +1177,20 @@ export class GameService {
 
       console.log("🌍 Update data being sent:", updateData);
 
+      // Check current user
+      const { data: user } = await supabase.auth.getUser();
+      console.log("🔐 Current user:", user?.user?.id);
+
+      // Check if user is admin
+      if (user?.user?.id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.user.id)
+          .single();
+        console.log("👮 User admin status:", profile?.is_admin);
+      }
+
       const { error, data } = await supabase
         .from("world_positions")
         .update(updateData)
@@ -1184,7 +1198,12 @@ export class GameService {
         .select();
 
       if (error) {
-        console.error("🚨 Supabase error:", error);
+        console.error("🚨 Supabase error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
         throw error;
       }
 
