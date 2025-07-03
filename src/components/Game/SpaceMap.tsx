@@ -1118,7 +1118,7 @@ export const SpaceMap: React.FC = () => {
         }, 333); // 3 tiros por segundo
       }
     },
-    [user?.isAdmin, isWorldEditMode, shootProjectile],
+    [user?.isAdmin, isWorldEditMode, shootProjectile, isLandingAnimationActive],
   );
 
   const handleMouseUp = useCallback(() => {
