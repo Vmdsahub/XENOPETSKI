@@ -141,7 +141,6 @@ interface GameStore extends GameState {
 
   // World positions management
   worldPositions: WorldPosition[];
-  worldPositionsSubscriptionId?: string;
   setWorldPositions: (positions: WorldPosition[]) => void;
   updateWorldPosition: (
     worldId: string,
