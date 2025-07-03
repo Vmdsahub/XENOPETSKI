@@ -1754,6 +1754,53 @@ export const SpaceMap: React.FC = () => {
             />
           </div>
 
+          {/* Interaction Radius Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Área de Pouso:{" "}
+              {Math.round(
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.interactionRadius || 90,
+              )}
+              px
+            </label>
+            <input
+              type="range"
+              min="50"
+              max="200"
+              step="5"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.interactionRadius || 90
+              }
+              onChange={(e) => {
+                const newRadius = Number(e.target.value);
+
+                // Update local state immediately
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? { ...planet, interactionRadius: newRadius }
+                    : planet,
+                );
+
+                // Save to store with throttling
+                clearTimeout((window as any).worldInteractionTimeout);
+                (window as any).worldInteractionTimeout = setTimeout(() => {
+                  if (selectedWorldId) {
+                    console.log("🎯 Saving interaction radius:", {
+                      selectedWorldId,
+                      newRadius,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      interactionRadius: newRadius,
+                    });
+                  }
+                }, 300);
+              }}
+              className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
           <div className="flex space-x-2 mt-3">
             <button
               onClick={() => {
