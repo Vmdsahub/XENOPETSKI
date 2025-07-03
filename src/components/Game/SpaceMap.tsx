@@ -1724,9 +1724,13 @@ export const SpaceMap: React.FC = () => {
               : `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3' fill='%230080ff' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 8 8, auto`,
         }}
         onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={(e) => {
+          handleMouseLeave(e);
+          handleMouseLeaveCanvas();
+        }}
         onMouseEnter={handleMouseEnter}
         onClick={handleClick}
+        onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       />
 
