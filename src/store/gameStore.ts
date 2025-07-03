@@ -138,6 +138,13 @@ interface GameStore extends GameState {
     cameraY: number;
   } | null;
 
+  // World positions management
+  worldPositions: WorldPosition[];
+  setWorldPositions: (positions: WorldPosition[]) => void;
+  loadWorldPositions: () => Promise<void>;
+  subscribeToWorldPositions: () => void;
+  unsubscribeFromWorldPositions: () => void;
+
   // Data loading and synchronization
   initializeNewUser: (userData: User) => void;
   loadUserData: (userId: string) => Promise<void>;
