@@ -832,6 +832,11 @@ export const SpaceMap: React.FC = () => {
     loadWorldPositions();
   }, [generateRichStarField, loadWorldPositions]);
 
+  // Update planets when worldPositions from store change
+  useEffect(() => {
+    updatePlanetsFromStore();
+  }, [updatePlanetsFromStore]);
+
   // Reload world positions when component becomes visible again
   useEffect(() => {
     const handleVisibilityChange = () => {
