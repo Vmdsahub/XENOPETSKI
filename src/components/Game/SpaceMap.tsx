@@ -103,6 +103,12 @@ const PROJECTILE_LIFETIME = 4.0; // seconds
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
 
+// Trail constants
+const TRAIL_MAX_POINTS = 15;
+const TRAIL_POINT_DISTANCE = 8;
+const TRAIL_LIFETIME = 800; // milliseconds
+const TRAIL_WIDTH = 6;
+
 export const SpaceMap: React.FC = () => {
   const {
     getShipState,
