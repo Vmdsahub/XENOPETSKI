@@ -695,6 +695,7 @@ export const useGameStore = create<GameStore>()(
 
       // World positions state
       worldPositions: [],
+      worldPositionsSubscriptionId: undefined,
 
       // Egg selection and hatching state
       selectedEggForHatching: null,
