@@ -1062,7 +1062,7 @@ export const SpaceMap: React.FC = () => {
   // Handle ESC key to cancel editing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isWorldEditMode) {
+      if (e.key === "Escape" && user?.isAdmin && isWorldEditMode) {
         setSelectedWorldId(null);
         setIsDragging(false);
         setDragOffset({ x: 0, y: 0 });
