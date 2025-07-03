@@ -1247,8 +1247,12 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Only respond to mouse if it has actually moved and modal is not open
-        if (hasMouseMoved.current && !showLandingModal) {
+        // Only respond to mouse if it has actually moved and modal is not open and not landing
+        if (
+          hasMouseMoved.current &&
+          !showLandingModal &&
+          !isLandingAnimationActive
+        ) {
           const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
           const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
