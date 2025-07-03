@@ -1146,6 +1146,25 @@ export const SpaceMap: React.FC = () => {
     setMouseInWindow(true);
   }, []);
 
+  // Cleanup do timer de tiro quando componente desmonta
+  useEffect(() => {
+    return () => {
+      if (shootingIntervalRef.current) {
+        clearInterval(shootingIntervalRef.current);
+        shootingIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  // Parar tiro quando mouse sai da área do canvas
+  const handleMouseLeaveCanvas = useCallback(() => {
+    setIsMousePressed(false);
+    if (shootingIntervalRef.current) {
+      clearInterval(shootingIntervalRef.current);
+      shootingIntervalRef.current = null;
+    }
+  }, []);
+
   // Optimized game loop with pre-rendering considerations
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1968,7 +1987,9 @@ export const SpaceMap: React.FC = () => {
       <div className="absolute bottom-2 left-2 text-white text-xs bg-black bg-opacity-70 p-2 rounded">
         {user?.isAdmin && isWorldEditMode ? (
           <>
-            <div className="text-yellow-400 font-bold mb-1">🔧 MODO EDIÇÃO</div>
+            <div className="text-yellow-400 font-bold mb-1">
+              ��� MODO EDIÇÃO
+            </div>
             <div>• 1º Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
