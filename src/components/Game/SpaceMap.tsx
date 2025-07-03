@@ -1678,13 +1678,53 @@ export const SpaceMap: React.FC = () => {
         drawShootingStar(ctx, shootingStar);
       });
 
-      // Render ship
+      // Render ship (with landing animation support)
+      let shipWorldX = gameState.ship.x;
+      let shipWorldY = gameState.ship.y;
+      let shipScale = 1;
+      let shipAngle = gameState.ship.angle;
+
+      // Handle landing animation
+      if (isLandingAnimationActive && landingAnimationData) {
+        const currentTime = performance.now();
+        const elapsed = currentTime - landingAnimationData.startTime;
+        const progress = Math.min(elapsed / landingAnimationData.duration, 1);
+
+        if (progress >= 1) {
+          // Animation complete - land on planet
+          setIsLandingAnimationActive(false);
+          setLandingAnimationData(null);
+          setCurrentPlanet(landingAnimationData.planet);
+          setCurrentScreen("planet");
+        } else {
+          // Calculate orbital animation
+          const planet = landingAnimationData.planet;
+          const orbitRadius = 80; // Distance from planet center
+          const orbitSpeed = 4; // Orbits per animation
+          const angleProgress = progress * orbitSpeed * Math.PI * 2;
+
+          // Calculate orbital position around planet
+          shipWorldX =
+            planet.x +
+            Math.cos(angleProgress) * orbitRadius * (1 - progress * 0.6);
+          shipWorldY =
+            planet.y +
+            Math.sin(angleProgress) * orbitRadius * (1 - progress * 0.6);
+
+          // Ship points toward the planet
+          shipAngle = Math.atan2(planet.y - shipWorldY, planet.x - shipWorldX);
+
+          // Scale down as landing progresses
+          shipScale = 1 - progress * 0.7; // Ship gets 70% smaller
+        }
+      }
+
       const shipWrappedDeltaX = getWrappedDistance(
-        gameState.ship.x,
+        shipWorldX,
         gameState.camera.x,
       );
       const shipWrappedDeltaY = getWrappedDistance(
-        gameState.ship.y,
+        shipWorldY,
         gameState.camera.y,
       );
       const shipScreenX = centerX + shipWrappedDeltaX;
@@ -1692,7 +1732,8 @@ export const SpaceMap: React.FC = () => {
 
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
-      ctx.rotate(gameState.ship.angle);
+      ctx.rotate(shipAngle);
+      ctx.scale(shipScale, shipScale);
       ctx.globalAlpha = 1;
 
       ctx.fillStyle = "#ffffff";
