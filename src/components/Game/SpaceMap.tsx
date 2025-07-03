@@ -1082,7 +1082,18 @@ export const SpaceMap: React.FC = () => {
         shootProjectile();
       }
     },
-    [gameState, getWrappedDistance, isClickOnPlanetPixel, isWorldEditMode],
+    [
+      gameState,
+      getWrappedDistance,
+      isClickOnPlanetPixel,
+      isWorldEditMode,
+      isLandingAnimationActive,
+      user?.isAdmin,
+      shootProjectile,
+      updateWorldPosition,
+      setSelectedPlanet,
+      setShowLandingModal,
+    ],
   );
 
   // Handle mouse up to stop dragging
@@ -2020,7 +2031,7 @@ export const SpaceMap: React.FC = () => {
           {/* Interaction Radius Control */}
           <div className="mb-3">
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Área de Pouso:{" "}
+              ��rea de Pouso:{" "}
               {Math.round(
                 planetsRef.current.find((p) => p.id === selectedWorldId)
                   ?.interactionRadius || 90,
