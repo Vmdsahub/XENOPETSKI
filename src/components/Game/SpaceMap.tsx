@@ -1071,7 +1071,7 @@ export const SpaceMap: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isWorldEditMode]);
+  }, [user?.isAdmin, isWorldEditMode]);
 
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
