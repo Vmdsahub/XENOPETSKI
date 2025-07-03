@@ -86,6 +86,7 @@ const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
 const BARRIER_RADIUS = 600;
+const PROJECTILE_SPEED = 400; // pixels per second (consistent across all FPS)
 
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
@@ -116,6 +117,7 @@ export const SpaceMap: React.FC = () => {
   const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
   const shootingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFrameTimeRef = useRef(performance.now());
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -215,8 +217,8 @@ export const SpaceMap: React.FC = () => {
       const newProjectile: Projectile = {
         x: gameState.ship.x,
         y: gameState.ship.y,
-        vx: Math.cos(gameState.ship.angle) * 12,
-        vy: Math.sin(gameState.ship.angle) * 12,
+        vx: Math.cos(gameState.ship.angle) * PROJECTILE_SPEED,
+        vy: Math.sin(gameState.ship.angle) * PROJECTILE_SPEED,
         life: 134,
         maxLife: 134,
       };
