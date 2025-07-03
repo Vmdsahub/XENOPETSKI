@@ -1270,15 +1270,18 @@ export const SpaceMap: React.FC = () => {
           }
         }
 
-        // Apply less friction when mouse is outside window to maintain momentum
-        const currentFriction = mouseInWindow ? FRICTION : 0.995;
-        newState.ship.vx *= currentFriction;
-        newState.ship.vy *= currentFriction;
-        newState.ship.x += newState.ship.vx;
-        newState.ship.y += newState.ship.vy;
+        // Apply physics only when not landing
+        if (!isLandingAnimationActive) {
+          // Apply less friction when mouse is outside window to maintain momentum
+          const currentFriction = mouseInWindow ? FRICTION : 0.995;
+          newState.ship.vx *= currentFriction;
+          newState.ship.vy *= currentFriction;
+          newState.ship.x += newState.ship.vx;
+          newState.ship.y += newState.ship.vy;
 
-        newState.ship.x = normalizeCoord(newState.ship.x);
-        newState.ship.y = normalizeCoord(newState.ship.y);
+          newState.ship.x = normalizeCoord(newState.ship.x);
+          newState.ship.y = normalizeCoord(newState.ship.y);
+        }
 
         const cameraFollowSpeed = 0.08;
         const deltaX = getWrappedDistance(newState.ship.x, newState.camera.x);
