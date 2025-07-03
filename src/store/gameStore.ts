@@ -1790,6 +1790,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#96ceb4",
+            interactionRadius: 90, // Área de pouso padrão
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
             createdAt: new Date(),
@@ -1803,6 +1804,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#ffeaa7",
+            interactionRadius: 70, // Área de pouso pequena - condições difíceis
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
             createdAt: new Date(),
@@ -1816,6 +1818,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#dda0dd",
+            interactionRadius: 110, // Área de pouso grande - vila acolhedora
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
             createdAt: new Date(),
