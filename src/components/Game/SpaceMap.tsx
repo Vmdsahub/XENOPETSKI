@@ -880,6 +880,7 @@ export const SpaceMap: React.FC = () => {
             y: planet.y,
             size: planet.size,
             rotation: planet.rotation,
+            interactionRadius: planet.interactionRadius,
           });
         }
       }
