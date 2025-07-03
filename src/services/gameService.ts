@@ -1215,7 +1215,9 @@ export class GameService {
       const { data: user, error: userError } = await supabase.auth.getUser();
       console.log("🔐 Current user:", user?.user?.id, "Error:", userError);
 
-      if (!user?.user?.id) {
+      let currentUserId = user?.user?.id;
+
+      if (!currentUserId) {
         console.error(
           "❌ No authenticated user - trying to refresh session...",
         );
@@ -1233,9 +1235,9 @@ export class GameService {
         if (!refreshData?.user?.id) {
           throw new Error("User not authenticated in Supabase");
         }
-      }
 
-      const currentUserId = user?.user?.id || refreshData?.user?.id;
+        currentUserId = refreshData.user.id;
+      }
 
       // Check if user is admin
       if (currentUserId) {
