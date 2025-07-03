@@ -1089,6 +1089,8 @@ export const SpaceMap: React.FC = () => {
   // Handler para mousedown - inicia tiro contínuo
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (isLandingAnimationActive) return;
+
       if (!user?.isAdmin || !isWorldEditMode) {
         setIsMousePressed(true);
 
