@@ -645,24 +645,41 @@ export const SpaceMap: React.FC = () => {
           ctx.lineTo(nextScreenX, nextScreenY);
           ctx.stroke();
 
-          // Draw the main trail segment
+          // Main trail segment with bright glow
+          ctx.shadowBlur = 10 * pulseIntensity * avgIntensity;
           ctx.strokeStyle = gradient;
           ctx.lineWidth =
             TRAIL_WIDTH *
             ((currentLifeRatio + nextLifeRatio) / 2) *
-            ((current.intensity + next.intensity) / 2);
+            avgIntensity;
           ctx.beginPath();
           ctx.moveTo(currentScreenX, currentScreenY);
           ctx.lineTo(nextScreenX, nextScreenY);
           ctx.stroke();
 
-          // Add bright inner core for enhanced effect
-          ctx.strokeStyle = `rgba(255, 255, 200, ${(currentAlpha + nextAlpha) * 0.7})`;
+          // Ultra bright inner core with white hot center
+          ctx.shadowColor = "#ffffff";
+          ctx.shadowBlur = 8 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${avgAlpha * 0.9 * pulseIntensity})`;
           ctx.lineWidth =
             TRAIL_WIDTH *
-            0.5 *
+            0.6 *
             ((currentLifeRatio + nextLifeRatio) / 2) *
-            ((current.intensity + next.intensity) / 2);
+            avgIntensity;
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Final bright yellow core
+          ctx.shadowColor = "#ffff00";
+          ctx.shadowBlur = 5 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 255, 150, ${avgAlpha * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            0.3 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
           ctx.beginPath();
           ctx.moveTo(currentScreenX, currentScreenY);
           ctx.lineTo(nextScreenX, nextScreenY);
