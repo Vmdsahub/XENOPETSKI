@@ -969,7 +969,7 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(() => {
-          console.log("������ Saving world drag position:", {
+          console.log("����� Saving world drag position:", {
             selectedWorldId,
             worldX,
             worldY,
@@ -1328,7 +1328,7 @@ export const SpaceMap: React.FC = () => {
                 );
                 const planet = landingAnimationData.planet;
                 const orbitRadius = 80;
-                const orbitSpeed = 4;
+                const orbitSpeed = 2;
                 const angleProgress = progress * orbitSpeed * Math.PI * 2;
                 return (
                   planet.y +
