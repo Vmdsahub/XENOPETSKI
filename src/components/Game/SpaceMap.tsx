@@ -1044,7 +1044,6 @@ export const SpaceMap: React.FC = () => {
             vy: Math.sin(gameState.ship.angle) * 12,
             life: 60,
             maxLife: 60,
-            trail: [],
           };
           projectilesRef.current.push(newProjectile);
           lastShootTime.current = currentTime;
