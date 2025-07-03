@@ -1691,19 +1691,13 @@ export const SpaceMap: React.FC = () => {
                       selectedWorldId,
                       newSize,
                     });
-                    try {
-                      const result = await gameService.updateWorldPosition(
-                        selectedWorldId,
-                        {
-                          size: newSize,
-                        },
-                      );
-                      console.log("📏 Size save result:", result);
-                    } catch (error) {
-                      console.error("Failed to update world size:", error);
-                      // Reload on error to revert to database state
-                      loadWorldPositions();
-                    }
+                    console.log("📏 Saving world size:", {
+                      selectedWorldId,
+                      newSize,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      size: newSize,
+                    });
                   }
                 }, 300);
               }}
