@@ -42,7 +42,6 @@ interface Projectile {
   vy: number;
   life: number;
   maxLife: number;
-  trail: { x: number; y: number }[];
 }
 
 interface ShootingStar {
