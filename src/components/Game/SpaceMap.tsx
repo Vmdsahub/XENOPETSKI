@@ -873,8 +873,8 @@ export const SpaceMap: React.FC = () => {
       if (selectedWorldId) {
         const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
         if (planet) {
-          // Fire and forget - save immediately on unmount
-          gameService.updateWorldPosition(selectedWorldId, {
+          // Save immediately on unmount
+          updateWorldPosition(selectedWorldId, {
             x: planet.x,
             y: planet.y,
             size: planet.size,
