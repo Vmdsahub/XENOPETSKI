@@ -1866,6 +1866,10 @@ export const SpaceMap: React.FC = () => {
     createShootingStar,
     drawShootingStar,
     isClickOnPlanetPixel,
+    isLandingAnimationActive,
+    landingAnimationData,
+    setCurrentPlanet,
+    setCurrentScreen,
   ]);
 
   return (
