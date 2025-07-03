@@ -26,6 +26,30 @@ export class GameService {
 
   // Real-time subscription methods
 
+  private async ensureAuthenticated(): Promise<string | null> {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+
+      if (user?.user?.id) {
+        return user.user.id;
+      }
+
+      console.log("🔄 No active session, trying to refresh...");
+      const { data: refreshData } = await supabase.auth.refreshSession();
+
+      if (refreshData?.user?.id) {
+        console.log("✅ Session refreshed successfully");
+        return refreshData.user.id;
+      }
+
+      console.error("❌ Could not authenticate user");
+      return null;
+    } catch (error) {
+      console.error("❌ Authentication check failed:", error);
+      return null;
+    }
+  }
+
   /**
    * Subscribe to real-time changes for a user's data
    * @param userId The user ID to subscribe to
@@ -93,6 +117,37 @@ export class GameService {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => callback({ type: "currency", data: payload.new }),
+      )
+      .subscribe();
+
+    return subscriptionId;
+  }
+
+  /**
+   * Subscribe to real-time changes for world positions
+   * @param callback Function to call when world positions change
+   * @returns Subscription ID that can be used to unsubscribe
+   */
+  subscribeToWorldPositions(callback: (data: any) => void): string {
+    // Generate a unique subscription ID
+    const subscriptionId = `world_positions_${Date.now()}`;
+
+    // Subscribe to world positions changes
+    this.subscriptions[subscriptionId] = supabase
+      .channel("public:world_positions")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "world_positions",
+        },
+        (payload) =>
+          callback({
+            type: "world_positions",
+            event: payload.eventType,
+            data: payload.new || payload.old,
+          }),
       )
       .subscribe();
 
@@ -911,14 +966,75 @@ export class GameService {
   // World positions operations
   async getWorldPositions(): Promise<WorldPosition[]> {
     try {
+      console.log("📡 Fetching world positions from database...");
       const { data, error } = await supabase
         .from("world_positions")
         .select("*")
         .order("created_at", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("📡 Supabase error fetching world positions:", error);
+        throw error;
+      }
 
-      return data.map((world) => ({
+      console.log("📡 Raw world positions data:", data);
+
+      // If table is empty, try to seed it with default data (only if user is admin)
+      if (!data || data.length === 0) {
+        console.log("🌱 Table is empty, checking if we can seed...");
+
+        // Check if current user is admin before seeding
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", (await supabase.auth.getUser()).data.user?.id)
+          .single();
+
+        if (profile?.is_admin) {
+          console.log(
+            "🌱 User is admin, seeding with default world positions...",
+          );
+          try {
+            await this.seedDefaultWorldPositions();
+
+            // Fetch again after seeding
+            const { data: seededData, error: seededError } = await supabase
+              .from("world_positions")
+              .select("*")
+              .order("created_at", { ascending: true });
+
+            if (seededError) throw seededError;
+
+            const mappedSeededData = seededData.map((world) => ({
+              id: world.id,
+              name: world.name,
+              x: world.x,
+              y: world.y,
+              size: world.size,
+              rotation: world.rotation,
+              color: world.color,
+              imageUrl: world.image_url,
+              createdAt: new Date(world.created_at),
+              updatedAt: new Date(world.updated_at),
+            }));
+
+            console.log(
+              "🌱 Seeded world positions successfully:",
+              mappedSeededData,
+            );
+            return mappedSeededData;
+          } catch (seedError) {
+            console.error("❌ Failed to seed world positions:", seedError);
+            // Continue with empty array if seeding fails
+          }
+        } else {
+          console.log(
+            "🌱 User is not admin, cannot seed. Returning empty array.",
+          );
+        }
+      }
+
+      const mappedData = data.map((world) => ({
         id: world.id,
         name: world.name,
         x: world.x,
@@ -930,9 +1046,170 @@ export class GameService {
         createdAt: new Date(world.created_at),
         updatedAt: new Date(world.updated_at),
       }));
+
+      console.log("📡 Mapped world positions:", mappedData);
+      return mappedData;
     } catch (error) {
-      console.error("Error fetching world positions:", error);
+      console.error("❌ Error fetching world positions:", error);
       return [];
+    }
+  }
+
+  private async seedDefaultWorldPositions(): Promise<void> {
+    const defaultWorlds = [
+      {
+        id: "planet-0",
+        name: "Estação Galáctica",
+        x: 7750,
+        y: 7250,
+        size: 60,
+        rotation: 0,
+        color: "#ff6b6b",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
+      },
+      {
+        id: "planet-1",
+        name: "Base Orbital",
+        x: 7966.6,
+        y: 7625,
+        size: 60,
+        rotation: 0,
+        color: "#4ecdc4",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
+      },
+      {
+        id: "planet-2",
+        name: "Mundo Alienígena",
+        x: 7750,
+        y: 8000,
+        size: 60,
+        rotation: 0,
+        color: "#45b7d1",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
+      },
+      {
+        id: "planet-3",
+        name: "Terra Verdejante",
+        x: 7533.4,
+        y: 7625,
+        size: 60,
+        rotation: 0,
+        color: "#96ceb4",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
+      },
+      {
+        id: "planet-4",
+        name: "Reino Gelado",
+        x: 7533.4,
+        y: 7375,
+        size: 60,
+        rotation: 0,
+        color: "#ffeaa7",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
+      },
+      {
+        id: "planet-5",
+        name: "Vila Ancestral",
+        x: 7966.6,
+        y: 7375,
+        size: 60,
+        rotation: 0,
+        color: "#dda0dd",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
+      },
+    ];
+
+    const { error } = await supabase
+      .from("world_positions")
+      .insert(defaultWorlds);
+
+    if (error) {
+      console.error("❌ Error seeding default worlds:", error);
+      throw error;
+    }
+
+    console.log("✅ Default worlds seeded successfully");
+  }
+
+  async syncCurrentWorldPositions(planets: any[]): Promise<boolean> {
+    try {
+      console.log("🔄 Syncing current world positions to database:", planets);
+
+      // Ensure user is authenticated
+      const currentUserId = await this.ensureAuthenticated();
+      if (!currentUserId) {
+        console.error("❌ Could not authenticate user for sync");
+        return false;
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", currentUserId)
+        .single();
+
+      console.log("👮 Sync - User admin status:", profile?.is_admin);
+
+      if (!profile?.is_admin) {
+        console.error("❌ User is not admin, cannot sync");
+        return false;
+      }
+
+      const worldsToInsert = planets.map((planet) => ({
+        id: planet.id,
+        name: planet.name || `Planeta ${planet.id}`,
+        x: planet.x,
+        y: planet.y,
+        size: planet.size,
+        rotation: planet.rotation,
+        color: planet.color,
+        image_url: planet.imageUrl || null,
+      }));
+
+      console.log("🔄 Worlds to insert:", worldsToInsert);
+
+      // First, delete all existing records (since we're syncing the current state)
+      const { error: deleteError } = await supabase
+        .from("world_positions")
+        .delete()
+        .neq("id", "nonexistent"); // Delete all
+
+      if (deleteError) {
+        console.error("❌ Error clearing existing worlds:", {
+          code: deleteError.code,
+          message: deleteError.message,
+          details: deleteError.details,
+        });
+      } else {
+        console.log("✅ Existing worlds cleared");
+      }
+
+      // Then insert the current planets
+      const { error: insertError } = await supabase
+        .from("world_positions")
+        .insert(worldsToInsert);
+
+      if (insertError) {
+        console.error("❌ Error syncing worlds:", {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+        });
+        throw insertError;
+      }
+
+      console.log("✅ Worlds synced successfully to database");
+      return true;
+    } catch (error) {
+      console.error("❌ Error syncing world positions:", error);
+      return false;
     }
   }
 
@@ -941,25 +1218,66 @@ export class GameService {
     updates: Partial<Pick<WorldPosition, "x" | "y" | "size" | "rotation">>,
   ): Promise<boolean> {
     try {
+      console.log("🌍 Attempting to update world position:", {
+        worldId,
+        updates,
+      });
+
+      // Ensure user is authenticated
+      const currentUserId = await this.ensureAuthenticated();
+      if (!currentUserId) {
+        throw new Error("User not authenticated in Supabase");
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", currentUserId)
+        .single();
+
+      console.log("👮 User admin status:", profile?.is_admin);
+
+      if (!profile?.is_admin) {
+        throw new Error("User is not admin");
+      }
+
       const updateData: any = {};
 
       if (updates.x !== undefined) updateData.x = updates.x;
       if (updates.y !== undefined) updateData.y = updates.y;
       if (updates.size !== undefined)
-        updateData.size = Math.max(20, Math.min(200, updates.size));
+        updateData.size = Math.max(20, Math.min(1000, updates.size));
       if (updates.rotation !== undefined)
         updateData.rotation = updates.rotation % (Math.PI * 2);
+      if (updates.interactionRadius !== undefined)
+        updateData.interactionRadius = Math.max(
+          50,
+          Math.min(1000, updates.interactionRadius),
+        );
 
-      const { error } = await supabase
+      console.log("🌍 Update data being sent:", updateData);
+
+      const { error, data } = await supabase
         .from("world_positions")
         .update(updateData)
-        .eq("id", worldId);
+        .eq("id", worldId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("🚨 Supabase error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        throw error;
+      }
 
+      console.log("✅ World position updated successfully:", data);
       return true;
     } catch (error) {
-      console.error("Error updating world position:", error);
+      console.error("❌ Error updating world position:", error);
       return false;
     }
   }

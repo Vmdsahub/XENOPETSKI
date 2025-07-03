@@ -96,6 +96,9 @@ export const SpaceMap: React.FC = () => {
     isWorldEditMode,
     setWorldEditMode,
     user,
+    worldPositions,
+    loadWorldPositions,
+    updateWorldPosition,
   } = useGameStore();
   const { saveShipState, forceSaveShipState } = useShipStatePersistence();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -730,48 +733,40 @@ export const SpaceMap: React.FC = () => {
     starsRef.current = stars;
   }, []);
 
-  // Load world positions from database
-  const loadWorldPositions = useCallback(async () => {
-    try {
-      const positions = await gameService.getWorldPositions();
+  // Update planets when worldPositions change
+  const updatePlanetsFromStore = useCallback(() => {
+    if (worldPositions.length > 0) {
+      // Use store positions
+      const planets: Planet[] = worldPositions.map((position) => ({
+        id: position.id,
+        x: position.x,
+        y: position.y,
+        size: position.size,
+        rotation: position.rotation,
+        color: position.color,
+        name: position.name,
+        interactionRadius: position.interactionRadius,
+        imageUrl: position.imageUrl || "",
+      }));
 
-      if (positions.length > 0) {
-        // Use database positions
-        const planets: Planet[] = positions.map((position) => ({
-          id: position.id,
-          x: position.x,
-          y: position.y,
-          size: position.size,
-          rotation: position.rotation,
-          color: position.color,
-          name: position.name,
-          interactionRadius: Math.max(90, position.size + 30),
-          imageUrl: position.imageUrl || "",
-        }));
+      // Preload planet images
+      worldPositions.forEach((position) => {
+        if (position.imageUrl) {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.src = position.imageUrl;
+          img.onload = () => {
+            planetImagesRef.current.set(position.id, img);
+          };
+        }
+      });
 
-        // Preload planet images
-        positions.forEach((position) => {
-          if (position.imageUrl) {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = position.imageUrl;
-            img.onload = () => {
-              planetImagesRef.current.set(position.id, img);
-            };
-          }
-        });
-
-        planetsRef.current = planets;
-      } else {
-        // Fallback to default positions if no data in database
-        generateDefaultPlanets();
-      }
-    } catch (error) {
-      console.error("Failed to load world positions:", error);
-      // Fallback to default positions on error
+      planetsRef.current = planets;
+    } else {
+      // Fallback to default positions if no data in store
       generateDefaultPlanets();
     }
-  }, []);
+  }, [worldPositions]);
 
   // Generate default planets (fallback)
   const generateDefaultPlanets = useCallback(() => {
@@ -838,6 +833,11 @@ export const SpaceMap: React.FC = () => {
     loadWorldPositions();
   }, [generateRichStarField, loadWorldPositions]);
 
+  // Update planets when worldPositions from store change
+  useEffect(() => {
+    updatePlanetsFromStore();
+  }, [updatePlanetsFromStore]);
+
   // Reload world positions when component becomes visible again
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -862,6 +862,7 @@ export const SpaceMap: React.FC = () => {
         (window as any).worldDragTimeout,
         (window as any).worldSizeTimeout,
         (window as any).worldRotationTimeout,
+        (window as any).worldInteractionTimeout,
       ];
 
       timeouts.forEach((timeout) => {
@@ -873,12 +874,13 @@ export const SpaceMap: React.FC = () => {
       if (selectedWorldId) {
         const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
         if (planet) {
-          // Fire and forget - save immediately on unmount
-          gameService.updateWorldPosition(selectedWorldId, {
+          // Save immediately on unmount
+          updateWorldPosition(selectedWorldId, {
             x: planet.x,
             y: planet.y,
             size: planet.size,
             rotation: planet.rotation,
+            interactionRadius: planet.interactionRadius,
           });
         }
       }
@@ -916,17 +918,16 @@ export const SpaceMap: React.FC = () => {
 
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
-        (window as any).worldDragTimeout = setTimeout(async () => {
-          try {
-            await gameService.updateWorldPosition(selectedWorldId, {
-              x: worldX,
-              y: worldY,
-            });
-          } catch (error) {
-            console.error("Failed to update world position:", error);
-            // Reload on error to revert to database state
-            await loadWorldPositions();
-          }
+        (window as any).worldDragTimeout = setTimeout(() => {
+          console.log("🎯 Saving world drag position:", {
+            selectedWorldId,
+            worldX,
+            worldY,
+          });
+          updateWorldPosition(selectedWorldId, {
+            x: worldX,
+            y: worldY,
+          });
         }, 200);
       }
 
@@ -1047,16 +1048,10 @@ export const SpaceMap: React.FC = () => {
       // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
-        try {
-          await gameService.updateWorldPosition(selectedWorldId, {
-            x: planet.x,
-            y: planet.y,
-          });
-        } catch (error) {
-          console.error("Failed to update world position on mouse up:", error);
-          // Reload on error to revert to database state
-          await loadWorldPositions();
-        }
+        updateWorldPosition(selectedWorldId, {
+          x: planet.x,
+          y: planet.y,
+        });
       }
 
       setIsDragging(false);
@@ -1415,12 +1410,8 @@ export const SpaceMap: React.FC = () => {
         const screenX = centerX + wrappedDeltaX;
         const screenY = centerY + wrappedDeltaY;
 
-        if (
-          screenX > -100 &&
-          screenX < canvas.width + 100 &&
-          screenY > -100 &&
-          screenY < canvas.height + 100
-        ) {
+        // Always render planets regardless of viewport position
+        {
           // Check if ship is within interaction radius for visual feedback
           const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
           const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
@@ -1430,25 +1421,27 @@ export const SpaceMap: React.FC = () => {
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
           const isSelected = isWorldEditMode && selectedWorldId === planet.id;
 
-          // Render interaction circle
-          ctx.save();
-          if (isWorldEditMode) {
-            // Edit mode styling
-            ctx.globalAlpha = isSelected ? 0.8 : 0.3;
-            ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
-            ctx.lineWidth = isSelected ? 4 : 2;
-            ctx.setLineDash(isSelected ? [] : [8, 8]);
-          } else {
-            // Normal mode styling
-            ctx.globalAlpha = isInRange ? 0.4 : 0.15;
-            ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
-            ctx.lineWidth = isInRange ? 3 : 1;
-            ctx.setLineDash(isInRange ? [] : [5, 5]);
+          // Render interaction circle (only visible to admins)
+          if (user?.isAdmin) {
+            ctx.save();
+            if (isWorldEditMode) {
+              // Edit mode styling
+              ctx.globalAlpha = isSelected ? 0.8 : 0.3;
+              ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
+              ctx.lineWidth = isSelected ? 4 : 2;
+              ctx.setLineDash(isSelected ? [] : [8, 8]);
+            } else {
+              // Normal mode styling
+              ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+              ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+              ctx.lineWidth = isInRange ? 3 : 1;
+              ctx.setLineDash(isInRange ? [] : [5, 5]);
+            }
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
           }
-          ctx.beginPath();
-          ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
 
           // Render planet image with rotation
           const img = planetImagesRef.current.get(planet.id);
@@ -1630,16 +1623,19 @@ export const SpaceMap: React.FC = () => {
 
       {/* Simple Admin Button for World Editing */}
       {user?.isAdmin && (
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 space-y-2">
           <button
             onClick={() => {
+              console.log("🔧 Toggling edit mode. Current user:", user);
+              console.log("🔧 Is admin:", user?.isAdmin);
+              console.log("🔧 Current edit mode:", isWorldEditMode);
               setWorldEditMode(!isWorldEditMode);
               if (isWorldEditMode) {
                 setSelectedWorldId(null);
                 setIsDragging(false);
               }
             }}
-            className={`px-3 py-1 text-xs rounded-lg font-medium transition-all ${
+            className={`block w-full px-3 py-1 text-xs rounded-lg font-medium transition-all ${
               isWorldEditMode
                 ? "bg-red-600 text-white hover:bg-red-700"
                 : "bg-blue-600 text-white hover:bg-blue-700"
@@ -1668,7 +1664,7 @@ export const SpaceMap: React.FC = () => {
             <input
               type="range"
               min="20"
-              max="150"
+              max="1000"
               value={
                 planetsRef.current.find((p) => p.id === selectedWorldId)
                   ?.size || 60
@@ -1691,15 +1687,17 @@ export const SpaceMap: React.FC = () => {
                 clearTimeout((window as any).worldSizeTimeout);
                 (window as any).worldSizeTimeout = setTimeout(async () => {
                   if (selectedWorldId) {
-                    try {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        size: newSize,
-                      });
-                    } catch (error) {
-                      console.error("Failed to update world size:", error);
-                      // Reload on error to revert to database state
-                      await loadWorldPositions();
-                    }
+                    console.log("📏 Attempting to save world size:", {
+                      selectedWorldId,
+                      newSize,
+                    });
+                    console.log("📏 Saving world size:", {
+                      selectedWorldId,
+                      newSize,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      size: newSize,
+                    });
                   }
                 }, 300);
               }}
@@ -1740,21 +1738,66 @@ export const SpaceMap: React.FC = () => {
 
                 // Save to database with throttling to avoid too many calls
                 clearTimeout((window as any).worldRotationTimeout);
-                (window as any).worldRotationTimeout = setTimeout(async () => {
+                (window as any).worldRotationTimeout = setTimeout(() => {
                   if (selectedWorldId) {
-                    try {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        rotation: newRotation,
-                      });
-                    } catch (error) {
-                      console.error("Failed to update world rotation:", error);
-                      // Reload on error to revert to database state
-                      await loadWorldPositions();
-                    }
+                    console.log("🔄 Saving world rotation:", {
+                      selectedWorldId,
+                      newRotation,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      rotation: newRotation,
+                    });
                   }
                 }, 300);
               }}
               className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {/* Interaction Radius Control */}
+          <div className="mb-3">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Área de Pouso:{" "}
+              {Math.round(
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.interactionRadius || 90,
+              )}
+              px
+            </label>
+            <input
+              type="range"
+              min="50"
+              max="1000"
+              step="5"
+              value={
+                planetsRef.current.find((p) => p.id === selectedWorldId)
+                  ?.interactionRadius || 90
+              }
+              onChange={(e) => {
+                const newRadius = Number(e.target.value);
+
+                // Update local state immediately
+                planetsRef.current = planetsRef.current.map((planet) =>
+                  planet.id === selectedWorldId
+                    ? { ...planet, interactionRadius: newRadius }
+                    : planet,
+                );
+
+                // Save to store with throttling
+                clearTimeout((window as any).worldInteractionTimeout);
+                (window as any).worldInteractionTimeout = setTimeout(() => {
+                  if (selectedWorldId) {
+                    console.log("🎯 Saving interaction radius:", {
+                      selectedWorldId,
+                      newRadius,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      interactionRadius: newRadius,
+                    });
+                  }
+                }, 300);
+              }}
+              className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
@@ -1776,23 +1819,22 @@ export const SpaceMap: React.FC = () => {
 
             {isDragging && (
               <button
-                onClick={async () => {
-                  // Save final position to database
+                onClick={() => {
+                  // Save final position
                   if (selectedWorldId) {
                     const planet = planetsRef.current.find(
                       (p) => p.id === selectedWorldId,
                     );
                     if (planet) {
-                      try {
-                        await gameService.updateWorldPosition(selectedWorldId, {
-                          x: planet.x,
-                          y: planet.y,
-                        });
-                      } catch (error) {
-                        console.error("Failed to reset world position:", error);
-                        // Reload on error to revert to database state
-                        await loadWorldPositions();
-                      }
+                      console.log("✅ Confirming world position:", {
+                        selectedWorldId,
+                        x: planet.x,
+                        y: planet.y,
+                      });
+                      updateWorldPosition(selectedWorldId, {
+                        x: planet.x,
+                        y: planet.y,
+                      });
                     }
                   }
 

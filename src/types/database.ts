@@ -341,6 +341,44 @@ export interface Database {
           created_at?: string;
         };
       };
+      world_positions: {
+        Row: {
+          id: string;
+          name: string;
+          x: number;
+          y: number;
+          size: number;
+          rotation: number;
+          color: string;
+          image_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          x?: number;
+          y?: number;
+          size?: number;
+          rotation?: number;
+          color?: string;
+          image_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          x?: number;
+          y?: number;
+          size?: number;
+          rotation?: number;
+          color?: string;
+          image_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Functions: {
       update_user_currency: {

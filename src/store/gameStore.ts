@@ -10,6 +10,7 @@ import {
   Collectible,
   Quest,
   RedeemCode,
+  WorldPosition,
 } from "../types/game";
 import { gameService } from "../services/gameService";
 import { playNotificationSound } from "../utils/soundManager";
@@ -137,6 +138,17 @@ interface GameStore extends GameState {
     cameraX: number;
     cameraY: number;
   } | null;
+
+  // World positions management
+  worldPositions: WorldPosition[];
+  setWorldPositions: (positions: WorldPosition[]) => void;
+  updateWorldPosition: (
+    worldId: string,
+    updates: Partial<WorldPosition>,
+  ) => void;
+  loadWorldPositions: () => Promise<void>;
+  subscribeToWorldPositions: () => void;
+  unsubscribeFromWorldPositions: () => void;
 
   // Data loading and synchronization
   initializeNewUser: (userData: User) => void;
@@ -683,6 +695,9 @@ export const useGameStore = create<GameStore>()(
       ],
       viewedUserId: null,
       shipState: null,
+
+      // World positions state
+      worldPositions: [],
 
       // Egg selection and hatching state
       selectedEggForHatching: null,
@@ -1691,20 +1706,163 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
+      // World positions management
+      setWorldPositions: (positions) => {
+        set({ worldPositions: positions });
+      },
+
+      updateWorldPosition: (
+        worldId: string,
+        updates: Partial<WorldPosition>,
+      ) => {
+        const state = get();
+        const updatedPositions = state.worldPositions.map((world) =>
+          world.id === worldId
+            ? { ...world, ...updates, updatedAt: new Date() }
+            : world,
+        );
+
+        console.log("📍 Updating world position:", { worldId, updates });
+        set({ worldPositions: updatedPositions });
+      },
+
+      loadWorldPositions: async () => {
+        const state = get();
+
+        // Se já tem posições no store, usa elas
+        if (state.worldPositions.length > 0) {
+          console.log(
+            "📍 Using world positions from store:",
+            state.worldPositions,
+          );
+          return;
+        }
+
+        // Se não tem, cria posições padrão
+        const defaultPositions = [
+          {
+            id: "planet-0",
+            name: "Estação Galáctica",
+            x: 7750,
+            y: 7250,
+            size: 60,
+            rotation: 0,
+            color: "#ff6b6b",
+            interactionRadius: 120, // Área de pouso grande para estação principal
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-1",
+            name: "Base Orbital",
+            x: 7966.6,
+            y: 7625,
+            size: 60,
+            rotation: 0,
+            color: "#4ecdc4",
+            interactionRadius: 100, // Área de pouso média para base
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-2",
+            name: "Mundo Alienígena",
+            x: 7750,
+            y: 8000,
+            size: 60,
+            rotation: 0,
+            color: "#45b7d1",
+            interactionRadius: 80, // Área de pouso menor - mundo perigoso
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-3",
+            name: "Terra Verdejante",
+            x: 7533.4,
+            y: 7625,
+            size: 60,
+            rotation: 0,
+            color: "#96ceb4",
+            interactionRadius: 90, // Área de pouso padrão
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-4",
+            name: "Reino Gelado",
+            x: 7533.4,
+            y: 7375,
+            size: 60,
+            rotation: 0,
+            color: "#ffeaa7",
+            interactionRadius: 70, // Área de pouso pequena - condições difíceis
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-5",
+            name: "Vila Ancestral",
+            x: 7966.6,
+            y: 7375,
+            size: 60,
+            rotation: 0,
+            color: "#dda0dd",
+            interactionRadius: 110, // Área de pouso grande - vila acolhedora
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+
+        console.log("📍 Creating default world positions");
+        set({ worldPositions: defaultPositions });
+      },
+
+      subscribeToWorldPositions: () => {
+        // No need for real-time subscriptions with localStorage
+        console.log(
+          "📍 World positions using localStorage - no subscription needed",
+        );
+      },
+
+      unsubscribeFromWorldPositions: () => {
+        // No need for real-time subscriptions with localStorage
+        console.log(
+          "📍 World positions using localStorage - no unsubscription needed",
+        );
+      },
+
       subscribeToRealtimeUpdates: () => {
         const state = get();
         if (!state.user) return;
 
-        // In a real app, this would set up real-time subscriptions
+        // Subscribe to user-specific data
         console.log(
           "Subscribing to real-time updates for user:",
           state.user.id,
         );
+
+        // Subscribe to world positions for all users
+        get().subscribeToWorldPositions();
       },
 
       unsubscribeFromRealtimeUpdates: () => {
-        // In a real app, this would clean up real-time subscriptions
         console.log("Unsubscribing from real-time updates");
+
+        // Unsubscribe from world positions
+        get().unsubscribeFromWorldPositions();
       },
 
       // Ship state management
@@ -1737,6 +1895,7 @@ export const useGameStore = create<GameStore>()(
         isHatchingInProgress: state.isHatchingInProgress,
         hatchingEgg: state.hatchingEgg,
         shipState: state.shipState,
+        worldPositions: state.worldPositions,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

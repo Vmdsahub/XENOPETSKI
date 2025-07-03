@@ -199,6 +199,7 @@ export interface WorldPosition {
   size: number;
   rotation: number;
   color: string;
+  interactionRadius: number;
   imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
