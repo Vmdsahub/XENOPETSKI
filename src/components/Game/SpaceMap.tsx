@@ -1042,8 +1042,8 @@ export const SpaceMap: React.FC = () => {
             y: gameState.ship.y,
             vx: Math.cos(gameState.ship.angle) * 12,
             vy: Math.sin(gameState.ship.angle) * 12,
-            life: 60,
-            maxLife: 60,
+            life: 134,
+            maxLife: 134,
           };
           projectilesRef.current.push(newProjectile);
           lastShootTime.current = currentTime;
@@ -1516,7 +1516,7 @@ export const SpaceMap: React.FC = () => {
 
         const lifeRatio = proj.life / proj.maxLife;
         const angle = Math.atan2(proj.vy, proj.vx);
-        const length = 8;
+        const length = 2;
 
         // Calcular pontos da linha do tracinho
         const endX = screenX + Math.cos(angle) * length;
