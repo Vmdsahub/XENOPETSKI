@@ -1582,21 +1582,21 @@ export const SpaceMap: React.FC = () => {
         const endX = screenX + Math.cos(angle) * length;
         const endY = screenY + Math.sin(angle) * length;
 
-        // Glow externo muito brilhante (aura de energia)
+        // Glow externo muito brilhante (aura de energia amarela)
         ctx.globalAlpha = lifeRatio * 0.3 * pulse;
-        ctx.strokeStyle = "#00ffff";
+        ctx.strokeStyle = "#ffdd00";
         ctx.lineWidth = 12;
         ctx.lineCap = "round";
-        ctx.shadowColor = "#00ffff";
+        ctx.shadowColor = "#ffdd00";
         ctx.shadowBlur = 20;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Glow médio azul-elétrico
+        // Glow médio amarelo-dourado
         ctx.globalAlpha = lifeRatio * 0.7;
-        ctx.strokeStyle = "#4dffff";
+        ctx.strokeStyle = "#ffee44";
         ctx.lineWidth = 6;
         ctx.shadowBlur = 12;
         ctx.beginPath();
@@ -1604,7 +1604,7 @@ export const SpaceMap: React.FC = () => {
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Core energético amarelo-elétrico
+        // Core energético amarelo puro
         ctx.globalAlpha = lifeRatio * 0.9 * pulse;
         ctx.strokeStyle = "#ffff00";
         ctx.lineWidth = 3;
@@ -1615,11 +1615,11 @@ export const SpaceMap: React.FC = () => {
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Centro ultra brilhante branco-azulado
+        // Centro ultra brilhante amarelo-branco
         ctx.globalAlpha = lifeRatio;
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle = "#ffffa0";
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = "#ffffff";
+        ctx.shadowColor = "#ffffa0";
         ctx.shadowBlur = 4;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
