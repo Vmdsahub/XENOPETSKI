@@ -1069,9 +1069,38 @@ export const SpaceMap: React.FC = () => {
   );
 
   // Handle mouse up to stop dragging
-  const handleMouseUp = useCallback(async () => {
+  // Handler para mousedown - inicia tiro contínuo
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!user?.isAdmin || !isWorldEditMode) {
+        setIsMousePressed(true);
+
+        // Primeiro tiro imediato
+        shootProjectile();
+
+        // Iniciar timer para tiros contínuos
+        if (shootingIntervalRef.current) {
+          clearInterval(shootingIntervalRef.current);
+        }
+
+        shootingIntervalRef.current = setInterval(() => {
+          shootProjectile();
+        }, 333); // 3 tiros por segundo
+      }
+    },
+    [user?.isAdmin, isWorldEditMode, shootProjectile],
+  );
+
+  const handleMouseUp = useCallback(() => {
+    // Parar tiro contínuo
+    setIsMousePressed(false);
+    if (shootingIntervalRef.current) {
+      clearInterval(shootingIntervalRef.current);
+      shootingIntervalRef.current = null;
+    }
+
+    // Lógica original de edição de mundos
     if (user?.isAdmin && isWorldEditMode && isDragging && selectedWorldId) {
-      // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
         updateWorldPosition(selectedWorldId, {
