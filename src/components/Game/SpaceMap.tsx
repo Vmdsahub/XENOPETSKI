@@ -1148,12 +1148,24 @@ export const SpaceMap: React.FC = () => {
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
     if (selectedPlanet) {
-      setCurrentPlanet(selectedPlanet);
-      setCurrentScreen("planet");
+      // Start landing animation
+      setLandingAnimationData({
+        planet: selectedPlanet,
+        startTime: performance.now(),
+        duration: 2500, // 2.5 seconds animation
+        initialShipX: gameState.ship.x,
+        initialShipY: gameState.ship.y,
+      });
+      setIsLandingAnimationActive(true);
+
+      // Play landing sound
+      playLandingSound().catch(() => {
+        // Sound is not critical, ignore errors
+      });
     }
     setShowLandingModal(false);
     setSelectedPlanet(null);
-  }, [selectedPlanet, setCurrentPlanet, setCurrentScreen]);
+  }, [selectedPlanet, gameState.ship.x, gameState.ship.y]);
 
   const handleLandingCancel = useCallback(() => {
     setShowLandingModal(false);
