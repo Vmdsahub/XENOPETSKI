@@ -1033,14 +1033,28 @@ export const SpaceMap: React.FC = () => {
 
       // Only shoot if we didn't click on a planet
       if (!clickedOnPlanet) {
-        const newProjectile: Projectile = {
-          x: gameState.ship.x,
-          y: gameState.ship.y,
-          vx: Math.cos(gameState.ship.angle) * 10,
-          vy: Math.sin(gameState.ship.angle) * 10,
-          life: 80,
-        };
-        projectilesRef.current.push(newProjectile);
+        const currentTime = Date.now();
+        const SHOOT_COOLDOWN = 200; // 200ms entre tiros
+
+        // Verificar cooldown
+        if (currentTime - lastShootTime.current >= SHOOT_COOLDOWN) {
+          const newProjectile: Projectile = {
+            x: gameState.ship.x,
+            y: gameState.ship.y,
+            vx: Math.cos(gameState.ship.angle) * 12,
+            vy: Math.sin(gameState.ship.angle) * 12,
+            life: 60,
+            maxLife: 60,
+            trail: [],
+          };
+          projectilesRef.current.push(newProjectile);
+          lastShootTime.current = currentTime;
+
+          // Tocar som de laser
+          playLaserShootSound().catch(() => {
+            // Som não é crítico, ignora erro
+          });
+        }
       }
     },
     [gameState, getWrappedDistance, isClickOnPlanetPixel, isWorldEditMode],
