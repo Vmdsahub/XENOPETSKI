@@ -1256,6 +1256,25 @@ export class GameService {
         updates,
       });
 
+      // Ensure user is authenticated
+      const currentUserId = await this.ensureAuthenticated();
+      if (!currentUserId) {
+        throw new Error("User not authenticated in Supabase");
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", currentUserId)
+        .single();
+
+      console.log("��� User admin status:", profile?.is_admin);
+
+      if (!profile?.is_admin) {
+        throw new Error("User is not admin");
+      }
+
       const updateData: any = {};
 
       if (updates.x !== undefined) updateData.x = updates.x;
@@ -1266,44 +1285,6 @@ export class GameService {
         updateData.rotation = updates.rotation % (Math.PI * 2);
 
       console.log("🌍 Update data being sent:", updateData);
-
-      // Check current user
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      console.log("🔐 Current user:", user?.user?.id, "Error:", userError);
-
-      let currentUserId = user?.user?.id;
-
-      if (!currentUserId) {
-        console.error(
-          "❌ No authenticated user - trying to refresh session...",
-        );
-
-        // Try to refresh the session
-        const { data: refreshData, error: refreshError } =
-          await supabase.auth.refreshSession();
-        console.log(
-          "🔄 Session refresh result:",
-          refreshData?.user?.id,
-          "Error:",
-          refreshError,
-        );
-
-        if (!refreshData?.user?.id) {
-          throw new Error("User not authenticated in Supabase");
-        }
-
-        currentUserId = refreshData.user.id;
-      }
-
-      // Check if user is admin
-      if (currentUserId) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("is_admin")
-          .eq("id", currentUserId)
-          .single();
-        console.log("👮 User admin status:", profile?.is_admin);
-      }
 
       const { error, data } = await supabase
         .from("world_positions")
