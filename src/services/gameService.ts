@@ -26,30 +26,23 @@ export class GameService {
 
   // Real-time subscription methods
 
-  /**
-   * Ensures user is authenticated in Supabase, refreshes session if needed
-   */
   private async ensureAuthenticated(): Promise<string | null> {
     try {
-      const { data: user, error: userError } = await supabase.auth.getUser();
+      const { data: user } = await supabase.auth.getUser();
 
       if (user?.user?.id) {
         return user.user.id;
       }
 
       console.log("🔄 No active session, trying to refresh...");
-      const { data: refreshData, error: refreshError } =
-        await supabase.auth.refreshSession();
+      const { data: refreshData } = await supabase.auth.refreshSession();
 
       if (refreshData?.user?.id) {
         console.log("✅ Session refreshed successfully");
         return refreshData.user.id;
       }
 
-      console.error("❌ Could not authenticate user:", {
-        userError,
-        refreshError,
-      });
+      console.error("❌ Could not authenticate user");
       return null;
     } catch (error) {
       console.error("❌ Authentication check failed:", error);
