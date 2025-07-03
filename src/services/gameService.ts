@@ -1250,6 +1250,11 @@ export class GameService {
         updateData.size = Math.max(20, Math.min(1000, updates.size));
       if (updates.rotation !== undefined)
         updateData.rotation = updates.rotation % (Math.PI * 2);
+      if (updates.interactionRadius !== undefined)
+        updateData.interactionRadius = Math.max(
+          50,
+          Math.min(1000, updates.interactionRadius),
+        );
 
       console.log("🌍 Update data being sent:", updateData);
 
