@@ -599,7 +599,7 @@ export const SpaceMap: React.FC = () => {
             nextScreenY,
           );
 
-          // Yellow glow effect with intensity-based strength - much more visible
+          // Yellow glow effect with intensity-based strength - ultra bright
           const currentAlpha = Math.min(
             currentLifeRatio * current.intensity * 0.95,
             0.9,
@@ -608,19 +608,37 @@ export const SpaceMap: React.FC = () => {
             nextLifeRatio * next.intensity * 0.95,
             0.9,
           );
+          const avgAlpha = (currentAlpha + nextAlpha) / 2;
+          const avgIntensity = (current.intensity + next.intensity) / 2;
 
           gradient.addColorStop(0, `rgba(255, 235, 59, ${currentAlpha})`); // Soft yellow
           gradient.addColorStop(1, `rgba(255, 193, 7, ${nextAlpha})`); // Slightly orange yellow
 
-          // Draw outer glow first for better visibility
-          ctx.strokeStyle = `rgba(255, 215, 0, ${(currentAlpha + nextAlpha) * 0.5})`;
+          // Ultra bright outer glow with shadow
+          ctx.shadowColor = "#ffeb3b";
+          ctx.shadowBlur = 25 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 215, 0, ${avgAlpha * 0.8 * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            2.5 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Medium glow layer
+          ctx.shadowBlur = 15 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 235, 59, ${avgAlpha * 0.9 * pulseIntensity})`;
           ctx.lineWidth =
             TRAIL_WIDTH *
             1.8 *
             ((currentLifeRatio + nextLifeRatio) / 2) *
-            ((current.intensity + next.intensity) / 2);
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
+            avgIntensity;
 
           ctx.beginPath();
           ctx.moveTo(currentScreenX, currentScreenY);
