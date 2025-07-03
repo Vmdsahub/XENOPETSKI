@@ -1744,16 +1744,21 @@ export const useGameStore = create<GameStore>()(
         const state = get();
         if (!state.user) return;
 
-        // In a real app, this would set up real-time subscriptions
+        // Subscribe to user-specific data
         console.log(
           "Subscribing to real-time updates for user:",
           state.user.id,
         );
+
+        // Subscribe to world positions for all users
+        get().subscribeToWorldPositions();
       },
 
       unsubscribeFromRealtimeUpdates: () => {
-        // In a real app, this would clean up real-time subscriptions
         console.log("Unsubscribing from real-time updates");
+
+        // Unsubscribe from world positions
+        get().unsubscribeFromWorldPositions();
       },
 
       // Ship state management
