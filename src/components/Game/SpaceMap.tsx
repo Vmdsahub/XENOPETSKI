@@ -1563,7 +1563,7 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render projectiles as bright yellow dashes
+      // Render projectiles as bright energy beams
       projectilesRef.current.forEach((proj) => {
         const wrappedDeltaX = getWrappedDistance(proj.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(proj.y, gameState.camera.y);
@@ -1575,38 +1575,60 @@ export const SpaceMap: React.FC = () => {
         const lifeRatio = proj.life / proj.maxLife;
         const angle = Math.atan2(proj.vy, proj.vx);
         const length = 8;
+        const time = Date.now() * 0.01; // Para efeito pulsante
+        const pulse = 0.8 + 0.2 * Math.sin(time);
 
         // Calcular pontos da linha do tracinho
         const endX = screenX + Math.cos(angle) * length;
         const endY = screenY + Math.sin(angle) * length;
 
-        // Brilho externo amarelo
-        ctx.globalAlpha = lifeRatio * 0.6;
-        ctx.strokeStyle = "#ffff00";
-        ctx.lineWidth = 4;
+        // Glow externo muito brilhante (aura de energia)
+        ctx.globalAlpha = lifeRatio * 0.3 * pulse;
+        ctx.strokeStyle = "#00ffff";
+        ctx.lineWidth = 12;
         ctx.lineCap = "round";
+        ctx.shadowColor = "#00ffff";
+        ctx.shadowBlur = 20;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Core brilhante amarelo
-        ctx.globalAlpha = lifeRatio;
-        ctx.strokeStyle = "#ffff88";
-        ctx.lineWidth = 2;
+        // Glow médio azul-elétrico
+        ctx.globalAlpha = lifeRatio * 0.7;
+        ctx.strokeStyle = "#4dffff";
+        ctx.lineWidth = 6;
+        ctx.shadowBlur = 12;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Centro ultra brilhante branco
+        // Core energético amarelo-elétrico
+        ctx.globalAlpha = lifeRatio * 0.9 * pulse;
+        ctx.strokeStyle = "#ffff00";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "#ffff00";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Centro ultra brilhante branco-azulado
         ctx.globalAlpha = lifeRatio;
         ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "#ffffff";
+        ctx.shadowBlur = 4;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
+
+        // Reset shadow para não afetar outros elementos
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
 
         ctx.restore();
       });
