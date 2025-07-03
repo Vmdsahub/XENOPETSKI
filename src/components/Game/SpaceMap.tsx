@@ -1057,7 +1057,7 @@ export const SpaceMap: React.FC = () => {
       setIsDragging(false);
       setDragOffset({ x: 0, y: 0 });
     }
-  }, [isWorldEditMode, isDragging, selectedWorldId]);
+  }, [user?.isAdmin, isWorldEditMode, isDragging, selectedWorldId]);
 
   // Handle ESC key to cancel editing
   useEffect(() => {
