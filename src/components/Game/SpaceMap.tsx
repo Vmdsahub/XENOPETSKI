@@ -969,7 +969,7 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(() => {
-          console.log("����� Saving world drag position:", {
+          console.log("���� Saving world drag position:", {
             selectedWorldId,
             worldX,
             worldY,
@@ -1761,8 +1761,16 @@ export const SpaceMap: React.FC = () => {
           // Calculate orbital animation
           const planet = landingAnimationData.planet;
           const orbitRadius = 80; // Distance from planet center
-          const orbitSpeed = 2; // Orbits per animation (reduced from 4 to 2)
-          const angleProgress = progress * orbitSpeed * Math.PI * 2;
+          const orbitSpeed = 1; // Only 1 orbit per animation
+
+          // Calculate initial angle based on player's starting position relative to planet
+          const initialAngle = Math.atan2(
+            landingAnimationData.initialShipY - planet.y,
+            landingAnimationData.initialShipX - planet.x,
+          );
+
+          const angleProgress =
+            initialAngle + progress * orbitSpeed * Math.PI * 2;
 
           // Calculate orbital position around planet
           shipWorldX =
