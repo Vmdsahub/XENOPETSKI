@@ -900,7 +900,7 @@ export const SpaceMap: React.FC = () => {
       };
 
       // Handle world dragging in edit mode
-      if (isWorldEditMode && isDragging && selectedWorldId) {
+      if (user?.isAdmin && isWorldEditMode && isDragging && selectedWorldId) {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
 
