@@ -1154,7 +1154,7 @@ export class GameService {
       const { data: profile } = await supabase
         .from("profiles")
         .select("is_admin")
-        .eq("id", user.user.id)
+        .eq("id", currentUserId)
         .single();
 
       console.log("👮 Sync - User admin status:", profile?.is_admin);
