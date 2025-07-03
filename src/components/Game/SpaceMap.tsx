@@ -1766,8 +1766,8 @@ export const SpaceMap: React.FC = () => {
           pulse,
           shipScreenX,
           shipScreenY,
-          gameState.ship.x,
-          gameState.ship.y,
+          shipWorldX,
+          shipWorldY,
         );
       });
 
