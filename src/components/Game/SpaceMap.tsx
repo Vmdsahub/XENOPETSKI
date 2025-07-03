@@ -1666,7 +1666,7 @@ export const SpaceMap: React.FC = () => {
             <input
               type="range"
               min="20"
-              max="150"
+              max="1000"
               value={
                 planetsRef.current.find((p) => p.id === selectedWorldId)
                   ?.size || 60
