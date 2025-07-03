@@ -33,11 +33,6 @@ export const AdminPanel: React.FC = () => {
   } = useGameStore();
 
   const [activeTab, setActiveTab] = useState("codes");
-
-  // Load world positions when component mounts
-  useEffect(() => {
-    loadWorldPositions();
-  }, [loadWorldPositions]);
   const [showCreateCodeModal, setShowCreateCodeModal] = useState(false);
   const [editingCode, setEditingCode] = useState<RedeemCode | null>(null);
   const [newCodeData, setNewCodeData] = useState({
