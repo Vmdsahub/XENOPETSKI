@@ -1421,25 +1421,27 @@ export const SpaceMap: React.FC = () => {
           const isInRange = shipToPlanetDistance <= planet.interactionRadius;
           const isSelected = isWorldEditMode && selectedWorldId === planet.id;
 
-          // Render interaction circle
-          ctx.save();
-          if (isWorldEditMode) {
-            // Edit mode styling
-            ctx.globalAlpha = isSelected ? 0.8 : 0.3;
-            ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
-            ctx.lineWidth = isSelected ? 4 : 2;
-            ctx.setLineDash(isSelected ? [] : [8, 8]);
-          } else {
-            // Normal mode styling
-            ctx.globalAlpha = isInRange ? 0.4 : 0.15;
-            ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
-            ctx.lineWidth = isInRange ? 3 : 1;
-            ctx.setLineDash(isInRange ? [] : [5, 5]);
+          // Render interaction circle (only visible to admins)
+          if (user?.isAdmin) {
+            ctx.save();
+            if (isWorldEditMode) {
+              // Edit mode styling
+              ctx.globalAlpha = isSelected ? 0.8 : 0.3;
+              ctx.strokeStyle = isSelected ? "#ffff00" : "#ffffff";
+              ctx.lineWidth = isSelected ? 4 : 2;
+              ctx.setLineDash(isSelected ? [] : [8, 8]);
+            } else {
+              // Normal mode styling
+              ctx.globalAlpha = isInRange ? 0.4 : 0.15;
+              ctx.strokeStyle = isInRange ? "#00ff00" : "#ffffff";
+              ctx.lineWidth = isInRange ? 3 : 1;
+              ctx.setLineDash(isInRange ? [] : [5, 5]);
+            }
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
           }
-          ctx.beginPath();
-          ctx.arc(screenX, screenY, planet.interactionRadius, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
 
           // Render planet image with rotation
           const img = planetImagesRef.current.get(planet.id);
