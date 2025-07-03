@@ -10,6 +10,7 @@ import {
   Collectible,
   Quest,
   RedeemCode,
+  WorldPosition,
 } from "../types/game";
 import { gameService } from "../services/gameService";
 import { playNotificationSound } from "../utils/soundManager";
