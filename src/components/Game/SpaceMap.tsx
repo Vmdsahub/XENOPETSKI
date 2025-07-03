@@ -1280,21 +1280,12 @@ export const SpaceMap: React.FC = () => {
 
       // Update projectiles
       projectilesRef.current = projectilesRef.current
-        .map((proj) => {
-          // Adicionar posição atual ao rastro
-          const newTrail = [{ x: proj.x, y: proj.y }, ...proj.trail].slice(
-            0,
-            8,
-          );
-
-          return {
-            ...proj,
-            x: normalizeCoord(proj.x + proj.vx),
-            y: normalizeCoord(proj.y + proj.vy),
-            life: proj.life - 1,
-            trail: newTrail,
-          };
-        })
+        .map((proj) => ({
+          ...proj,
+          x: normalizeCoord(proj.x + proj.vx),
+          y: normalizeCoord(proj.y + proj.vy),
+          life: proj.life - 1,
+        }))
         .filter((proj) => proj.life > 0);
 
       // Create shooting stars periodically
