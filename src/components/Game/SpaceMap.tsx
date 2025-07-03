@@ -1760,8 +1760,22 @@ export const SpaceMap: React.FC = () => {
         const progress = Math.min(elapsed / landingAnimationData.duration, 1);
 
         if (progress >= 1) {
-          // Animation complete - hide ship and transition after a brief delay
+          // Animation complete - set final position at planet and hide ship
+          shipWorldX = landingAnimationData.planet.x;
+          shipWorldY = landingAnimationData.planet.y;
           shipScale = 0; // Hide the ship immediately
+
+          // Update the game state to keep ship at planet position
+          setGameState((prevState) => ({
+            ...prevState,
+            ship: {
+              ...prevState.ship,
+              x: landingAnimationData.planet.x,
+              y: landingAnimationData.planet.y,
+              vx: 0,
+              vy: 0,
+            },
+          }));
 
           // Use setTimeout to delay the transition, preventing the ship from appearing at center
           setTimeout(() => {
