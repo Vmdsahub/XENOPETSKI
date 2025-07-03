@@ -1316,16 +1316,8 @@ export const SpaceMap: React.FC = () => {
                 const initialAngle = Math.atan2(initialDy, initialDx);
                 const angleProgress =
                   initialAngle + progress * orbitSpeed * Math.PI * 2;
-                const wobbleFreq1 = 3;
-                const wobbleAmount = 15;
-                const wobbleX =
-                  Math.sin(progress * wobbleFreq1 * Math.PI * 2) *
-                  wobbleAmount *
-                  (1 - progress);
                 const currentRadius = initialRadius * (1 - progress * 0.9);
-                return (
-                  planet.x + Math.cos(angleProgress) * currentRadius + wobbleX
-                );
+                return planet.x + Math.cos(angleProgress) * currentRadius;
               })()
             : newState.ship.x;
 
