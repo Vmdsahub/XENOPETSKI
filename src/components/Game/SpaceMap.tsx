@@ -1697,7 +1697,7 @@ export const SpaceMap: React.FC = () => {
                     } catch (error) {
                       console.error("Failed to update world size:", error);
                       // Reload on error to revert to database state
-                      await loadWorldPositions();
+                      loadWorldPositions();
                     }
                   }
                 }, 300);
