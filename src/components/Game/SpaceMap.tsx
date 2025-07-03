@@ -1340,14 +1340,15 @@ export const SpaceMap: React.FC = () => {
 
       // Update projectiles with delta time
       const currentFrameTime = performance.now();
-      const deltaTime = (currentFrameTime - lastFrameTimeRef.current) / 1000; // Convert to seconds
+      const projectileDeltaTime =
+        (currentFrameTime - lastFrameTimeRef.current) / 1000; // Convert to seconds
       lastFrameTimeRef.current = currentFrameTime;
 
       projectilesRef.current = projectilesRef.current
         .map((proj) => ({
           ...proj,
-          x: normalizeCoord(proj.x + proj.vx * deltaTime),
-          y: normalizeCoord(proj.y + proj.vy * deltaTime),
+          x: normalizeCoord(proj.x + proj.vx * projectileDeltaTime),
+          y: normalizeCoord(proj.y + proj.vy * projectileDeltaTime),
           life: proj.life - 1,
         }))
         .filter((proj) => proj.life > 0);
@@ -2022,7 +2023,7 @@ export const SpaceMap: React.FC = () => {
             <div className="text-yellow-400 font-bold mb-1">
               ��� MODO EDIÇÃO
             </div>
-            <div>• 1º Click: Selecionar mundo</div>
+            <div>�� 1º Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
             </div>
