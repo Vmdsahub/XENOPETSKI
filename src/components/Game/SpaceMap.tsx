@@ -1912,6 +1912,48 @@ export const SpaceMap: React.FC = () => {
         drawShootingStar(ctx, shootingStar);
       });
 
+      // Render ship trail before ship (so trail appears behind ship)
+      let shipWorldX = gameState.ship.x;
+      let shipWorldY = gameState.ship.y;
+
+      // Handle landing animation for trail positioning
+      if (isLandingAnimationActive && landingAnimationData) {
+        const currentTime = performance.now();
+        const elapsed = currentTime - landingAnimationData.startTime;
+        const progress = Math.min(elapsed / landingAnimationData.duration, 1);
+
+        if (progress < 1) {
+          const planet = landingAnimationData.planet;
+          const initialDx = landingAnimationData.initialShipX - planet.x;
+          const initialDy = landingAnimationData.initialShipY - planet.y;
+          const initialRadius = Math.sqrt(
+            initialDx * initialDx + initialDy * initialDy,
+          );
+          const orbitSpeed = 1;
+          const initialAngle = Math.atan2(initialDy, initialDx);
+          const angleProgress =
+            initialAngle + progress * orbitSpeed * Math.PI * 2;
+          const currentRadius = initialRadius * (1 - progress * 0.9);
+
+          shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
+          shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
+        }
+      }
+
+      const shipWrappedDeltaX = getWrappedDistance(
+        shipWorldX,
+        gameState.camera.x,
+      );
+      const shipWrappedDeltaY = getWrappedDistance(
+        shipWorldY,
+        gameState.camera.y,
+      );
+      const shipScreenX = centerX + shipWrappedDeltaX;
+      const shipScreenY = centerY + shipWrappedDeltaY;
+
+      // Draw the trail
+      drawShipTrail(ctx, shipScreenX, shipScreenY, shipWorldX, shipWorldY);
+
       // Render ship (with landing animation support)
       let shipWorldX = gameState.ship.x;
       let shipWorldY = gameState.ship.y;
@@ -2365,7 +2407,7 @@ export const SpaceMap: React.FC = () => {
             <div className="text-yellow-400 font-bold mb-1">
               ��� MODO EDIÇÃO
             </div>
-            <div>�� 1º Click: Selecionar mundo</div>
+            <div>�� 1�� Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
             </div>
