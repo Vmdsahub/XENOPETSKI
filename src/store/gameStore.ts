@@ -1710,12 +1710,101 @@ export const useGameStore = create<GameStore>()(
       },
 
       loadWorldPositions: async () => {
-        try {
-          const positions = await gameService.getWorldPositions();
-          set({ worldPositions: positions });
-        } catch (error) {
-          console.error("Error loading world positions:", error);
+        const state = get();
+
+        // Se já tem posições no store, usa elas
+        if (state.worldPositions.length > 0) {
+          console.log(
+            "📍 Using world positions from store:",
+            state.worldPositions,
+          );
+          return;
         }
+
+        // Se não tem, cria posições padrão
+        const defaultPositions = [
+          {
+            id: "planet-0",
+            name: "Estação Galáctica",
+            x: 7750,
+            y: 7250,
+            size: 60,
+            rotation: 0,
+            color: "#ff6b6b",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-1",
+            name: "Base Orbital",
+            x: 7966.6,
+            y: 7625,
+            size: 60,
+            rotation: 0,
+            color: "#4ecdc4",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-2",
+            name: "Mundo Alienígena",
+            x: 7750,
+            y: 8000,
+            size: 60,
+            rotation: 0,
+            color: "#45b7d1",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-3",
+            name: "Terra Verdejante",
+            x: 7533.4,
+            y: 7625,
+            size: 60,
+            rotation: 0,
+            color: "#96ceb4",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-4",
+            name: "Reino Gelado",
+            x: 7533.4,
+            y: 7375,
+            size: 60,
+            rotation: 0,
+            color: "#ffeaa7",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: "planet-5",
+            name: "Vila Ancestral",
+            x: 7966.6,
+            y: 7375,
+            size: 60,
+            rotation: 0,
+            color: "#dda0dd",
+            imageUrl:
+              "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+
+        console.log("📍 Creating default world positions");
+        set({ worldPositions: defaultPositions });
       },
 
       subscribeToWorldPositions: () => {
