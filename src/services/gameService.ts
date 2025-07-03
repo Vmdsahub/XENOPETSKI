@@ -1247,7 +1247,7 @@ export class GameService {
       if (updates.x !== undefined) updateData.x = updates.x;
       if (updates.y !== undefined) updateData.y = updates.y;
       if (updates.size !== undefined)
-        updateData.size = Math.max(20, Math.min(200, updates.size));
+        updateData.size = Math.max(20, Math.min(1000, updates.size));
       if (updates.rotation !== undefined)
         updateData.rotation = updates.rotation % (Math.PI * 2);
 
