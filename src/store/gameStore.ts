@@ -747,7 +747,15 @@ export const useGameStore = create<GameStore>()(
       setCurrentPlanet: (planet) => set({ currentPlanet: planet }),
 
       // World editing mode
-      setWorldEditMode: (enabled) => set({ isWorldEditMode: enabled }),
+      setWorldEditMode: (enabled) => {
+        const state = get();
+        // Only allow admins to enable world edit mode
+        if (enabled && !state.user?.isAdmin) {
+          console.warn("⚠️ Only admins can enable world edit mode");
+          return;
+        }
+        set({ isWorldEditMode: enabled });
+      },
 
       // Egg selection and hatching actions
       setSelectedEggForHatching: (eggData) =>
