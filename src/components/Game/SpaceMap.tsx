@@ -69,6 +69,14 @@ interface RadarPulse {
   opacity: number;
 }
 
+interface TrailPoint {
+  x: number;
+  y: number;
+  life: number;
+  maxLife: number;
+  intensity: number;
+}
+
 interface GameState {
   ship: {
     x: number;
