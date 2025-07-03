@@ -177,7 +177,12 @@ export const AdminPanel: React.FC = () => {
     { id: "users", name: "Usuários", icon: Users, count: 0 },
     { id: "items", name: "Itens", icon: Package, count: 0 },
     { id: "achievements", name: "Conquistas", icon: Trophy, count: 0 },
-    { id: "world", name: "Mundos", icon: Settings, count: 0 },
+    {
+      id: "world",
+      name: "Mundos",
+      icon: Settings,
+      count: worldPositions.length,
+    },
   ];
 
   const renderCodesTab = () => (
