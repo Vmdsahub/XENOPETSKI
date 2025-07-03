@@ -3,6 +3,7 @@ import { useGameStore } from "../../store/gameStore";
 import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 import { PlanetLandingModal } from "./PlanetLandingModal";
 import { gameService } from "../../services/gameService";
+import { playLaserShootSound } from "../../utils/soundManager";
 
 interface Star {
   x: number;
