@@ -111,6 +111,7 @@ export const SpaceMap: React.FC = () => {
   const shootingStarsRef = useRef<ShootingStar[]>([]);
   const radarPulsesRef = useRef<RadarPulse[]>([]);
   const lastShootingStarTime = useRef(0);
+  const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
