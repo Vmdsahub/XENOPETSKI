@@ -732,48 +732,40 @@ export const SpaceMap: React.FC = () => {
     starsRef.current = stars;
   }, []);
 
-  // Load world positions from database
-  const loadWorldPositions = useCallback(async () => {
-    try {
-      const positions = await gameService.getWorldPositions();
+  // Update planets when worldPositions change
+  const updatePlanetsFromStore = useCallback(() => {
+    if (worldPositions.length > 0) {
+      // Use store positions
+      const planets: Planet[] = worldPositions.map((position) => ({
+        id: position.id,
+        x: position.x,
+        y: position.y,
+        size: position.size,
+        rotation: position.rotation,
+        color: position.color,
+        name: position.name,
+        interactionRadius: Math.max(90, position.size + 30),
+        imageUrl: position.imageUrl || "",
+      }));
 
-      if (positions.length > 0) {
-        // Use database positions
-        const planets: Planet[] = positions.map((position) => ({
-          id: position.id,
-          x: position.x,
-          y: position.y,
-          size: position.size,
-          rotation: position.rotation,
-          color: position.color,
-          name: position.name,
-          interactionRadius: Math.max(90, position.size + 30),
-          imageUrl: position.imageUrl || "",
-        }));
+      // Preload planet images
+      worldPositions.forEach((position) => {
+        if (position.imageUrl) {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.src = position.imageUrl;
+          img.onload = () => {
+            planetImagesRef.current.set(position.id, img);
+          };
+        }
+      });
 
-        // Preload planet images
-        positions.forEach((position) => {
-          if (position.imageUrl) {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = position.imageUrl;
-            img.onload = () => {
-              planetImagesRef.current.set(position.id, img);
-            };
-          }
-        });
-
-        planetsRef.current = planets;
-      } else {
-        // Fallback to default positions if no data in database
-        generateDefaultPlanets();
-      }
-    } catch (error) {
-      console.error("Failed to load world positions:", error);
-      // Fallback to default positions on error
+      planetsRef.current = planets;
+    } else {
+      // Fallback to default positions if no data in store
       generateDefaultPlanets();
     }
-  }, []);
+  }, [worldPositions]);
 
   // Generate default planets (fallback)
   const generateDefaultPlanets = useCallback(() => {
