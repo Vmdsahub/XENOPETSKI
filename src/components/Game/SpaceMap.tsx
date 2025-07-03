@@ -1035,7 +1035,7 @@ export const SpaceMap: React.FC = () => {
               setIsDragging(false);
               setDragOffset({ x: 0, y: 0 });
             } else if (selectedWorldId === planet.id && !isDragging) {
-              // Se já está selecionado mas não dragging, inicie o drag
+              // Se já est�� selecionado mas não dragging, inicie o drag
               setIsDragging(true);
               setDragOffset({ x: dx, y: dy });
             } else {
@@ -1307,18 +1307,17 @@ export const SpaceMap: React.FC = () => {
                   1,
                 );
                 const planet = landingAnimationData.planet;
-                const orbitRadius = 80;
-                const orbitSpeed = 1;
-                const initialAngle = Math.atan2(
-                  landingAnimationData.initialShipY - planet.y,
-                  landingAnimationData.initialShipX - planet.x,
+                const initialDx = landingAnimationData.initialShipX - planet.x;
+                const initialDy = landingAnimationData.initialShipY - planet.y;
+                const initialRadius = Math.sqrt(
+                  initialDx * initialDx + initialDy * initialDy,
                 );
+                const orbitSpeed = 1;
+                const initialAngle = Math.atan2(initialDy, initialDx);
                 const angleProgress =
                   initialAngle + progress * orbitSpeed * Math.PI * 2;
-                return (
-                  planet.x +
-                  Math.cos(angleProgress) * orbitRadius * (1 - progress * 0.6)
-                );
+                const currentRadius = initialRadius * (1 - progress * 0.9);
+                return planet.x + Math.cos(angleProgress) * currentRadius;
               })()
             : newState.ship.x;
 
