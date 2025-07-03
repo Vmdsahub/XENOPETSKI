@@ -1702,6 +1702,42 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
+      // World positions management
+      setWorldPositions: (positions) => {
+        set({ worldPositions: positions });
+      },
+
+      loadWorldPositions: async () => {
+        try {
+          const positions = await gameService.getWorldPositions();
+          set({ worldPositions: positions });
+        } catch (error) {
+          console.error("Error loading world positions:", error);
+        }
+      },
+
+      subscribeToWorldPositions: () => {
+        const worldSubscriptionId = gameService.subscribeToWorldPositions(
+          (payload) => {
+            console.log("World positions changed:", payload);
+
+            // Reload world positions when changes occur
+            get().loadWorldPositions();
+          },
+        );
+
+        // Store subscription ID for cleanup
+        set({ worldPositionsSubscriptionId: worldSubscriptionId });
+      },
+
+      unsubscribeFromWorldPositions: () => {
+        const state = get();
+        if (state.worldPositionsSubscriptionId) {
+          gameService.unsubscribe(state.worldPositionsSubscriptionId);
+          set({ worldPositionsSubscriptionId: undefined });
+        }
+      },
+
       subscribeToRealtimeUpdates: () => {
         const state = get();
         if (!state.user) return;
