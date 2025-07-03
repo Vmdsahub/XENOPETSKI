@@ -104,10 +104,10 @@ const PROJECTILE_LIFETIME = 4.0; // seconds
 const RENDER_BUFFER = 200;
 
 // Trail constants
-const TRAIL_MAX_POINTS = 15;
-const TRAIL_POINT_DISTANCE = 8;
-const TRAIL_LIFETIME = 800; // milliseconds
-const TRAIL_WIDTH = 6;
+const TRAIL_MAX_POINTS = 25;
+const TRAIL_POINT_DISTANCE = 6;
+const TRAIL_LIFETIME = 1200; // milliseconds
+const TRAIL_WIDTH = 12;
 
 export const SpaceMap: React.FC = () => {
   const {
@@ -975,7 +975,7 @@ export const SpaceMap: React.FC = () => {
     ];
 
     const planetNames = [
-      "Estação Galáctica",
+      "Estaç��o Galáctica",
       "Base Orbital",
       "Mundo Alienígena",
       "Terra Verdejante",
