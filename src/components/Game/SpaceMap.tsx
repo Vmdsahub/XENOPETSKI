@@ -516,6 +516,125 @@ export const SpaceMap: React.FC = () => {
     [getWrappedDistance],
   );
 
+  // Create trail point function
+  const createTrailPoint = useCallback(
+    (x: number, y: number, currentTime: number, shipVelocity: number) => {
+      const intensity = Math.min(shipVelocity / SHIP_MAX_SPEED, 1);
+
+      trailPointsRef.current.push({
+        x,
+        y,
+        life: TRAIL_LIFETIME,
+        maxLife: TRAIL_LIFETIME,
+        intensity,
+      });
+
+      // Keep only the most recent trail points
+      if (trailPointsRef.current.length > TRAIL_MAX_POINTS) {
+        trailPointsRef.current.shift();
+      }
+    },
+    [],
+  );
+
+  // Update trail points function
+  const updateTrailPoints = useCallback((deltaTime: number) => {
+    trailPointsRef.current.forEach((point) => {
+      point.life -= deltaTime;
+    });
+
+    // Remove dead trail points
+    trailPointsRef.current = trailPointsRef.current.filter(
+      (point) => point.life > 0,
+    );
+  }, []);
+
+  // Draw trail function
+  const drawShipTrail = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      shipScreenX: number,
+      shipScreenY: number,
+      shipWorldX: number,
+      shipWorldY: number,
+    ) => {
+      if (trailPointsRef.current.length < 2) return;
+
+      ctx.save();
+
+      // Draw each segment of the trail
+      for (let i = 0; i < trailPointsRef.current.length - 1; i++) {
+        const current = trailPointsRef.current[i];
+        const next = trailPointsRef.current[i + 1];
+
+        const currentLifeRatio = current.life / current.maxLife;
+        const nextLifeRatio = next.life / next.maxLife;
+
+        // Calculate screen positions using wrapped distance
+        const currentDx = getWrappedDistance(current.x, shipWorldX);
+        const currentDy = getWrappedDistance(current.y, shipWorldY);
+        const currentScreenX = shipScreenX + currentDx;
+        const currentScreenY = shipScreenY + currentDy;
+
+        const nextDx = getWrappedDistance(next.x, shipWorldX);
+        const nextDy = getWrappedDistance(next.y, shipWorldY);
+        const nextScreenX = shipScreenX + nextDx;
+        const nextScreenY = shipScreenY + nextDy;
+
+        // Create gradient for the trail segment
+        const distance = Math.sqrt(
+          Math.pow(nextScreenX - currentScreenX, 2) +
+            Math.pow(nextScreenY - currentScreenY, 2),
+        );
+
+        if (distance > 0) {
+          const gradient = ctx.createLinearGradient(
+            currentScreenX,
+            currentScreenY,
+            nextScreenX,
+            nextScreenY,
+          );
+
+          // Yellow glow effect with intensity-based strength
+          const currentAlpha = currentLifeRatio * current.intensity * 0.8;
+          const nextAlpha = nextLifeRatio * next.intensity * 0.8;
+
+          gradient.addColorStop(0, `rgba(255, 235, 59, ${currentAlpha})`); // Soft yellow
+          gradient.addColorStop(1, `rgba(255, 193, 7, ${nextAlpha})`); // Slightly orange yellow
+
+          // Draw the trail segment
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            ((current.intensity + next.intensity) / 2);
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Add inner glow for enhanced effect
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(currentAlpha + nextAlpha) * 0.3})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            0.4 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            ((current.intensity + next.intensity) / 2);
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+    },
+    [getWrappedDistance],
+  );
+
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
     (
