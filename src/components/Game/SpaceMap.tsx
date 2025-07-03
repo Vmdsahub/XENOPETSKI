@@ -1628,9 +1628,6 @@ export const SpaceMap: React.FC = () => {
         <div className="absolute top-2 right-2 space-y-2">
           <button
             onClick={() => {
-              console.log("🔧 Toggling edit mode. Current user:", user);
-              console.log("🔧 Is admin:", user?.isAdmin);
-              console.log("🔧 Current edit mode:", isWorldEditMode);
               setWorldEditMode(!isWorldEditMode);
               if (isWorldEditMode) {
                 setSelectedWorldId(null);
