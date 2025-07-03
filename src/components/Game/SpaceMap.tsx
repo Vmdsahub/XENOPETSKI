@@ -1505,7 +1505,7 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render projectiles with trail
+      // Render projectiles as bright yellow dashes
       projectilesRef.current.forEach((proj) => {
         const wrappedDeltaX = getWrappedDistance(proj.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(proj.y, gameState.camera.y);
@@ -1514,66 +1514,41 @@ export const SpaceMap: React.FC = () => {
 
         ctx.save();
 
-        // Desenhar rastro
-        if (proj.trail.length > 1) {
-          for (let i = 0; i < proj.trail.length - 1; i++) {
-            const trailPoint = proj.trail[i];
-            const trailWrappedX = getWrappedDistance(
-              trailPoint.x,
-              gameState.camera.x,
-            );
-            const trailWrappedY = getWrappedDistance(
-              trailPoint.y,
-              gameState.camera.y,
-            );
-            const trailScreenX = centerX + trailWrappedX;
-            const trailScreenY = centerY + trailWrappedY;
-
-            const trailAlpha =
-              (proj.life / proj.maxLife) * (1 - i / proj.trail.length) * 0.4;
-            const trailSize = Math.max(0.5, 2 - i * 0.2);
-
-            ctx.globalAlpha = trailAlpha;
-            ctx.fillStyle = `rgba(0, 255, 255, ${trailAlpha})`;
-            ctx.beginPath();
-            ctx.arc(trailScreenX, trailScreenY, trailSize, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // Desenhar projétil principal com brilho
         const lifeRatio = proj.life / proj.maxLife;
+        const angle = Math.atan2(proj.vy, proj.vx);
+        const length = 8;
 
-        // Brilho externo
-        ctx.globalAlpha = lifeRatio * 0.3;
-        const gradient = ctx.createRadialGradient(
-          screenX,
-          screenY,
-          0,
-          screenX,
-          screenY,
-          8,
-        );
-        gradient.addColorStop(0, "rgba(0, 255, 255, 0.8)");
-        gradient.addColorStop(1, "rgba(0, 255, 255, 0)");
-        ctx.fillStyle = gradient;
+        // Calcular pontos da linha do tracinho
+        const endX = screenX + Math.cos(angle) * length;
+        const endY = screenY + Math.sin(angle) * length;
+
+        // Brilho externo amarelo
+        ctx.globalAlpha = lifeRatio * 0.6;
+        ctx.strokeStyle = "#ffff00";
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
         ctx.beginPath();
-        ctx.arc(screenX, screenY, 8, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
 
-        // Core brilhante
+        // Core brilhante amarelo
         ctx.globalAlpha = lifeRatio;
-        ctx.fillStyle = "#00ffff";
+        ctx.strokeStyle = "#ffff88";
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, 2.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
 
-        // Centro ultra brilhante
+        // Centro ultra brilhante branco
         ctx.globalAlpha = lifeRatio;
-        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, 1, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
 
         ctx.restore();
       });
