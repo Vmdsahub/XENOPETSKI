@@ -98,6 +98,7 @@ export const SpaceMap: React.FC = () => {
     user,
     worldPositions,
     loadWorldPositions,
+    updateWorldPosition,
   } = useGameStore();
   const { saveShipState, forceSaveShipState } = useShipStatePersistence();
   const canvasRef = useRef<HTMLCanvasElement>(null);
