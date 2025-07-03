@@ -1761,7 +1761,7 @@ export const SpaceMap: React.FC = () => {
           // Calculate orbital animation
           const planet = landingAnimationData.planet;
           const orbitRadius = 80; // Distance from planet center
-          const orbitSpeed = 4; // Orbits per animation
+          const orbitSpeed = 2; // Orbits per animation (reduced from 4 to 2)
           const angleProgress = progress * orbitSpeed * Math.PI * 2;
 
           // Calculate orbital position around planet
@@ -1772,8 +1772,8 @@ export const SpaceMap: React.FC = () => {
             planet.y +
             Math.sin(angleProgress) * orbitRadius * (1 - progress * 0.6);
 
-          // Ship points toward the planet
-          shipAngle = Math.atan2(planet.y - shipWorldY, planet.x - shipWorldX);
+          // Ship points in trajectory direction (tangent to the orbit)
+          shipAngle = angleProgress + Math.PI / 2; // Tangent is perpendicular to radius
 
           // Scale down as landing progresses
           shipScale = 1 - progress * 0.7; // Ship gets 70% smaller
