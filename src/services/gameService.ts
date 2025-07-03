@@ -1117,6 +1117,28 @@ export class GameService {
     try {
       console.log("🔄 Syncing current world positions to database:", planets);
 
+      // Check current user and admin status
+      const { data: user } = await supabase.auth.getUser();
+      console.log("🔐 Sync - Current user:", user?.user?.id);
+
+      if (!user?.user?.id) {
+        console.error("❌ No authenticated user for sync");
+        return false;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.user.id)
+        .single();
+
+      console.log("👮 Sync - User admin status:", profile?.is_admin);
+
+      if (!profile?.is_admin) {
+        console.error("❌ User is not admin, cannot sync");
+        return false;
+      }
+
       const worldsToInsert = planets.map((planet) => ({
         id: planet.id,
         name: planet.name || `Planeta ${planet.id}`,
@@ -1128,6 +1150,8 @@ export class GameService {
         image_url: planet.imageUrl || null,
       }));
 
+      console.log("🔄 Worlds to insert:", worldsToInsert);
+
       // First, delete all existing records (since we're syncing the current state)
       const { error: deleteError } = await supabase
         .from("world_positions")
@@ -1135,7 +1159,13 @@ export class GameService {
         .neq("id", "nonexistent"); // Delete all
 
       if (deleteError) {
-        console.error("❌ Error clearing existing worlds:", deleteError);
+        console.error("❌ Error clearing existing worlds:", {
+          code: deleteError.code,
+          message: deleteError.message,
+          details: deleteError.details,
+        });
+      } else {
+        console.log("✅ Existing worlds cleared");
       }
 
       // Then insert the current planets
@@ -1144,7 +1174,11 @@ export class GameService {
         .insert(worldsToInsert);
 
       if (insertError) {
-        console.error("❌ Error syncing worlds:", insertError);
+        console.error("❌ Error syncing worlds:", {
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+        });
         throw insertError;
       }
 
