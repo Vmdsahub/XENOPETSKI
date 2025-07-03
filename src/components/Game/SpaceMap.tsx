@@ -1769,7 +1769,7 @@ export const SpaceMap: React.FC = () => {
             <input
               type="range"
               min="50"
-              max="200"
+              max="1000"
               step="5"
               value={
                 planetsRef.current.find((p) => p.id === selectedWorldId)
