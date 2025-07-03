@@ -1955,8 +1955,6 @@ export const SpaceMap: React.FC = () => {
       drawShipTrail(ctx, shipScreenX, shipScreenY, shipWorldX, shipWorldY);
 
       // Render ship (with landing animation support)
-      let shipWorldX = gameState.ship.x;
-      let shipWorldY = gameState.ship.y;
       let shipScale = 1;
       let shipAngle = gameState.ship.angle;
 
@@ -2407,7 +2405,7 @@ export const SpaceMap: React.FC = () => {
             <div className="text-yellow-400 font-bold mb-1">
               ��� MODO EDIÇÃO
             </div>
-            <div>�� 1�� Click: Selecionar mundo</div>
+            <div>�� 1º Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
             </div>
