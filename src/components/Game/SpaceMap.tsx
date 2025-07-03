@@ -86,6 +86,8 @@ const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
 const BARRIER_RADIUS = 600;
+const PROJECTILE_SPEED = 600; // pixels per second (consistent across all FPS)
+const PROJECTILE_LIFETIME = 4.0; // seconds
 
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
@@ -116,6 +118,7 @@ export const SpaceMap: React.FC = () => {
   const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
   const shootingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFrameTimeRef = useRef(performance.now());
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -215,10 +218,10 @@ export const SpaceMap: React.FC = () => {
       const newProjectile: Projectile = {
         x: gameState.ship.x,
         y: gameState.ship.y,
-        vx: Math.cos(gameState.ship.angle) * 12,
-        vy: Math.sin(gameState.ship.angle) * 12,
-        life: 134,
-        maxLife: 134,
+        vx: Math.cos(gameState.ship.angle) * PROJECTILE_SPEED,
+        vy: Math.sin(gameState.ship.angle) * PROJECTILE_SPEED,
+        life: PROJECTILE_LIFETIME,
+        maxLife: PROJECTILE_LIFETIME,
       };
       projectilesRef.current.push(newProjectile);
       lastShootTime.current = currentTime;
@@ -1336,13 +1339,18 @@ export const SpaceMap: React.FC = () => {
         star.pulse += star.speed * 0.8;
       }
 
-      // Update projectiles
+      // Update projectiles with delta time
+      const currentFrameTime = performance.now();
+      const projectileDeltaTime =
+        (currentFrameTime - lastFrameTimeRef.current) / 1000; // Convert to seconds
+      lastFrameTimeRef.current = currentFrameTime;
+
       projectilesRef.current = projectilesRef.current
         .map((proj) => ({
           ...proj,
-          x: normalizeCoord(proj.x + proj.vx),
-          y: normalizeCoord(proj.y + proj.vy),
-          life: proj.life - 1,
+          x: normalizeCoord(proj.x + proj.vx * projectileDeltaTime),
+          y: normalizeCoord(proj.y + proj.vy * projectileDeltaTime),
+          life: proj.life - projectileDeltaTime,
         }))
         .filter((proj) => proj.life > 0);
 
@@ -1454,7 +1462,7 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render barrier circle
+      // Render barrier circle (rotating, gray, transparent)
       const barrierWrappedDeltaX = getWrappedDistance(
         CENTER_X,
         gameState.camera.x,
@@ -1467,10 +1475,16 @@ export const SpaceMap: React.FC = () => {
       const barrierScreenY = centerY + barrierWrappedDeltaY;
 
       ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = "#00ffff";
+      ctx.globalAlpha = 0.15; // Muito transparente
+      ctx.strokeStyle = "#888888"; // Cinza
       ctx.lineWidth = 2;
+
+      // Rotação lenta baseada no tempo
+      const rotationTime = currentTime * 0.0005; // Muito lenta
+      const dashOffset = (rotationTime * 50) % 20; // Offset dos traços para simular rotação
+
       ctx.setLineDash([10, 10]);
+      ctx.lineDashOffset = -dashOffset; // Anima os traços
       ctx.beginPath();
       ctx.arc(barrierScreenX, barrierScreenY, BARRIER_RADIUS, 0, Math.PI * 2);
       ctx.stroke();
@@ -1582,45 +1596,45 @@ export const SpaceMap: React.FC = () => {
         const endX = screenX + Math.cos(angle) * length;
         const endY = screenY + Math.sin(angle) * length;
 
-        // Glow externo muito brilhante (aura de energia amarela)
-        ctx.globalAlpha = lifeRatio * 0.3 * pulse;
-        ctx.strokeStyle = "#ffdd00";
-        ctx.lineWidth = 12;
-        ctx.lineCap = "round";
-        ctx.shadowColor = "#ffdd00";
-        ctx.shadowBlur = 20;
-        ctx.beginPath();
-        ctx.moveTo(screenX, screenY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
-        // Glow médio amarelo-dourado
-        ctx.globalAlpha = lifeRatio * 0.7;
-        ctx.strokeStyle = "#ffee44";
+        // Glow externo mais sutil (aura de energia amarela mais fraca)
+        ctx.globalAlpha = lifeRatio * 0.2 * pulse;
+        ctx.strokeStyle = "#e6c200";
         ctx.lineWidth = 6;
-        ctx.shadowBlur = 12;
+        ctx.lineCap = "round";
+        ctx.shadowColor = "#e6c200";
+        ctx.shadowBlur = 15;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Core energético amarelo puro
-        ctx.globalAlpha = lifeRatio * 0.9 * pulse;
-        ctx.strokeStyle = "#ffff00";
+        // Glow médio amarelo-dourado mais suave
+        ctx.globalAlpha = lifeRatio * 0.5;
+        ctx.strokeStyle = "#f0d633";
         ctx.lineWidth = 3;
-        ctx.shadowColor = "#ffff00";
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
 
-        // Centro ultra brilhante amarelo-branco
-        ctx.globalAlpha = lifeRatio;
-        ctx.strokeStyle = "#ffffa0";
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = "#ffffa0";
-        ctx.shadowBlur = 4;
+        // Core energético amarelo mais suave
+        ctx.globalAlpha = lifeRatio * 0.7 * pulse;
+        ctx.strokeStyle = "#f5e033";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#f5e033";
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Centro brilhante amarelo-branco mais sutil
+        ctx.globalAlpha = lifeRatio * 0.8;
+        ctx.strokeStyle = "#f8f8cc";
+        ctx.lineWidth = 1;
+        ctx.shadowColor = "#f8f8cc";
+        ctx.shadowBlur = 3;
         ctx.beginPath();
         ctx.moveTo(screenX, screenY);
         ctx.lineTo(endX, endY);
@@ -2016,7 +2030,7 @@ export const SpaceMap: React.FC = () => {
             <div className="text-yellow-400 font-bold mb-1">
               ��� MODO EDIÇÃO
             </div>
-            <div>• 1º Click: Selecionar mundo</div>
+            <div>�� 1º Click: Selecionar mundo</div>
             <div>
               • 2º Click: {isDragging ? "Confirmar posição" : "Ativar arrastar"}
             </div>
