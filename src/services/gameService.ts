@@ -972,6 +972,11 @@ export class GameService {
     updates: Partial<Pick<WorldPosition, "x" | "y" | "size" | "rotation">>,
   ): Promise<boolean> {
     try {
+      console.log("🌍 Attempting to update world position:", {
+        worldId,
+        updates,
+      });
+
       const updateData: any = {};
 
       if (updates.x !== undefined) updateData.x = updates.x;
@@ -981,16 +986,23 @@ export class GameService {
       if (updates.rotation !== undefined)
         updateData.rotation = updates.rotation % (Math.PI * 2);
 
-      const { error } = await supabase
+      console.log("🌍 Update data being sent:", updateData);
+
+      const { error, data } = await supabase
         .from("world_positions")
         .update(updateData)
-        .eq("id", worldId);
+        .eq("id", worldId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("🚨 Supabase error:", error);
+        throw error;
+      }
 
+      console.log("✅ World position updated successfully:", data);
       return true;
     } catch (error) {
-      console.error("Error updating world position:", error);
+      console.error("❌ Error updating world position:", error);
       return false;
     }
   }
