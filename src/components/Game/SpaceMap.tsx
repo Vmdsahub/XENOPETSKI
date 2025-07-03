@@ -1338,12 +1338,16 @@ export const SpaceMap: React.FC = () => {
         star.pulse += star.speed * 0.8;
       }
 
-      // Update projectiles
+      // Update projectiles with delta time
+      const currentFrameTime = performance.now();
+      const deltaTime = (currentFrameTime - lastFrameTimeRef.current) / 1000; // Convert to seconds
+      lastFrameTimeRef.current = currentFrameTime;
+
       projectilesRef.current = projectilesRef.current
         .map((proj) => ({
           ...proj,
-          x: normalizeCoord(proj.x + proj.vx),
-          y: normalizeCoord(proj.y + proj.vy),
+          x: normalizeCoord(proj.x + proj.vx * deltaTime),
+          y: normalizeCoord(proj.y + proj.vy * deltaTime),
           life: proj.life - 1,
         }))
         .filter((proj) => proj.life > 0);
