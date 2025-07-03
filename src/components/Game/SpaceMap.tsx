@@ -86,8 +86,8 @@ const FRICTION = 0.88;
 const CENTER_X = WORLD_SIZE / 2;
 const CENTER_Y = WORLD_SIZE / 2;
 const BARRIER_RADIUS = 600;
-const PROJECTILE_SPEED = 400; // pixels per second (consistent across all FPS)
-const PROJECTILE_LIFETIME = 2.5; // seconds
+const PROJECTILE_SPEED = 600; // pixels per second (consistent across all FPS)
+const PROJECTILE_LIFETIME = 4.0; // seconds
 
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
