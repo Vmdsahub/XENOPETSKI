@@ -460,6 +460,126 @@ export const AdminPanel: React.FC = () => {
               </p>
             </div>
           )}
+          {activeTab === "world" && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Posições dos Mundos
+                    </h3>
+                    <p className="text-gray-600">
+                      Gerencie posicionamento, tamanho e rotação dos mundos no
+                      mapa
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-200">
+                    <p className="text-2xl font-bold text-blue-800">
+                      {worldPositions.length}
+                    </p>
+                    <p className="text-xs text-blue-600">Total de Mundos</p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-xl border border-green-200">
+                    <p className="text-2xl font-bold text-green-800">
+                      {worldPositions.filter((w) => w.imageUrl).length}
+                    </p>
+                    <p className="text-xs text-green-600">Com Imagens</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Worlds List */}
+              <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+                <h4 className="text-lg font-bold text-gray-900 mb-4">
+                  Mundos Configurados
+                </h4>
+
+                {worldPositions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Settings className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-gray-600">
+                      Carregando posições dos mundos...
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {worldPositions.map((world, index) => (
+                      <motion.div
+                        key={world.id}
+                        className="p-4 rounded-2xl border-2 border-blue-300 bg-blue-50"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h5 className="font-bold text-gray-900 text-lg">
+                                {world.name}
+                              </h5>
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                {world.id}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                              <p>
+                                Posição: X={Math.round(world.x)}, Y=
+                                {Math.round(world.y)}
+                              </p>
+                              <p>Tamanho: {Math.round(world.size)}</p>
+                              <p>
+                                Rotação:{" "}
+                                {Math.round((world.rotation * 180) / Math.PI)}°
+                              </p>
+                              <p>Cor: {world.color}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 ml-4">
+                            {world.imageUrl && (
+                              <img
+                                src={world.imageUrl}
+                                alt={world.name}
+                                className="w-12 h-12 rounded-lg object-cover border-2 border-blue-300"
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-500">
+                          Última atualização: {world.updatedAt.toLocaleString()}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-6 border border-blue-200">
+                <h4 className="text-lg font-bold text-blue-900 mb-3">
+                  Como Editar Mundos
+                </h4>
+                <div className="space-y-2 text-sm text-blue-800">
+                  <p>• Acesse o mapa espacial e ative o "Modo de Edição"</p>
+                  <p>• Clique em um mundo para selecioná-lo</p>
+                  <p>• Arraste para reposicionar</p>
+                  <p>
+                    • Use os controles laterais para ajustar tamanho e rotação
+                  </p>
+                  <p>
+                    • As mudanças são salvas automaticamente e sincronizadas
+                    para todos os jogadores
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
