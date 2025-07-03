@@ -1118,12 +1118,37 @@ export class GameService {
       console.log("🔄 Syncing current world positions to database:", planets);
 
       // Check current user and admin status
-      const { data: user } = await supabase.auth.getUser();
-      console.log("🔐 Sync - Current user:", user?.user?.id);
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      console.log(
+        "🔐 Sync - Current user:",
+        user?.user?.id,
+        "Error:",
+        userError,
+      );
 
-      if (!user?.user?.id) {
-        console.error("❌ No authenticated user for sync");
-        return false;
+      let currentUserId = user?.user?.id;
+
+      if (!currentUserId) {
+        console.error(
+          "❌ No authenticated user for sync - trying to refresh session...",
+        );
+
+        // Try to refresh the session
+        const { data: refreshData, error: refreshError } =
+          await supabase.auth.refreshSession();
+        console.log(
+          "🔄 Sync - Session refresh result:",
+          refreshData?.user?.id,
+          "Error:",
+          refreshError,
+        );
+
+        if (!refreshData?.user?.id) {
+          console.error("❌ Could not authenticate user for sync");
+          return false;
+        }
+
+        currentUserId = refreshData.user.id;
       }
 
       const { data: profile } = await supabase
