@@ -1803,12 +1803,28 @@ export const SpaceMap: React.FC = () => {
           const angleProgress =
             initialAngle + progress * orbitSpeed * Math.PI * 2;
 
+          // Add wobble to make trajectory less perfect
+          const wobbleFreq1 = 3; // Primary wobble frequency
+          const wobbleFreq2 = 7; // Secondary wobble frequency
+          const wobbleAmount = 15; // Wobble intensity
+
+          const wobbleX =
+            Math.sin(progress * wobbleFreq1 * Math.PI * 2) *
+            wobbleAmount *
+            (1 - progress);
+          const wobbleY =
+            Math.cos(progress * wobbleFreq2 * Math.PI * 2) *
+            wobbleAmount *
+            (1 - progress);
+
           // Gradually spiral inward from initial radius to planet center
           const currentRadius = initialRadius * (1 - progress * 0.9); // Spiral 90% closer
 
-          // Calculate orbital position around planet
-          shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
-          shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
+          // Calculate orbital position around planet with wobble
+          shipWorldX =
+            planet.x + Math.cos(angleProgress) * currentRadius + wobbleX;
+          shipWorldY =
+            planet.y + Math.sin(angleProgress) * currentRadius + wobbleY;
 
           // Ship points in trajectory direction (tangent to the orbit)
           shipAngle = angleProgress + Math.PI / 2; // Tangent is perpendicular to radius
