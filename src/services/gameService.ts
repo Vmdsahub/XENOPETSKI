@@ -942,14 +942,20 @@ export class GameService {
   // World positions operations
   async getWorldPositions(): Promise<WorldPosition[]> {
     try {
+      console.log("📡 Fetching world positions from database...");
       const { data, error } = await supabase
         .from("world_positions")
         .select("*")
         .order("created_at", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("📡 Supabase error fetching world positions:", error);
+        throw error;
+      }
 
-      return data.map((world) => ({
+      console.log("📡 Raw world positions data:", data);
+
+      const mappedData = data.map((world) => ({
         id: world.id,
         name: world.name,
         x: world.x,
@@ -961,8 +967,11 @@ export class GameService {
         createdAt: new Date(world.created_at),
         updatedAt: new Date(world.updated_at),
       }));
+
+      console.log("📡 Mapped world positions:", mappedData);
+      return mappedData;
     } catch (error) {
-      console.error("Error fetching world positions:", error);
+      console.error("❌ Error fetching world positions:", error);
       return [];
     }
   }
