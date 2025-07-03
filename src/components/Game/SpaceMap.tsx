@@ -595,17 +595,24 @@ export const SpaceMap: React.FC = () => {
             nextScreenY,
           );
 
-          // Yellow glow effect with intensity-based strength
-          const currentAlpha = currentLifeRatio * current.intensity * 0.8;
-          const nextAlpha = nextLifeRatio * next.intensity * 0.8;
+          // Yellow glow effect with intensity-based strength - much more visible
+          const currentAlpha = Math.min(
+            currentLifeRatio * current.intensity * 0.95,
+            0.9,
+          );
+          const nextAlpha = Math.min(
+            nextLifeRatio * next.intensity * 0.95,
+            0.9,
+          );
 
           gradient.addColorStop(0, `rgba(255, 235, 59, ${currentAlpha})`); // Soft yellow
           gradient.addColorStop(1, `rgba(255, 193, 7, ${nextAlpha})`); // Slightly orange yellow
 
-          // Draw the trail segment
-          ctx.strokeStyle = gradient;
+          // Draw outer glow first for better visibility
+          ctx.strokeStyle = `rgba(255, 215, 0, ${(currentAlpha + nextAlpha) * 0.5})`;
           ctx.lineWidth =
             TRAIL_WIDTH *
+            1.8 *
             ((currentLifeRatio + nextLifeRatio) / 2) *
             ((current.intensity + next.intensity) / 2);
           ctx.lineCap = "round";
@@ -616,11 +623,22 @@ export const SpaceMap: React.FC = () => {
           ctx.lineTo(nextScreenX, nextScreenY);
           ctx.stroke();
 
-          // Add inner glow for enhanced effect
-          ctx.strokeStyle = `rgba(255, 255, 255, ${(currentAlpha + nextAlpha) * 0.3})`;
+          // Draw the main trail segment
+          ctx.strokeStyle = gradient;
           ctx.lineWidth =
             TRAIL_WIDTH *
-            0.4 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            ((current.intensity + next.intensity) / 2);
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Add bright inner core for enhanced effect
+          ctx.strokeStyle = `rgba(255, 255, 200, ${(currentAlpha + nextAlpha) * 0.7})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            0.5 *
             ((currentLifeRatio + nextLifeRatio) / 2) *
             ((current.intensity + next.intensity) / 2);
           ctx.beginPath();
