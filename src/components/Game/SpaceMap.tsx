@@ -1516,18 +1516,76 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render projectiles
-      ctx.fillStyle = "#ffff00";
+      // Render projectiles with trail
       projectilesRef.current.forEach((proj) => {
         const wrappedDeltaX = getWrappedDistance(proj.x, gameState.camera.x);
         const wrappedDeltaY = getWrappedDistance(proj.y, gameState.camera.y);
         const screenX = centerX + wrappedDeltaX;
         const screenY = centerY + wrappedDeltaY;
+
         ctx.save();
-        ctx.globalAlpha = proj.life / 80;
+
+        // Desenhar rastro
+        if (proj.trail.length > 1) {
+          for (let i = 0; i < proj.trail.length - 1; i++) {
+            const trailPoint = proj.trail[i];
+            const trailWrappedX = getWrappedDistance(
+              trailPoint.x,
+              gameState.camera.x,
+            );
+            const trailWrappedY = getWrappedDistance(
+              trailPoint.y,
+              gameState.camera.y,
+            );
+            const trailScreenX = centerX + trailWrappedX;
+            const trailScreenY = centerY + trailWrappedY;
+
+            const trailAlpha =
+              (proj.life / proj.maxLife) * (1 - i / proj.trail.length) * 0.4;
+            const trailSize = Math.max(0.5, 2 - i * 0.2);
+
+            ctx.globalAlpha = trailAlpha;
+            ctx.fillStyle = `rgba(0, 255, 255, ${trailAlpha})`;
+            ctx.beginPath();
+            ctx.arc(trailScreenX, trailScreenY, trailSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Desenhar projétil principal com brilho
+        const lifeRatio = proj.life / proj.maxLife;
+
+        // Brilho externo
+        ctx.globalAlpha = lifeRatio * 0.3;
+        const gradient = ctx.createRadialGradient(
+          screenX,
+          screenY,
+          0,
+          screenX,
+          screenY,
+          8,
+        );
+        gradient.addColorStop(0, "rgba(0, 255, 255, 0.8)");
+        gradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+        ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
+        ctx.arc(screenX, screenY, 8, 0, Math.PI * 2);
         ctx.fill();
+
+        // Core brilhante
+        ctx.globalAlpha = lifeRatio;
+        ctx.fillStyle = "#00ffff";
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Centro ultra brilhante
+        ctx.globalAlpha = lifeRatio;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, 1, 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.restore();
       });
 
