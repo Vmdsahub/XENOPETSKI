@@ -1999,10 +1999,23 @@ export const SpaceMap: React.FC = () => {
           shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
           shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
 
-          // Create trail points during landing animation with high intensity
-          if (currentTime - lastTrailTime.current > 25) {
-            // More frequent during landing
-            createTrailPoint(shipWorldX, shipWorldY, currentTime, 1.5); // High intensity
+          // Create trail points during landing animation with proportional intensity
+          if (currentTime - lastTrailTime.current > 35) {
+            // Calculate orbital velocity for proportional trail intensity
+            const orbitalSpeed =
+              (2 * Math.PI * currentRadius) / landingAnimationData.duration;
+            const normalizedOrbitalSpeed = Math.min(
+              orbitalSpeed / (SHIP_MAX_SPEED * 300),
+              1,
+            );
+            const landingIntensity = Math.max(normalizedOrbitalSpeed, 0.4); // Minimum intensity for visibility
+
+            createTrailPoint(
+              shipWorldX,
+              shipWorldY,
+              currentTime,
+              landingIntensity,
+            );
             lastTrailTime.current = currentTime;
           }
         }
