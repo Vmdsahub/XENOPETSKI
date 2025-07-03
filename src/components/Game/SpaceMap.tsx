@@ -1647,7 +1647,7 @@ export const SpaceMap: React.FC = () => {
       )}
 
       {/* World Controls when selected */}
-      {isWorldEditMode && selectedWorldId && (
+      {user?.isAdmin && isWorldEditMode && selectedWorldId && (
         <div className="absolute top-14 right-2 bg-white rounded-lg p-3 shadow-lg border border-gray-200 w-64">
           <h4 className="text-sm font-bold text-gray-900 mb-3">
             Mundo:{" "}
