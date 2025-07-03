@@ -100,6 +100,37 @@ export class GameService {
   }
 
   /**
+   * Subscribe to real-time changes for world positions
+   * @param callback Function to call when world positions change
+   * @returns Subscription ID that can be used to unsubscribe
+   */
+  subscribeToWorldPositions(callback: (data: any) => void): string {
+    // Generate a unique subscription ID
+    const subscriptionId = `world_positions_${Date.now()}`;
+
+    // Subscribe to world positions changes
+    this.subscriptions[subscriptionId] = supabase
+      .channel("public:world_positions")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "world_positions",
+        },
+        (payload) =>
+          callback({
+            type: "world_positions",
+            event: payload.eventType,
+            data: payload.new || payload.old,
+          }),
+      )
+      .subscribe();
+
+    return subscriptionId;
+  }
+
+  /**
    * Unsubscribe from all subscriptions for a given ID
    * @param subscriptionId The subscription ID to unsubscribe
    */
