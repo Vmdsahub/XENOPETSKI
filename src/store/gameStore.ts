@@ -1748,6 +1748,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#ff6b6b",
+            interactionRadius: 120, // Área de pouso grande para estação principal
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
             createdAt: new Date(),
@@ -1761,6 +1762,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#4ecdc4",
+            interactionRadius: 100, // Área de pouso média para base
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
             createdAt: new Date(),
@@ -1774,6 +1776,7 @@ export const useGameStore = create<GameStore>()(
             size: 60,
             rotation: 0,
             color: "#45b7d1",
+            interactionRadius: 80, // Área de pouso menor - mundo perigoso
             imageUrl:
               "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
             createdAt: new Date(),
