@@ -131,6 +131,8 @@ export const SpaceMap: React.FC = () => {
   const projectilesRef = useRef<Projectile[]>([]);
   const shootingStarsRef = useRef<ShootingStar[]>([]);
   const radarPulsesRef = useRef<RadarPulse[]>([]);
+  const trailPointsRef = useRef<TrailPoint[]>([]);
+  const lastTrailTime = useRef<number>(0);
   const lastShootingStarTime = useRef(0);
   const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
