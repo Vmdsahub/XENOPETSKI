@@ -1699,10 +1699,18 @@ export const SpaceMap: React.FC = () => {
                 clearTimeout((window as any).worldSizeTimeout);
                 (window as any).worldSizeTimeout = setTimeout(async () => {
                   if (selectedWorldId) {
+                    console.log("📏 Attempting to save world size:", {
+                      selectedWorldId,
+                      newSize,
+                    });
                     try {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        size: newSize,
-                      });
+                      const result = await gameService.updateWorldPosition(
+                        selectedWorldId,
+                        {
+                          size: newSize,
+                        },
+                      );
+                      console.log("📏 Size save result:", result);
                     } catch (error) {
                       console.error("Failed to update world size:", error);
                       // Reload on error to revert to database state
