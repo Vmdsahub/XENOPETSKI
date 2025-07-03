@@ -1772,23 +1772,22 @@ export const SpaceMap: React.FC = () => {
 
             {isDragging && (
               <button
-                onClick={async () => {
-                  // Save final position to database
+                onClick={() => {
+                  // Save final position
                   if (selectedWorldId) {
                     const planet = planetsRef.current.find(
                       (p) => p.id === selectedWorldId,
                     );
                     if (planet) {
-                      try {
-                        await gameService.updateWorldPosition(selectedWorldId, {
-                          x: planet.x,
-                          y: planet.y,
-                        });
-                      } catch (error) {
-                        console.error("Failed to reset world position:", error);
-                        // Reload on error to revert to database state
-                        loadWorldPositions();
-                      }
+                      console.log("✅ Confirming world position:", {
+                        selectedWorldId,
+                        x: planet.x,
+                        y: planet.y,
+                      });
+                      updateWorldPosition(selectedWorldId, {
+                        x: planet.x,
+                        y: planet.y,
+                      });
                     }
                   }
 
