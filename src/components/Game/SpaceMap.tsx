@@ -3,7 +3,10 @@ import { useGameStore } from "../../store/gameStore";
 import { useShipStatePersistence } from "../../hooks/useShipStatePersistence";
 import { PlanetLandingModal } from "./PlanetLandingModal";
 import { gameService } from "../../services/gameService";
-import { playLaserShootSound } from "../../utils/soundManager";
+import {
+  playLaserShootSound,
+  playLandingSound,
+} from "../../utils/soundManager";
 
 interface Star {
   x: number;
@@ -185,6 +188,17 @@ export const SpaceMap: React.FC = () => {
   // Modal state
   const [showLandingModal, setShowLandingModal] = useState(false);
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
+
+  // Landing animation state
+  const [isLandingAnimationActive, setIsLandingAnimationActive] =
+    useState(false);
+  const [landingAnimationData, setLandingAnimationData] = useState<{
+    planet: Planet;
+    startTime: number;
+    duration: number;
+    initialShipX: number;
+    initialShipY: number;
+  } | null>(null);
 
   // World editing state
   const [selectedWorldId, setSelectedWorldId] = useState<string | null>(null);
@@ -955,7 +969,7 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(() => {
-          console.log("🎯 Saving world drag position:", {
+          console.log("���� Saving world drag position:", {
             selectedWorldId,
             worldX,
             worldY,
@@ -994,7 +1008,7 @@ export const SpaceMap: React.FC = () => {
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas || isLandingAnimationActive) return;
 
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -1021,7 +1035,7 @@ export const SpaceMap: React.FC = () => {
               setIsDragging(false);
               setDragOffset({ x: 0, y: 0 });
             } else if (selectedWorldId === planet.id && !isDragging) {
-              // Se já está selecionado mas não dragging, inicie o drag
+              // Se já est���� selecionado mas não dragging, inicie o drag
               setIsDragging(true);
               setDragOffset({ x: dx, y: dy });
             } else {
@@ -1068,13 +1082,26 @@ export const SpaceMap: React.FC = () => {
         shootProjectile();
       }
     },
-    [gameState, getWrappedDistance, isClickOnPlanetPixel, isWorldEditMode],
+    [
+      gameState,
+      getWrappedDistance,
+      isClickOnPlanetPixel,
+      isWorldEditMode,
+      isLandingAnimationActive,
+      user?.isAdmin,
+      shootProjectile,
+      updateWorldPosition,
+      setSelectedPlanet,
+      setShowLandingModal,
+    ],
   );
 
   // Handle mouse up to stop dragging
   // Handler para mousedown - inicia tiro contínuo
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (isLandingAnimationActive) return;
+
       if (!user?.isAdmin || !isWorldEditMode) {
         setIsMousePressed(true);
 
@@ -1091,7 +1118,7 @@ export const SpaceMap: React.FC = () => {
         }, 333); // 3 tiros por segundo
       }
     },
-    [user?.isAdmin, isWorldEditMode, shootProjectile],
+    [user?.isAdmin, isWorldEditMode, shootProjectile, isLandingAnimationActive],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -1134,12 +1161,24 @@ export const SpaceMap: React.FC = () => {
   // Modal handlers
   const handleLandingConfirm = useCallback(() => {
     if (selectedPlanet) {
-      setCurrentPlanet(selectedPlanet);
-      setCurrentScreen("planet");
+      // Start landing animation
+      setLandingAnimationData({
+        planet: selectedPlanet,
+        startTime: performance.now(),
+        duration: 2500, // 2.5 seconds animation
+        initialShipX: gameState.ship.x,
+        initialShipY: gameState.ship.y,
+      });
+      setIsLandingAnimationActive(true);
+
+      // Play landing sound
+      playLandingSound().catch(() => {
+        // Sound is not critical, ignore errors
+      });
     }
     setShowLandingModal(false);
     setSelectedPlanet(null);
-  }, [selectedPlanet, setCurrentPlanet, setCurrentScreen]);
+  }, [selectedPlanet, gameState.ship.x, gameState.ship.y]);
 
   const handleLandingCancel = useCallback(() => {
     setShowLandingModal(false);
@@ -1221,8 +1260,12 @@ export const SpaceMap: React.FC = () => {
       setGameState((prevState) => {
         const newState = { ...prevState };
 
-        // Only respond to mouse if it has actually moved and modal is not open
-        if (hasMouseMoved.current && !showLandingModal) {
+        // Only respond to mouse if it has actually moved and modal is not open and not landing
+        if (
+          hasMouseMoved.current &&
+          !showLandingModal &&
+          !isLandingAnimationActive
+        ) {
           const worldMouseX = mouseRef.current.x - centerX + newState.camera.x;
           const worldMouseY = mouseRef.current.y - centerY + newState.camera.y;
 
@@ -1240,19 +1283,71 @@ export const SpaceMap: React.FC = () => {
           }
         }
 
-        // Apply less friction when mouse is outside window to maintain momentum
-        const currentFriction = mouseInWindow ? FRICTION : 0.995;
-        newState.ship.vx *= currentFriction;
-        newState.ship.vy *= currentFriction;
-        newState.ship.x += newState.ship.vx;
-        newState.ship.y += newState.ship.vy;
+        // Apply physics only when not landing
+        if (!isLandingAnimationActive) {
+          // Apply less friction when mouse is outside window to maintain momentum
+          const currentFriction = mouseInWindow ? FRICTION : 0.995;
+          newState.ship.vx *= currentFriction;
+          newState.ship.vy *= currentFriction;
+          newState.ship.x += newState.ship.vx;
+          newState.ship.y += newState.ship.vy;
 
-        newState.ship.x = normalizeCoord(newState.ship.x);
-        newState.ship.y = normalizeCoord(newState.ship.y);
+          newState.ship.x = normalizeCoord(newState.ship.x);
+          newState.ship.y = normalizeCoord(newState.ship.y);
+        }
+
+        // Camera follows ship (use current ship position for landing animation)
+        const targetX =
+          isLandingAnimationActive && landingAnimationData
+            ? (function () {
+                const currentTime = performance.now();
+                const elapsed = currentTime - landingAnimationData.startTime;
+                const progress = Math.min(
+                  elapsed / landingAnimationData.duration,
+                  1,
+                );
+                const planet = landingAnimationData.planet;
+                const initialDx = landingAnimationData.initialShipX - planet.x;
+                const initialDy = landingAnimationData.initialShipY - planet.y;
+                const initialRadius = Math.sqrt(
+                  initialDx * initialDx + initialDy * initialDy,
+                );
+                const orbitSpeed = 1;
+                const initialAngle = Math.atan2(initialDy, initialDx);
+                const angleProgress =
+                  initialAngle + progress * orbitSpeed * Math.PI * 2;
+                const currentRadius = initialRadius * (1 - progress * 0.9);
+                return planet.x + Math.cos(angleProgress) * currentRadius;
+              })()
+            : newState.ship.x;
+
+        const targetY =
+          isLandingAnimationActive && landingAnimationData
+            ? (function () {
+                const currentTime = performance.now();
+                const elapsed = currentTime - landingAnimationData.startTime;
+                const progress = Math.min(
+                  elapsed / landingAnimationData.duration,
+                  1,
+                );
+                const planet = landingAnimationData.planet;
+                const initialDx = landingAnimationData.initialShipX - planet.x;
+                const initialDy = landingAnimationData.initialShipY - planet.y;
+                const initialRadius = Math.sqrt(
+                  initialDx * initialDx + initialDy * initialDy,
+                );
+                const orbitSpeed = 1;
+                const initialAngle = Math.atan2(initialDy, initialDx);
+                const angleProgress =
+                  initialAngle + progress * orbitSpeed * Math.PI * 2;
+                const currentRadius = initialRadius * (1 - progress * 0.9);
+                return planet.y + Math.sin(angleProgress) * currentRadius;
+              })()
+            : newState.ship.y;
 
         const cameraFollowSpeed = 0.08;
-        const deltaX = getWrappedDistance(newState.ship.x, newState.camera.x);
-        const deltaY = getWrappedDistance(newState.ship.y, newState.camera.y);
+        const deltaX = getWrappedDistance(targetX, newState.camera.x);
+        const deltaY = getWrappedDistance(targetY, newState.camera.y);
 
         newState.camera.x += deltaX * cameraFollowSpeed;
         newState.camera.y += deltaY * cameraFollowSpeed;
@@ -1479,7 +1574,7 @@ export const SpaceMap: React.FC = () => {
       ctx.strokeStyle = "#888888"; // Cinza
       ctx.lineWidth = 2;
 
-      // Rotação lenta baseada no tempo
+      // Rotaç��o lenta baseada no tempo
       const rotationTime = currentTime * 0.0005; // Muito lenta
       const dashOffset = (rotationTime * 50) % 20; // Offset dos traços para simular rotação
 
@@ -1652,13 +1747,83 @@ export const SpaceMap: React.FC = () => {
         drawShootingStar(ctx, shootingStar);
       });
 
-      // Render ship
+      // Render ship (with landing animation support)
+      let shipWorldX = gameState.ship.x;
+      let shipWorldY = gameState.ship.y;
+      let shipScale = 1;
+      let shipAngle = gameState.ship.angle;
+
+      // Handle landing animation
+      if (isLandingAnimationActive && landingAnimationData) {
+        const currentTime = performance.now();
+        const elapsed = currentTime - landingAnimationData.startTime;
+        const progress = Math.min(elapsed / landingAnimationData.duration, 1);
+
+        if (progress >= 1) {
+          // Animation complete - set final position at planet and hide ship
+          shipWorldX = landingAnimationData.planet.x;
+          shipWorldY = landingAnimationData.planet.y;
+          shipScale = 0; // Hide the ship immediately
+
+          // Update the game state to keep ship at planet position
+          setGameState((prevState) => ({
+            ...prevState,
+            ship: {
+              ...prevState.ship,
+              x: landingAnimationData.planet.x,
+              y: landingAnimationData.planet.y,
+              vx: 0,
+              vy: 0,
+            },
+          }));
+
+          // Use setTimeout to delay the transition, preventing the ship from appearing at center
+          setTimeout(() => {
+            setIsLandingAnimationActive(false);
+            setLandingAnimationData(null);
+            setCurrentPlanet(landingAnimationData.planet);
+            setCurrentScreen("planet");
+          }, 100); // Brief delay to ensure smooth transition
+        } else {
+          // Calculate orbital animation
+          const planet = landingAnimationData.planet;
+
+          // Calculate initial distance from player to planet
+          const initialDx = landingAnimationData.initialShipX - planet.x;
+          const initialDy = landingAnimationData.initialShipY - planet.y;
+          const initialRadius = Math.sqrt(
+            initialDx * initialDx + initialDy * initialDy,
+          );
+
+          const orbitSpeed = 1; // Only 1 orbit per animation
+
+          // Calculate initial angle based on player's starting position relative to planet
+          const initialAngle = Math.atan2(initialDy, initialDx);
+
+          const angleProgress =
+            initialAngle + progress * orbitSpeed * Math.PI * 2;
+
+          // Gradually spiral inward from initial radius to planet center
+          const currentRadius = initialRadius * (1 - progress * 0.9); // Spiral 90% closer
+
+          // Calculate orbital position around planet
+          shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
+          shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
+
+          // Ship points in trajectory direction (tangent to the orbit)
+          shipAngle = angleProgress + Math.PI / 2; // Tangent is perpendicular to radius
+
+          // Scale down as landing progresses, becoming completely invisible
+          shipScale = Math.max(0, 1 - progress * 1.2); // Ship becomes completely invisible
+        }
+      }
+
       const shipWrappedDeltaX = getWrappedDistance(
-        gameState.ship.x,
+        shipWorldX,
         gameState.camera.x,
       );
       const shipWrappedDeltaY = getWrappedDistance(
-        gameState.ship.y,
+        shipWorldY,
         gameState.camera.y,
       );
       const shipScreenX = centerX + shipWrappedDeltaX;
@@ -1666,7 +1831,8 @@ export const SpaceMap: React.FC = () => {
 
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
-      ctx.rotate(gameState.ship.angle);
+      ctx.rotate(shipAngle);
+      ctx.scale(shipScale, shipScale);
       ctx.globalAlpha = 1;
 
       ctx.fillStyle = "#ffffff";
@@ -1699,8 +1865,8 @@ export const SpaceMap: React.FC = () => {
           pulse,
           shipScreenX,
           shipScreenY,
-          gameState.ship.x,
-          gameState.ship.y,
+          shipWorldX,
+          shipWorldY,
         );
       });
 
@@ -1738,6 +1904,10 @@ export const SpaceMap: React.FC = () => {
     createShootingStar,
     drawShootingStar,
     isClickOnPlanetPixel,
+    isLandingAnimationActive,
+    landingAnimationData,
+    setCurrentPlanet,
+    setCurrentScreen,
   ]);
 
   return (
@@ -1886,7 +2056,7 @@ export const SpaceMap: React.FC = () => {
                 clearTimeout((window as any).worldRotationTimeout);
                 (window as any).worldRotationTimeout = setTimeout(() => {
                   if (selectedWorldId) {
-                    console.log("🔄 Saving world rotation:", {
+                    console.log("�� Saving world rotation:", {
                       selectedWorldId,
                       newRotation,
                     });
@@ -1903,7 +2073,7 @@ export const SpaceMap: React.FC = () => {
           {/* Interaction Radius Control */}
           <div className="mb-3">
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Área de Pouso:{" "}
+              ����rea de Pouso:{" "}
               {Math.round(
                 planetsRef.current.find((p) => p.id === selectedWorldId)
                   ?.interactionRadius || 90,
