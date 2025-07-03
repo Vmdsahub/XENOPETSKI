@@ -562,6 +562,10 @@ export const SpaceMap: React.FC = () => {
 
       ctx.save();
 
+      // Enable global shadow for intense glow effect
+      const time = Date.now() * 0.003;
+      const pulseIntensity = 0.7 + 0.3 * Math.sin(time); // Pulsing effect
+
       // Draw each segment of the trail
       for (let i = 0; i < trailPointsRef.current.length - 1; i++) {
         const current = trailPointsRef.current[i];
