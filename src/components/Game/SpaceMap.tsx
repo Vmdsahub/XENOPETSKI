@@ -1044,7 +1044,7 @@ export const SpaceMap: React.FC = () => {
 
   // Handle mouse up to stop dragging
   const handleMouseUp = useCallback(async () => {
-    if (isWorldEditMode && isDragging && selectedWorldId) {
+    if (user?.isAdmin && isWorldEditMode && isDragging && selectedWorldId) {
       // Get final position and save to database
       const planet = planetsRef.current.find((p) => p.id === selectedWorldId);
       if (planet) {
