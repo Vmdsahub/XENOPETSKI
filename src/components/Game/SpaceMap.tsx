@@ -916,26 +916,16 @@ export const SpaceMap: React.FC = () => {
 
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
-        (window as any).worldDragTimeout = setTimeout(async () => {
-          console.log("🎯 Attempting to save world drag position:", {
+        (window as any).worldDragTimeout = setTimeout(() => {
+          console.log("🎯 Saving world drag position:", {
             selectedWorldId,
             worldX,
             worldY,
           });
-          try {
-            const result = await gameService.updateWorldPosition(
-              selectedWorldId,
-              {
-                x: worldX,
-                y: worldY,
-              },
-            );
-            console.log("🎯 Drag save result:", result);
-          } catch (error) {
-            console.error("Failed to update world position:", error);
-            // Reload on error to revert to database state
-            loadWorldPositions();
-          }
+          updateWorldPosition(selectedWorldId, {
+            x: worldX,
+            y: worldY,
+          });
         }, 200);
       }
 
