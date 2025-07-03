@@ -685,7 +685,6 @@ export const SpaceMap: React.FC = () => {
           ctx.lineTo(nextScreenX, nextScreenY);
           ctx.stroke();
         }
-        }
       }
 
       // Reset shadow effects to not affect other elements
