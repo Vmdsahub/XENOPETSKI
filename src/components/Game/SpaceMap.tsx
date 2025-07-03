@@ -205,6 +205,34 @@ export const SpaceMap: React.FC = () => {
     return ((coord % WORLD_SIZE) + WORLD_SIZE) % WORLD_SIZE;
   }, []);
 
+  // Função de tiro que pode ser reutilizada
+  const shootProjectile = useCallback(() => {
+    const currentTime = Date.now();
+    const SHOOT_COOLDOWN = 333; // 333ms entre tiros (3 tiros/segundo)
+
+    // Verificar cooldown
+    if (currentTime - lastShootTime.current >= SHOOT_COOLDOWN) {
+      const newProjectile: Projectile = {
+        x: gameState.ship.x,
+        y: gameState.ship.y,
+        vx: Math.cos(gameState.ship.angle) * 12,
+        vy: Math.sin(gameState.ship.angle) * 12,
+        life: 134,
+        maxLife: 134,
+      };
+      projectilesRef.current.push(newProjectile);
+      lastShootTime.current = currentTime;
+
+      // Tocar som de laser
+      playLaserShootSound().catch(() => {
+        // Som não é crítico, ignora erro
+      });
+
+      return true; // Tiro disparado
+    }
+    return false; // Cooldown ainda ativo
+  }, [gameState.ship.x, gameState.ship.y, gameState.ship.angle]);
+
   // Function to check if click is on visible pixel of planet image
   const isClickOnPlanetPixel = useCallback(
     (
