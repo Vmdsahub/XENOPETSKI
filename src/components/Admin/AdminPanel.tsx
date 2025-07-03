@@ -30,6 +30,8 @@ export const AdminPanel: React.FC = () => {
     updateRedeemCode,
     deleteRedeemCode,
     addNotification,
+    worldPositions,
+    loadWorldPositions,
   } = useGameStore();
 
   const [activeTab, setActiveTab] = useState("codes");
