@@ -969,7 +969,7 @@ export const SpaceMap: React.FC = () => {
         // Save to database with throttling
         clearTimeout((window as any).worldDragTimeout);
         (window as any).worldDragTimeout = setTimeout(() => {
-          console.log("🎯 Saving world drag position:", {
+          console.log("���� Saving world drag position:", {
             selectedWorldId,
             worldX,
             worldY,
@@ -1008,7 +1008,7 @@ export const SpaceMap: React.FC = () => {
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
+      if (!canvas || isLandingAnimationActive) return;
 
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
