@@ -1410,12 +1410,8 @@ export const SpaceMap: React.FC = () => {
         const screenX = centerX + wrappedDeltaX;
         const screenY = centerY + wrappedDeltaY;
 
-        if (
-          screenX > -100 &&
-          screenX < canvas.width + 100 &&
-          screenY > -100 &&
-          screenY < canvas.height + 100
-        ) {
+        // Always render planets regardless of viewport position
+        {
           // Check if ship is within interaction radius for visual feedback
           const shipToPlanetX = getWrappedDistance(planet.x, gameState.ship.x);
           const shipToPlanetY = getWrappedDistance(planet.y, gameState.ship.y);
