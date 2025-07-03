@@ -496,3 +496,98 @@ export const playAutoPilotActivationSound = (): Promise<void> => {
     console.warn("Auto pilot activation sound failed:", error.message);
   });
 };
+
+/**
+ * Creates a bright laser shooting sound using Web Audio API
+ */
+const createLaserShootSound = (): Promise<void> => {
+  return new Promise((resolve) => {
+    try {
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+
+      const startTime = audioContext.currentTime;
+
+      // Create oscillators for a bright laser sound
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const osc3 = audioContext.createOscillator();
+
+      const gain1 = audioContext.createGain();
+      const gain2 = audioContext.createGain();
+      const gain3 = audioContext.createGain();
+      const masterGain = audioContext.createGain();
+
+      // Add some filtering for a crisp sound
+      const filter = audioContext.createBiquadFilter();
+
+      // Connect audio nodes
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      osc3.connect(gain3);
+
+      gain1.connect(filter);
+      gain2.connect(filter);
+      gain3.connect(filter);
+      filter.connect(masterGain);
+      masterGain.connect(audioContext.destination);
+
+      // Configure filter for bright, crisp laser sound
+      filter.type = "highpass";
+      filter.frequency.setValueAtTime(800, startTime);
+      filter.Q.setValueAtTime(2, startTime);
+
+      // Configure oscillators for a sci-fi laser sound
+      osc1.type = "sawtooth";
+      osc2.type = "square";
+      osc3.type = "sine";
+
+      // Rapidly descending frequencies for classic laser "pew" sound
+      osc1.frequency.setValueAtTime(1800, startTime);
+      osc1.frequency.exponentialRampToValueAtTime(300, startTime + 0.08);
+
+      osc2.frequency.setValueAtTime(2200, startTime);
+      osc2.frequency.exponentialRampToValueAtTime(400, startTime + 0.06);
+
+      osc3.frequency.setValueAtTime(3000, startTime);
+      osc3.frequency.exponentialRampToValueAtTime(600, startTime + 0.05);
+
+      // Volume envelopes for sharp attack and quick decay
+      gain1.gain.setValueAtTime(0, startTime);
+      gain1.gain.linearRampToValueAtTime(0.15, startTime + 0.005);
+      gain1.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
+
+      gain2.gain.setValueAtTime(0, startTime);
+      gain2.gain.linearRampToValueAtTime(0.08, startTime + 0.003);
+      gain2.gain.exponentialRampToValueAtTime(0.001, startTime + 0.06);
+
+      gain3.gain.setValueAtTime(0, startTime);
+      gain3.gain.linearRampToValueAtTime(0.05, startTime + 0.002);
+      gain3.gain.exponentialRampToValueAtTime(0.001, startTime + 0.05);
+
+      // Master volume
+      masterGain.gain.setValueAtTime(0.6, startTime);
+
+      // Start and stop oscillators
+      osc1.start(startTime);
+      osc1.stop(startTime + 0.08);
+
+      osc2.start(startTime);
+      osc2.stop(startTime + 0.06);
+
+      osc3.start(startTime);
+      osc3.stop(startTime + 0.05);
+
+      setTimeout(() => resolve(), 100);
+    } catch (error) {
+      console.warn("Laser shoot sound failed:", error);
+      resolve();
+    }
+  });
+};
+
+export const playLaserShootSound = (): Promise<void> => {
+  return createLaserShootSound().catch((error) => {
+    console.warn("Laser shoot sound failed:", error.message);
+  });
+};
