@@ -1308,8 +1308,13 @@ export const SpaceMap: React.FC = () => {
                 );
                 const planet = landingAnimationData.planet;
                 const orbitRadius = 80;
-                const orbitSpeed = 2;
-                const angleProgress = progress * orbitSpeed * Math.PI * 2;
+                const orbitSpeed = 1;
+                const initialAngle = Math.atan2(
+                  landingAnimationData.initialShipY - planet.y,
+                  landingAnimationData.initialShipX - planet.x,
+                );
+                const angleProgress =
+                  initialAngle + progress * orbitSpeed * Math.PI * 2;
                 return (
                   planet.x +
                   Math.cos(angleProgress) * orbitRadius * (1 - progress * 0.6)
@@ -1328,8 +1333,13 @@ export const SpaceMap: React.FC = () => {
                 );
                 const planet = landingAnimationData.planet;
                 const orbitRadius = 80;
-                const orbitSpeed = 2;
-                const angleProgress = progress * orbitSpeed * Math.PI * 2;
+                const orbitSpeed = 1;
+                const initialAngle = Math.atan2(
+                  landingAnimationData.initialShipY - planet.y,
+                  landingAnimationData.initialShipX - planet.x,
+                );
+                const angleProgress =
+                  initialAngle + progress * orbitSpeed * Math.PI * 2;
                 return (
                   planet.y +
                   Math.sin(angleProgress) * orbitRadius * (1 - progress * 0.6)
