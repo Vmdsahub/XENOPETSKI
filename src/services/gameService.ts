@@ -1113,6 +1113,49 @@ export class GameService {
     console.log("✅ Default worlds seeded successfully");
   }
 
+  async syncCurrentWorldPositions(planets: any[]): Promise<boolean> {
+    try {
+      console.log("🔄 Syncing current world positions to database:", planets);
+
+      const worldsToInsert = planets.map((planet) => ({
+        id: planet.id,
+        name: planet.name || `Planeta ${planet.id}`,
+        x: planet.x,
+        y: planet.y,
+        size: planet.size,
+        rotation: planet.rotation,
+        color: planet.color,
+        image_url: planet.imageUrl || null,
+      }));
+
+      // First, delete all existing records (since we're syncing the current state)
+      const { error: deleteError } = await supabase
+        .from("world_positions")
+        .delete()
+        .neq("id", "nonexistent"); // Delete all
+
+      if (deleteError) {
+        console.error("❌ Error clearing existing worlds:", deleteError);
+      }
+
+      // Then insert the current planets
+      const { error: insertError } = await supabase
+        .from("world_positions")
+        .insert(worldsToInsert);
+
+      if (insertError) {
+        console.error("❌ Error syncing worlds:", insertError);
+        throw insertError;
+      }
+
+      console.log("✅ Worlds synced successfully to database");
+      return true;
+    } catch (error) {
+      console.error("❌ Error syncing world positions:", error);
+      return false;
+    }
+  }
+
   async updateWorldPosition(
     worldId: string,
     updates: Partial<Pick<WorldPosition, "x" | "y" | "size" | "rotation">>,
