@@ -955,6 +955,38 @@ export class GameService {
 
       console.log("📡 Raw world positions data:", data);
 
+      // If table is empty, seed it with default data
+      if (!data || data.length === 0) {
+        console.log(
+          "🌱 Table is empty, seeding with default world positions...",
+        );
+        await this.seedDefaultWorldPositions();
+
+        // Fetch again after seeding
+        const { data: seededData, error: seededError } = await supabase
+          .from("world_positions")
+          .select("*")
+          .order("created_at", { ascending: true });
+
+        if (seededError) throw seededError;
+
+        const mappedSeededData = seededData.map((world) => ({
+          id: world.id,
+          name: world.name,
+          x: world.x,
+          y: world.y,
+          size: world.size,
+          rotation: world.rotation,
+          color: world.color,
+          imageUrl: world.image_url,
+          createdAt: new Date(world.created_at),
+          updatedAt: new Date(world.updated_at),
+        }));
+
+        console.log("🌱 Seeded world positions:", mappedSeededData);
+        return mappedSeededData;
+      }
+
       const mappedData = data.map((world) => ({
         id: world.id,
         name: world.name,
@@ -974,6 +1006,88 @@ export class GameService {
       console.error("❌ Error fetching world positions:", error);
       return [];
     }
+  }
+
+  private async seedDefaultWorldPositions(): Promise<void> {
+    const defaultWorlds = [
+      {
+        id: "planet-0",
+        name: "Estação Galáctica",
+        x: 7750,
+        y: 7250,
+        size: 60,
+        rotation: 0,
+        color: "#ff6b6b",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfdbc589c3f344eea7b33af316e83b41?format=webp&width=800",
+      },
+      {
+        id: "planet-1",
+        name: "Base Orbital",
+        x: 7966.6,
+        y: 7625,
+        size: 60,
+        rotation: 0,
+        color: "#4ecdc4",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fd42810aa3d45429d93d8c58c52827326?format=webp&width=800",
+      },
+      {
+        id: "planet-2",
+        name: "Mundo Alienígena",
+        x: 7750,
+        y: 8000,
+        size: 60,
+        rotation: 0,
+        color: "#45b7d1",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2Fdfce7132f868407eb4d7afdf27d09a77?format=webp&width=800",
+      },
+      {
+        id: "planet-3",
+        name: "Terra Verdejante",
+        x: 7533.4,
+        y: 7625,
+        size: 60,
+        rotation: 0,
+        color: "#96ceb4",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F8e6b96287f6448089ed602d82e2839bc?format=webp&width=800",
+      },
+      {
+        id: "planet-4",
+        name: "Reino Gelado",
+        x: 7533.4,
+        y: 7375,
+        size: 60,
+        rotation: 0,
+        color: "#ffeaa7",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F7a1b7c8172a5446b9a22ffd65d22a6f7?format=webp&width=800",
+      },
+      {
+        id: "planet-5",
+        name: "Vila Ancestral",
+        x: 7966.6,
+        y: 7375,
+        size: 60,
+        rotation: 0,
+        color: "#dda0dd",
+        image_url:
+          "https://cdn.builder.io/api/v1/image/assets%2Ff94d2a386a444693b9fbdff90d783a66%2F76c4f943e6e045938d8e5efb84a2a969?format=webp&width=800",
+      },
+    ];
+
+    const { error } = await supabase
+      .from("world_positions")
+      .insert(defaultWorlds);
+
+    if (error) {
+      console.error("❌ Error seeding default worlds:", error);
+      throw error;
+    }
+
+    console.log("✅ Default worlds seeded successfully");
   }
 
   async updateWorldPosition(
