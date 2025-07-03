@@ -1462,7 +1462,7 @@ export const SpaceMap: React.FC = () => {
         }
       });
 
-      // Render barrier circle
+      // Render barrier circle (rotating, gray, transparent)
       const barrierWrappedDeltaX = getWrappedDistance(
         CENTER_X,
         gameState.camera.x,
@@ -1475,10 +1475,16 @@ export const SpaceMap: React.FC = () => {
       const barrierScreenY = centerY + barrierWrappedDeltaY;
 
       ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = "#00ffff";
+      ctx.globalAlpha = 0.15; // Muito transparente
+      ctx.strokeStyle = "#888888"; // Cinza
       ctx.lineWidth = 2;
+
+      // Rotação lenta baseada no tempo
+      const rotationTime = currentTime * 0.0005; // Muito lenta
+      const dashOffset = (rotationTime * 50) % 20; // Offset dos traços para simular rotação
+
       ctx.setLineDash([10, 10]);
+      ctx.lineDashOffset = -dashOffset; // Anima os traços
       ctx.beginPath();
       ctx.arc(barrierScreenX, barrierScreenY, BARRIER_RADIUS, 0, Math.PI * 2);
       ctx.stroke();
