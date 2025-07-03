@@ -745,7 +745,7 @@ export const SpaceMap: React.FC = () => {
         rotation: position.rotation,
         color: position.color,
         name: position.name,
-        interactionRadius: Math.max(90, position.size + 30),
+        interactionRadius: position.interactionRadius,
         imageUrl: position.imageUrl || "",
       }));
 
