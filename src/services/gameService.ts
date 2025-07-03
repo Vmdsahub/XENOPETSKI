@@ -1212,15 +1212,37 @@ export class GameService {
       console.log("🌍 Update data being sent:", updateData);
 
       // Check current user
-      const { data: user } = await supabase.auth.getUser();
-      console.log("🔐 Current user:", user?.user?.id);
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      console.log("🔐 Current user:", user?.user?.id, "Error:", userError);
+
+      if (!user?.user?.id) {
+        console.error(
+          "❌ No authenticated user - trying to refresh session...",
+        );
+
+        // Try to refresh the session
+        const { data: refreshData, error: refreshError } =
+          await supabase.auth.refreshSession();
+        console.log(
+          "🔄 Session refresh result:",
+          refreshData?.user?.id,
+          "Error:",
+          refreshError,
+        );
+
+        if (!refreshData?.user?.id) {
+          throw new Error("User not authenticated in Supabase");
+        }
+      }
+
+      const currentUserId = user?.user?.id || refreshData?.user?.id;
 
       // Check if user is admin
-      if (user?.user?.id) {
+      if (currentUserId) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("is_admin")
-          .eq("id", user.user.id)
+          .eq("id", currentUserId)
           .single();
         console.log("👮 User admin status:", profile?.is_admin);
       }
