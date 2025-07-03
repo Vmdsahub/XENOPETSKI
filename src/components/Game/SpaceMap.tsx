@@ -1762,11 +1762,16 @@ export const SpaceMap: React.FC = () => {
         const progress = Math.min(elapsed / landingAnimationData.duration, 1);
 
         if (progress >= 1) {
-          // Animation complete - land on planet
-          setIsLandingAnimationActive(false);
-          setLandingAnimationData(null);
-          setCurrentPlanet(landingAnimationData.planet);
-          setCurrentScreen("planet");
+          // Animation complete - hide ship and transition after a brief delay
+          shipScale = 0; // Hide the ship immediately
+
+          // Use setTimeout to delay the transition, preventing the ship from appearing at center
+          setTimeout(() => {
+            setIsLandingAnimationActive(false);
+            setLandingAnimationData(null);
+            setCurrentPlanet(landingAnimationData.planet);
+            setCurrentScreen("planet");
+          }, 100); // Brief delay to ensure smooth transition
         } else {
           // Calculate orbital animation
           const planet = landingAnimationData.planet;
@@ -2036,7 +2041,7 @@ export const SpaceMap: React.FC = () => {
                 clearTimeout((window as any).worldRotationTimeout);
                 (window as any).worldRotationTimeout = setTimeout(() => {
                   if (selectedWorldId) {
-                    console.log("🔄 Saving world rotation:", {
+                    console.log("�� Saving world rotation:", {
                       selectedWorldId,
                       newRotation,
                     });
