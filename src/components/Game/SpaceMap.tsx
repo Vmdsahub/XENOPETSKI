@@ -1738,17 +1738,15 @@ export const SpaceMap: React.FC = () => {
 
                 // Save to database with throttling to avoid too many calls
                 clearTimeout((window as any).worldRotationTimeout);
-                (window as any).worldRotationTimeout = setTimeout(async () => {
+                (window as any).worldRotationTimeout = setTimeout(() => {
                   if (selectedWorldId) {
-                    try {
-                      await gameService.updateWorldPosition(selectedWorldId, {
-                        rotation: newRotation,
-                      });
-                    } catch (error) {
-                      console.error("Failed to update world rotation:", error);
-                      // Reload on error to revert to database state
-                      loadWorldPositions();
-                    }
+                    console.log("🔄 Saving world rotation:", {
+                      selectedWorldId,
+                      newRotation,
+                    });
+                    updateWorldPosition(selectedWorldId, {
+                      rotation: newRotation,
+                    });
                   }
                 }, 300);
               }}
