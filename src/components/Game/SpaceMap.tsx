@@ -69,6 +69,14 @@ interface RadarPulse {
   opacity: number;
 }
 
+interface TrailPoint {
+  x: number;
+  y: number;
+  life: number;
+  maxLife: number;
+  intensity: number;
+}
+
 interface GameState {
   ship: {
     x: number;
@@ -95,6 +103,12 @@ const PROJECTILE_LIFETIME = 4.0; // seconds
 // Pre-render buffer size
 const RENDER_BUFFER = 200;
 
+// Trail constants
+const TRAIL_MAX_POINTS = 25;
+const TRAIL_POINT_DISTANCE = 6;
+const TRAIL_LIFETIME = 1200; // milliseconds
+const TRAIL_WIDTH = 12;
+
 export const SpaceMap: React.FC = () => {
   const {
     getShipState,
@@ -117,6 +131,8 @@ export const SpaceMap: React.FC = () => {
   const projectilesRef = useRef<Projectile[]>([]);
   const shootingStarsRef = useRef<ShootingStar[]>([]);
   const radarPulsesRef = useRef<RadarPulse[]>([]);
+  const trailPointsRef = useRef<TrailPoint[]>([]);
+  const lastTrailTime = useRef<number>(0);
   const lastShootingStarTime = useRef(0);
   const lastShootTime = useRef(0);
   const lastRadarCheckRef = useRef<Set<string>>(new Set());
@@ -500,6 +516,186 @@ export const SpaceMap: React.FC = () => {
     [getWrappedDistance],
   );
 
+  // Create trail point function
+  const createTrailPoint = useCallback(
+    (x: number, y: number, currentTime: number, shipVelocity: number) => {
+      const intensity = Math.min(shipVelocity / SHIP_MAX_SPEED, 1);
+
+      trailPointsRef.current.push({
+        x,
+        y,
+        life: TRAIL_LIFETIME,
+        maxLife: TRAIL_LIFETIME,
+        intensity,
+      });
+
+      // Keep only the most recent trail points
+      if (trailPointsRef.current.length > TRAIL_MAX_POINTS) {
+        trailPointsRef.current.shift();
+      }
+    },
+    [],
+  );
+
+  // Update trail points function
+  const updateTrailPoints = useCallback((deltaTime: number) => {
+    trailPointsRef.current.forEach((point) => {
+      point.life -= deltaTime;
+    });
+
+    // Remove dead trail points
+    trailPointsRef.current = trailPointsRef.current.filter(
+      (point) => point.life > 0,
+    );
+  }, []);
+
+  // Draw trail function
+  const drawShipTrail = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      shipScreenX: number,
+      shipScreenY: number,
+      shipWorldX: number,
+      shipWorldY: number,
+    ) => {
+      if (trailPointsRef.current.length < 2) return;
+
+      ctx.save();
+
+      // Enable global shadow for intense glow effect
+      const time = Date.now() * 0.003;
+      const pulseIntensity = 0.7 + 0.3 * Math.sin(time); // Pulsing effect
+
+      // Draw each segment of the trail
+      for (let i = 0; i < trailPointsRef.current.length - 1; i++) {
+        const current = trailPointsRef.current[i];
+        const next = trailPointsRef.current[i + 1];
+
+        const currentLifeRatio = current.life / current.maxLife;
+        const nextLifeRatio = next.life / next.maxLife;
+
+        // Calculate screen positions using wrapped distance
+        const currentDx = getWrappedDistance(current.x, shipWorldX);
+        const currentDy = getWrappedDistance(current.y, shipWorldY);
+        const currentScreenX = shipScreenX + currentDx;
+        const currentScreenY = shipScreenY + currentDy;
+
+        const nextDx = getWrappedDistance(next.x, shipWorldX);
+        const nextDy = getWrappedDistance(next.y, shipWorldY);
+        const nextScreenX = shipScreenX + nextDx;
+        const nextScreenY = shipScreenY + nextDy;
+
+        // Create gradient for the trail segment
+        const distance = Math.sqrt(
+          Math.pow(nextScreenX - currentScreenX, 2) +
+            Math.pow(nextScreenY - currentScreenY, 2),
+        );
+
+        if (distance > 0) {
+          const gradient = ctx.createLinearGradient(
+            currentScreenX,
+            currentScreenY,
+            nextScreenX,
+            nextScreenY,
+          );
+
+          // Yellow glow effect with intensity-based strength - ultra bright
+          const currentAlpha = Math.min(
+            currentLifeRatio * current.intensity * 0.95,
+            0.9,
+          );
+          const nextAlpha = Math.min(
+            nextLifeRatio * next.intensity * 0.95,
+            0.9,
+          );
+          const avgAlpha = (currentAlpha + nextAlpha) / 2;
+          const avgIntensity = (current.intensity + next.intensity) / 2;
+
+          gradient.addColorStop(0, `rgba(255, 235, 59, ${currentAlpha})`); // Soft yellow
+          gradient.addColorStop(1, `rgba(255, 193, 7, ${nextAlpha})`); // Slightly orange yellow
+
+          // Ultra bright outer glow with shadow
+          ctx.shadowColor = "#ffeb3b";
+          ctx.shadowBlur = 25 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 215, 0, ${avgAlpha * 0.8 * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            2.5 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Medium glow layer
+          ctx.shadowBlur = 15 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 235, 59, ${avgAlpha * 0.9 * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            1.8 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Main trail segment with bright glow
+          ctx.shadowBlur = 10 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Ultra bright inner core with white hot center
+          ctx.shadowColor = "#ffffff";
+          ctx.shadowBlur = 8 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${avgAlpha * 0.9 * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            0.6 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+
+          // Final bright yellow core
+          ctx.shadowColor = "#ffff00";
+          ctx.shadowBlur = 5 * pulseIntensity * avgIntensity;
+          ctx.strokeStyle = `rgba(255, 255, 150, ${avgAlpha * pulseIntensity})`;
+          ctx.lineWidth =
+            TRAIL_WIDTH *
+            0.3 *
+            ((currentLifeRatio + nextLifeRatio) / 2) *
+            avgIntensity;
+          ctx.beginPath();
+          ctx.moveTo(currentScreenX, currentScreenY);
+          ctx.lineTo(nextScreenX, nextScreenY);
+          ctx.stroke();
+        }
+      }
+
+      // Reset shadow effects to not affect other elements
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+
+      ctx.restore();
+    },
+    [getWrappedDistance],
+  );
+
   // Helper function to draw pure light points
   const drawPureLightStar = useCallback(
     (
@@ -840,7 +1036,7 @@ export const SpaceMap: React.FC = () => {
     ];
 
     const planetNames = [
-      "Estação Galáctica",
+      "Estaç��o Galáctica",
       "Base Orbital",
       "Mundo Alienígena",
       "Terra Verdejante",
@@ -1296,6 +1492,36 @@ export const SpaceMap: React.FC = () => {
           newState.ship.y = normalizeCoord(newState.ship.y);
         }
 
+        return newState;
+      });
+
+      // Create trail points after ship position update
+      const currentShipVelocity = Math.sqrt(
+        gameState.ship.vx * gameState.ship.vx +
+          gameState.ship.vy * gameState.ship.vy,
+      );
+
+      // Only create trail points if ship is moving and enough time has passed
+      if (
+        currentShipVelocity > 0.1 &&
+        currentTime - lastTrailTime.current > 35
+      ) {
+        createTrailPoint(
+          gameState.ship.x,
+          gameState.ship.y,
+          currentTime,
+          currentShipVelocity,
+        );
+        lastTrailTime.current = currentTime;
+      }
+
+      // Update trail points
+      updateTrailPoints(deltaTime);
+
+      // Continue with game state update
+      setGameState((prevState) => {
+        const newState = { ...prevState };
+
         // Camera follows ship (use current ship position for landing animation)
         const targetX =
           isLandingAnimationActive && landingAnimationData
@@ -1747,9 +1973,69 @@ export const SpaceMap: React.FC = () => {
         drawShootingStar(ctx, shootingStar);
       });
 
-      // Render ship (with landing animation support)
+      // Render ship trail before ship (so trail appears behind ship)
       let shipWorldX = gameState.ship.x;
       let shipWorldY = gameState.ship.y;
+
+      // Handle landing animation for trail positioning
+      if (isLandingAnimationActive && landingAnimationData) {
+        const currentTime = performance.now();
+        const elapsed = currentTime - landingAnimationData.startTime;
+        const progress = Math.min(elapsed / landingAnimationData.duration, 1);
+
+        if (progress < 1) {
+          const planet = landingAnimationData.planet;
+          const initialDx = landingAnimationData.initialShipX - planet.x;
+          const initialDy = landingAnimationData.initialShipY - planet.y;
+          const initialRadius = Math.sqrt(
+            initialDx * initialDx + initialDy * initialDy,
+          );
+          const orbitSpeed = 1;
+          const initialAngle = Math.atan2(initialDy, initialDx);
+          const angleProgress =
+            initialAngle + progress * orbitSpeed * Math.PI * 2;
+          const currentRadius = initialRadius * (1 - progress * 0.9);
+
+          shipWorldX = planet.x + Math.cos(angleProgress) * currentRadius;
+          shipWorldY = planet.y + Math.sin(angleProgress) * currentRadius;
+
+          // Create trail points during landing animation with proportional intensity
+          if (currentTime - lastTrailTime.current > 35) {
+            // Calculate orbital velocity for proportional trail intensity
+            const orbitalSpeed =
+              (2 * Math.PI * currentRadius) / landingAnimationData.duration;
+            const normalizedOrbitalSpeed = Math.min(
+              orbitalSpeed / (SHIP_MAX_SPEED * 300),
+              1,
+            );
+            const landingIntensity = Math.max(normalizedOrbitalSpeed, 0.4); // Minimum intensity for visibility
+
+            createTrailPoint(
+              shipWorldX,
+              shipWorldY,
+              currentTime,
+              landingIntensity,
+            );
+            lastTrailTime.current = currentTime;
+          }
+        }
+      }
+
+      const shipWrappedDeltaX = getWrappedDistance(
+        shipWorldX,
+        gameState.camera.x,
+      );
+      const shipWrappedDeltaY = getWrappedDistance(
+        shipWorldY,
+        gameState.camera.y,
+      );
+      const shipScreenX = centerX + shipWrappedDeltaX;
+      const shipScreenY = centerY + shipWrappedDeltaY;
+
+      // Draw the trail
+      drawShipTrail(ctx, shipScreenX, shipScreenY, shipWorldX, shipWorldY);
+
+      // Render ship (with landing animation support)
       let shipScale = 1;
       let shipAngle = gameState.ship.angle;
 
@@ -1817,17 +2103,6 @@ export const SpaceMap: React.FC = () => {
           shipScale = Math.max(0, 1 - progress * 1.2); // Ship becomes completely invisible
         }
       }
-
-      const shipWrappedDeltaX = getWrappedDistance(
-        shipWorldX,
-        gameState.camera.x,
-      );
-      const shipWrappedDeltaY = getWrappedDistance(
-        shipWorldY,
-        gameState.camera.y,
-      );
-      const shipScreenX = centerX + shipWrappedDeltaX;
-      const shipScreenY = centerY + shipWrappedDeltaY;
 
       ctx.save();
       ctx.translate(shipScreenX, shipScreenY);
@@ -1908,6 +2183,9 @@ export const SpaceMap: React.FC = () => {
     landingAnimationData,
     setCurrentPlanet,
     setCurrentScreen,
+    createTrailPoint,
+    updateTrailPoints,
+    drawShipTrail,
   ]);
 
   return (
