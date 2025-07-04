@@ -144,6 +144,7 @@ export const SpaceMap: React.FC = () => {
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const shipImageRef = useRef<HTMLImageElement | null>(null);
   const movementSoundActiveRef = useRef<boolean>(false);
 
   // Initialize state from store or use defaults
