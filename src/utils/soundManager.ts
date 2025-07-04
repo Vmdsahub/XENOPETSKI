@@ -536,7 +536,18 @@ export const playMovementSound = (
 ): Promise<void> => {
   return createMovementSound(velocity, maxVelocity).catch((error) => {
     console.warn("Movement sound failed:", error.message);
+    // Try to restart audio context if it failed
+    restartAudioContext();
   });
+};
+
+// Function to restart audio context if it becomes unresponsive
+const restartAudioContext = () => {
+  if (sharedAudioContext && sharedAudioContext.state === "closed") {
+    console.log("🔄 Restarting audio context...");
+    sharedAudioContext = null;
+    audioInitialized = false;
+  }
 };
 
 // Keep empty functions for compatibility but use different approach
