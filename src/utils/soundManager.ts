@@ -482,30 +482,60 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
   try {
     const audioContext = getAudioContext();
 
-    // Create audio nodes
-    const oscillator = audioContext.createOscillator();
+    // Create a more organic whoosh sound using noise
+    const bufferSize = audioContext.sampleRate * 2; // 2 seconds of noise
+    const noiseBuffer = audioContext.createBuffer(
+      1,
+      bufferSize,
+      audioContext.sampleRate,
+    );
+    const output = noiseBuffer.getChannelData(0);
+
+    // Generate pink noise (more natural than white noise)
+    let b0, b1, b2, b3, b4, b5, b6;
+    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.969 * b2 + white * 0.153852;
+      b3 = 0.8665 * b3 + white * 0.3104856;
+      b4 = 0.55 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.016898;
+      output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.05; // Very quiet
+      b6 = white * 0.115926;
+    }
+
+    // Create audio nodes for organic whoosh
+    const noiseSource = audioContext.createBufferSource();
     const gainNode = audioContext.createGain();
     const filterNode = audioContext.createBiquadFilter();
+    const filterNode2 = audioContext.createBiquadFilter();
+
+    // Set up the noise buffer
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
 
     // Connect audio chain
-    oscillator.connect(filterNode);
-    filterNode.connect(gainNode);
+    noiseSource.connect(filterNode);
+    filterNode.connect(filterNode2);
+    filterNode2.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Configure oscillator for smooth, warm sound
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(80, audioContext.currentTime); // Much lower, warmer frequency
-
-    // Configure filter for warm, comfortable sound (low-pass instead of high-pass)
+    // Configure filters for warm, natural whoosh
     filterNode.type = "lowpass";
-    filterNode.frequency.setValueAtTime(300, audioContext.currentTime); // Cut harsh frequencies
-    filterNode.Q.setValueAtTime(0.1, audioContext.currentTime); // Very gentle filtering
+    filterNode.frequency.setValueAtTime(400, audioContext.currentTime);
+    filterNode.Q.setValueAtTime(0.5, audioContext.currentTime);
+
+    filterNode2.type = "highpass";
+    filterNode2.frequency.setValueAtTime(60, audioContext.currentTime);
+    filterNode2.Q.setValueAtTime(0.1, audioContext.currentTime);
 
     // Start with zero volume
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
 
-    // Start the oscillator (it will run continuously)
-    oscillator.start();
+    // Start the noise source
+    noiseSource.start();
 
     return {
       oscillator,
