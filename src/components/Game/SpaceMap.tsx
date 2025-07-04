@@ -1505,6 +1505,25 @@ export const SpaceMap: React.FC = () => {
           gameState.ship.vy * gameState.ship.vy,
       );
 
+      // Spaceship movement sound control based on velocity
+      const velocityThreshold = 0.05; // Minimum velocity to activate sound
+      const isShipMoving = currentShipVelocity > velocityThreshold;
+
+      if (isShipMoving && !movementSoundActiveRef.current) {
+        // Start movement sound when ship starts moving
+        startSpaceshipMovementSound();
+        movementSoundActiveRef.current = true;
+      } else if (!isShipMoving && movementSoundActiveRef.current) {
+        // Stop movement sound when ship stops
+        stopSpaceshipMovementSound();
+        movementSoundActiveRef.current = false;
+      }
+
+      // Update movement sound volume and pitch based on current velocity
+      if (movementSoundActiveRef.current) {
+        updateSpaceshipMovementSound(currentShipVelocity, SHIP_MAX_SPEED);
+      }
+
       // Only create trail points if ship is moving and enough time has passed
       if (
         currentShipVelocity > 0.1 &&
