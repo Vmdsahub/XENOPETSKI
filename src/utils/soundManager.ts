@@ -419,11 +419,18 @@ export const stopEngineSound = (): void => {
 
 // Shared AudioContext for better resource management
 let sharedAudioContext: AudioContext | null = null;
+let audioInitialized = false;
 
 const getAudioContext = (): AudioContext => {
   if (!sharedAudioContext || sharedAudioContext.state === "closed") {
     sharedAudioContext = new (window.AudioContext ||
       (window as any).webkitAudioContext)();
+
+    // Auto-initialize audio on first use
+    if (!audioInitialized) {
+      initializeAudio();
+      audioInitialized = true;
+    }
   }
 
   // Resume context if suspended
@@ -434,6 +441,29 @@ const getAudioContext = (): AudioContext => {
   }
 
   return sharedAudioContext;
+};
+
+// Initialize audio context on user interaction
+const initializeAudio = () => {
+  const enableAudio = () => {
+    if (sharedAudioContext) {
+      sharedAudioContext
+        .resume()
+        .then(() => {
+          console.log("🔊 Audio context initialized");
+          // Remove listeners after first interaction
+          document.removeEventListener("click", enableAudio);
+          document.removeEventListener("keydown", enableAudio);
+          document.removeEventListener("mousedown", enableAudio);
+        })
+        .catch((err) => console.warn("Failed to initialize audio:", err));
+    }
+  };
+
+  // Listen for user interaction to enable audio
+  document.addEventListener("click", enableAudio, { once: true });
+  document.addEventListener("keydown", enableAudio, { once: true });
+  document.addEventListener("mousedown", enableAudio, { once: true });
 };
 
 /**
