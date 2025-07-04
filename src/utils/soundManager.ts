@@ -537,8 +537,7 @@ export const playBarrierCollisionSound = (): Promise<void> => {
 const createAutoPilotActivationSound = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const startTime = audioContext.currentTime;
 
