@@ -586,6 +586,32 @@ export const stopEngineSound = (): void => {
   }
 };
 
+export const startSpaceshipMovementSound = (): void => {
+  // Para o som anterior se existir
+  if (currentMovementSound) {
+    currentMovementSound.stop();
+  }
+
+  // Cria e inicia novo som de movimento
+  currentMovementSound = createSpaceshipMovementSound();
+};
+
+export const updateSpaceshipMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): void => {
+  if (currentMovementSound) {
+    currentMovementSound.updateVelocity(velocity, maxVelocity);
+  }
+};
+
+export const stopSpaceshipMovementSound = (): void => {
+  if (currentMovementSound) {
+    currentMovementSound.stop();
+    currentMovementSound = null;
+  }
+};
+
 export const playBarrierCollisionSound = (): Promise<void> => {
   return playCollisionSound().catch((error) => {
     console.warn("Collision sound failed:", error.message);
