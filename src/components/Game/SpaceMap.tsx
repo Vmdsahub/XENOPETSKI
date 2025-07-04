@@ -144,6 +144,7 @@ export const SpaceMap: React.FC = () => {
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const shipImageRef = useRef<HTMLImageElement | null>(null);
   const movementSoundActiveRef = useRef<boolean>(false);
 
   // Initialize state from store or use defaults
@@ -1075,6 +1076,17 @@ export const SpaceMap: React.FC = () => {
     });
 
     planetsRef.current = planets;
+  }, []);
+
+  // Load ship image
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src =
+      "https://cdn.builder.io/api/v1/image/assets%2F927080298e954d2fba85d9a91618627d%2Fd89cbfd7d2604752a995652efb832852?format=webp&width=800";
+    img.onload = () => {
+      shipImageRef.current = img;
+    };
   }, []);
 
   // Initialize game objects once
@@ -2133,25 +2145,38 @@ export const SpaceMap: React.FC = () => {
       ctx.scale(shipScale, shipScale);
       ctx.globalAlpha = 1;
 
-      ctx.fillStyle = "#ffffff";
-      ctx.strokeStyle = "#00aaff";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(15, 0);
-      ctx.lineTo(-10, -8);
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(-10, 8);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+      // Render ship image if loaded, otherwise fallback to original drawing
+      if (shipImageRef.current && shipImageRef.current.complete) {
+        const shipSize = 40; // Adjust size as needed
+        ctx.drawImage(
+          shipImageRef.current,
+          -shipSize / 2,
+          -shipSize / 2,
+          shipSize,
+          shipSize,
+        );
+      } else {
+        // Fallback to original ship drawing
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#00aaff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(15, 0);
+        ctx.lineTo(-10, -8);
+        ctx.lineTo(-6, 0);
+        ctx.lineTo(-10, 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
-      ctx.fillStyle = "#ff4400";
-      ctx.beginPath();
-      ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(-8, 4, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = "#ff4400";
+        ctx.beginPath();
+        ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(-8, 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       ctx.restore();
       ctx.globalAlpha = 1;
