@@ -477,7 +477,7 @@ const createMovementSound = (
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.15);
 
-      setTimeout(() => resolve(), 220);
+      setTimeout(() => resolve(), 180);
     } catch (error) {
       console.warn("Movement sound failed:", error);
       resolve();
