@@ -467,78 +467,134 @@ const initializeAudio = () => {
 };
 
 /**
- * Creates a movement sound using shared AudioContext for reliability
+ * Continuous movement sound system for smooth, uniform audio
  */
-const createMovementSound = (
-  velocity: number,
-  maxVelocity: number,
-): Promise<void> => {
-  return new Promise((resolve) => {
-    try {
-      const audioContext = getAudioContext();
+let continuousMovementSound: {
+  oscillator: OscillatorNode;
+  gainNode: GainNode;
+  filterNode: BiquadFilterNode;
+  audioContext: AudioContext;
+  updateVelocity: (velocity: number, maxVelocity: number) => void;
+  stop: () => void;
+} | null = null;
 
-      const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
+const createContinuousMovementSound = (): typeof continuousMovementSound => {
+  try {
+    const audioContext = getAudioContext();
 
-      // Only play if there's significant velocity
-      if (normalizedVelocity < 0.05) {
-        resolve();
-        return;
-      }
+    // Create audio nodes
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    const filterNode = audioContext.createBiquadFilter();
 
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const filter = audioContext.createBiquadFilter();
+    // Connect audio chain
+    oscillator.connect(filterNode);
+    filterNode.connect(gainNode);
+    gainNode.connect(audioContext.destination);
 
-      // Connect audio chain for cleaner sound
-      oscillator.connect(filter);
-      filter.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+    // Configure oscillator for smooth, continuous sound
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
 
-      // Clean sine wave for futuristic feel
-      oscillator.type = "sine";
+    // Configure filter for crystalline clarity
+    filterNode.type = "highpass";
+    filterNode.frequency.setValueAtTime(180, audioContext.currentTime);
+    filterNode.Q.setValueAtTime(0.3, audioContext.currentTime);
 
-      // Base frequency with velocity modulation - higher and more audible
-      const baseFreq = 220;
-      const targetFreq = baseFreq + normalizedVelocity * 120;
-      oscillator.frequency.setValueAtTime(targetFreq, audioContext.currentTime);
+    // Start with zero volume
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
 
-      // High-pass filter for crystalline clarity
-      filter.type = "highpass";
-      filter.frequency.setValueAtTime(180, audioContext.currentTime);
-      filter.Q.setValueAtTime(0.3, audioContext.currentTime);
+    // Start the oscillator (it will run continuously)
+    oscillator.start();
 
-      // Volume based on velocity - more audible
-      const volume = normalizedVelocity * 0.15;
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(
-        volume,
-        audioContext.currentTime + 0.03,
-      );
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.001,
-        audioContext.currentTime + 0.15,
-      );
+    return {
+      oscillator,
+      gainNode,
+      filterNode,
+      audioContext,
+      updateVelocity: (velocity: number, maxVelocity: number) => {
+        try {
+          const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
+          const currentTime = audioContext.currentTime;
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.15);
+          // Smooth volume transition based on velocity
+          const targetVolume = normalizedVelocity * 0.12;
+          gainNode.gain.linearRampToValueAtTime(
+            targetVolume,
+            currentTime + 0.1,
+          );
 
-      setTimeout(() => resolve(), 180);
-    } catch (error) {
-      console.warn("Movement sound failed:", error);
-      resolve();
-    }
-  });
+          // Smooth frequency modulation
+          const baseFreq = 220;
+          const targetFreq = baseFreq + normalizedVelocity * 100;
+          oscillator.frequency.linearRampToValueAtTime(
+            targetFreq,
+            currentTime + 0.15,
+          );
+
+          // Dynamic filter cutoff for brightness
+          const filterFreq = 180 + normalizedVelocity * 80;
+          filterNode.frequency.linearRampToValueAtTime(
+            filterFreq,
+            currentTime + 0.1,
+          );
+        } catch (error) {
+          console.warn("Failed to update movement sound:", error);
+        }
+      },
+      stop: () => {
+        try {
+          const currentTime = audioContext.currentTime;
+          // Smooth fade out
+          gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.2);
+
+          setTimeout(() => {
+            try {
+              oscillator.stop();
+            } catch (e) {
+              // Oscillator may already be stopped
+            }
+          }, 250);
+        } catch (error) {
+          console.warn("Failed to stop movement sound:", error);
+        }
+      },
+    };
+  } catch (error) {
+    console.warn("Failed to create continuous movement sound:", error);
+    return null;
+  }
 };
 
+export const startContinuousMovementSound = (): void => {
+  if (!continuousMovementSound) {
+    continuousMovementSound = createContinuousMovementSound();
+  }
+};
+
+export const updateContinuousMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): void => {
+  if (continuousMovementSound) {
+    continuousMovementSound.updateVelocity(velocity, maxVelocity);
+  }
+};
+
+export const stopContinuousMovementSound = (): void => {
+  if (continuousMovementSound) {
+    continuousMovementSound.stop();
+    continuousMovementSound = null;
+  }
+};
+
+// Legacy function for compatibility
 export const playMovementSound = (
   velocity: number,
   maxVelocity: number,
 ): Promise<void> => {
-  return createMovementSound(velocity, maxVelocity).catch((error) => {
-    console.warn("Movement sound failed:", error.message);
-    // Try to restart audio context if it failed
-    restartAudioContext();
-  });
+  // Not used anymore - keeping for compatibility
+  return Promise.resolve();
 };
 
 // Function to restart audio context if it becomes unresponsive
