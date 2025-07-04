@@ -470,7 +470,7 @@ const initializeAudio = () => {
  * Continuous movement sound system for smooth, uniform audio
  */
 let continuousMovementSound: {
-  oscillator: OscillatorNode;
+  oscillators: OscillatorNode[];
   gainNode: GainNode;
   filterNode: BiquadFilterNode;
   audioContext: AudioContext;
@@ -482,64 +482,67 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
   try {
     const audioContext = getAudioContext();
 
-    // Create a more organic whoosh sound using noise
-    const bufferSize = audioContext.sampleRate * 2; // 2 seconds of noise
-    const noiseBuffer = audioContext.createBuffer(
-      1,
-      bufferSize,
-      audioContext.sampleRate,
-    );
-    const output = noiseBuffer.getChannelData(0);
+    // Create clean oscillator-based sound similar to landing sound
+    const osc1 = audioContext.createOscillator(); // Main engine tone
+    const osc2 = audioContext.createOscillator(); // Harmonic
+    const osc3 = audioContext.createOscillator(); // Sub-harmonic
 
-    // Generate pink noise (more natural than white noise)
-    let b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.969 * b2 + white * 0.153852;
-      b3 = 0.8665 * b3 + white * 0.3104856;
-      b4 = 0.55 * b4 + white * 0.5329522;
-      b5 = -0.7616 * b5 - white * 0.016898;
-      output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.05; // Very quiet
-      b6 = white * 0.115926;
-    }
+    const gain1 = audioContext.createGain();
+    const gain2 = audioContext.createGain();
+    const gain3 = audioContext.createGain();
+    const masterGain = audioContext.createGain();
 
-    // Create audio nodes for organic whoosh
-    const noiseSource = audioContext.createBufferSource();
-    const gainNode = audioContext.createGain();
+    // Add filtering for clean spaceship sound
     const filterNode = audioContext.createBiquadFilter();
     const filterNode2 = audioContext.createBiquadFilter();
 
-    // Set up the noise buffer
-    noiseSource.buffer = noiseBuffer;
-    noiseSource.loop = true;
-
     // Connect audio chain
-    noiseSource.connect(filterNode);
-    filterNode.connect(filterNode2);
-    filterNode2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    osc3.connect(gain3);
 
-    // Configure filters for warm, natural whoosh
+    gain1.connect(filterNode);
+    gain2.connect(filterNode);
+    gain3.connect(filterNode);
+
+    filterNode.connect(filterNode2);
+    filterNode2.connect(masterGain);
+    masterGain.connect(audioContext.destination);
+
+    // Configure filters for clean, spaceship-like sound
     filterNode.type = "lowpass";
-    filterNode.frequency.setValueAtTime(400, audioContext.currentTime);
-    filterNode.Q.setValueAtTime(0.5, audioContext.currentTime);
+    filterNode.frequency.setValueAtTime(800, audioContext.currentTime);
+    filterNode.Q.setValueAtTime(1, audioContext.currentTime);
 
     filterNode2.type = "highpass";
-    filterNode2.frequency.setValueAtTime(60, audioContext.currentTime);
-    filterNode2.Q.setValueAtTime(0.1, audioContext.currentTime);
+    filterNode2.frequency.setValueAtTime(80, audioContext.currentTime);
+    filterNode2.Q.setValueAtTime(0.5, audioContext.currentTime);
 
-    // Start with zero volume
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    // Configure oscillators for clean engine sound
+    osc1.type = "sine"; // Smooth main tone
+    osc2.type = "triangle"; // Gentle harmonic
+    osc3.type = "sine"; // Sub tone
 
-    // Start the noise source
-    noiseSource.start();
+    // Base frequencies for spaceship engine
+    osc1.frequency.setValueAtTime(140, audioContext.currentTime);
+    osc2.frequency.setValueAtTime(210, audioContext.currentTime); // Fifth above
+    osc3.frequency.setValueAtTime(70, audioContext.currentTime); // Octave below
+
+    // Set individual gains for balanced clean sound
+    gain1.gain.setValueAtTime(0.04, audioContext.currentTime);
+    gain2.gain.setValueAtTime(0.02, audioContext.currentTime);
+    gain3.gain.setValueAtTime(0.015, audioContext.currentTime);
+
+    // Start with zero master volume
+    masterGain.gain.setValueAtTime(0, audioContext.currentTime);
+
+    // Start oscillators
+    const oscillators = [osc1, osc2, osc3];
+    oscillators.forEach((osc) => osc.start(audioContext.currentTime));
 
     return {
-      oscillator: noiseSource,
-      gainNode,
+      oscillators,
+      gainNode: masterGain,
       filterNode,
       audioContext,
       updateVelocity: (velocity: number, maxVelocity: number) => {
@@ -547,21 +550,31 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
           const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
           const currentTime = audioContext.currentTime;
 
-          // Very subtle volume for organic whoosh
-          const targetVolume = normalizedVelocity * 0.08;
-          gainNode.gain.linearRampToValueAtTime(
+          // Clean volume scaling - much quieter and smoother
+          const targetVolume = normalizedVelocity * 0.3;
+          masterGain.gain.linearRampToValueAtTime(
             targetVolume,
+            currentTime + 0.2,
+          );
+
+          // Subtle frequency modulation for engine acceleration feel
+          const baseFreq = 140 + normalizedVelocity * 20; // 140-160Hz range
+          osc1.frequency.linearRampToValueAtTime(baseFreq, currentTime + 0.3);
+          osc2.frequency.linearRampToValueAtTime(
+            baseFreq * 1.5,
+            currentTime + 0.3,
+          );
+          osc3.frequency.linearRampToValueAtTime(
+            baseFreq * 0.5,
             currentTime + 0.3,
           );
 
-          // Modulate filter cutoff for natural whoosh effect
-          const filterFreq = 200 + normalizedVelocity * 300; // 200-500Hz range
+          // Adjust filter for engine tone clarity
+          const filterFreq = 600 + normalizedVelocity * 400; // 600-1000Hz range
           filterNode.frequency.linearRampToValueAtTime(
             filterFreq,
-            currentTime + 0.4,
+            currentTime + 0.3,
           );
-
-          // No frequency modulation needed for noise source
         } catch (error) {
           console.warn("Failed to update movement sound:", error);
         }
@@ -570,15 +583,17 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
         try {
           const currentTime = audioContext.currentTime;
           // Smooth fade out
-          gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.3);
+          masterGain.gain.linearRampToValueAtTime(0, currentTime + 0.2);
 
           setTimeout(() => {
-            try {
-              noiseSource.stop();
-            } catch (e) {
-              // Source may already be stopped
-            }
-          }, 350);
+            oscillators.forEach((osc) => {
+              try {
+                osc.stop();
+              } catch (e) {
+                // Oscillator may already be stopped
+              }
+            });
+          }, 250);
         } catch (error) {
           console.warn("Failed to stop movement sound:", error);
         }
