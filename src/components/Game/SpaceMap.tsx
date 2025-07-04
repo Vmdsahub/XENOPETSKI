@@ -2147,7 +2147,7 @@ export const SpaceMap: React.FC = () => {
 
       // Render ship image if loaded, otherwise fallback to original drawing
       if (shipImageRef.current && shipImageRef.current.complete) {
-        const shipSize = 60; // Adjust size as needed
+        const shipSize = 40; // Adjust size as needed
         ctx.drawImage(
           shipImageRef.current,
           -shipSize / 2,
