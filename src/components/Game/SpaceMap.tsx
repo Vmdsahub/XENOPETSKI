@@ -2172,11 +2172,6 @@ export const SpaceMap: React.FC = () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
-      // Stop movement sound when component unmounts
-      if (movementSoundActiveRef.current) {
-        stopSpaceshipMovementSound();
-        movementSoundActiveRef.current = false;
-      }
       // Force save final state when component unmounts
       forceSaveShipState({
         x: gameState.ship.x,
