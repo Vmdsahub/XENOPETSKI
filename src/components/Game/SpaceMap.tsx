@@ -142,7 +142,7 @@ export const SpaceMap: React.FC = () => {
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
-  const movementSoundActiveRef = useRef(false);
+  const movementSoundActiveRef = useRef<number | false>(false);
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
