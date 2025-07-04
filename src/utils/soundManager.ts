@@ -517,26 +517,26 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
           const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
           const currentTime = audioContext.currentTime;
 
-          // Smooth volume transition based on velocity
-          const targetVolume = normalizedVelocity * 0.12;
+          // Very gentle volume - much quieter and comfortable
+          const targetVolume = normalizedVelocity * 0.04; // Reduced from 0.12 to 0.04
           gainNode.gain.linearRampToValueAtTime(
             targetVolume,
-            currentTime + 0.1,
+            currentTime + 0.2,
           );
 
-          // Smooth frequency modulation
-          const baseFreq = 220;
-          const targetFreq = baseFreq + normalizedVelocity * 100;
+          // Smooth frequency modulation in comfortable low range
+          const baseFreq = 80; // Much lower base frequency
+          const targetFreq = baseFreq + normalizedVelocity * 40; // Smaller range (80-120Hz)
           oscillator.frequency.linearRampToValueAtTime(
             targetFreq,
-            currentTime + 0.15,
+            currentTime + 0.3,
           );
 
-          // Dynamic filter cutoff for brightness
-          const filterFreq = 180 + normalizedVelocity * 80;
+          // Keep filter in comfortable range - cut harsh frequencies
+          const filterFreq = 250 + normalizedVelocity * 50; // 250-300Hz max
           filterNode.frequency.linearRampToValueAtTime(
             filterFreq,
-            currentTime + 0.1,
+            currentTime + 0.2,
           );
         } catch (error) {
           console.warn("Failed to update movement sound:", error);
