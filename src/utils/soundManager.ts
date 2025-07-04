@@ -547,27 +547,21 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
           const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
           const currentTime = audioContext.currentTime;
 
-          // Very gentle volume - much quieter and comfortable
-          const targetVolume = normalizedVelocity * 0.04; // Reduced from 0.12 to 0.04
+          // Very subtle volume for organic whoosh
+          const targetVolume = normalizedVelocity * 0.08;
           gainNode.gain.linearRampToValueAtTime(
             targetVolume,
-            currentTime + 0.2,
-          );
-
-          // Smooth frequency modulation in comfortable low range
-          const baseFreq = 80; // Much lower base frequency
-          const targetFreq = baseFreq + normalizedVelocity * 40; // Smaller range (80-120Hz)
-          oscillator.frequency.linearRampToValueAtTime(
-            targetFreq,
             currentTime + 0.3,
           );
 
-          // Keep filter in comfortable range - cut harsh frequencies
-          const filterFreq = 250 + normalizedVelocity * 50; // 250-300Hz max
+          // Modulate filter cutoff for natural whoosh effect
+          const filterFreq = 200 + normalizedVelocity * 300; // 200-500Hz range
           filterNode.frequency.linearRampToValueAtTime(
             filterFreq,
-            currentTime + 0.2,
+            currentTime + 0.4,
           );
+
+          // No frequency modulation needed for noise source
         } catch (error) {
           console.warn("Failed to update movement sound:", error);
         }
