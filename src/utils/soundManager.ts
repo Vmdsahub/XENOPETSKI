@@ -302,8 +302,7 @@ let currentEngineSound: { stop: () => void } | null = null;
 
 const createEngineSound = () => {
   try {
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContext = getAudioContext();
 
     const startTime = audioContext.currentTime;
 
