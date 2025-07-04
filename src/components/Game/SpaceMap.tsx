@@ -1505,20 +1505,23 @@ export const SpaceMap: React.FC = () => {
           gameState.ship.vy * gameState.ship.vy,
       );
 
-      // Play movement sound based on velocity (periodic sound bursts)
-      const velocityThreshold = 0.08;
-      const soundInterval = 200; // Play sound every 200ms when moving
+      // Continuous movement sound control
+      const velocityThreshold = 0.05;
+      const isShipMoving = currentShipVelocity > velocityThreshold;
 
-      if (currentShipVelocity > velocityThreshold) {
-        if (
-          !movementSoundActiveRef.current ||
-          currentTime - (movementSoundActiveRef.current as any) > soundInterval
-        ) {
-          playMovementSound(currentShipVelocity, SHIP_MAX_SPEED);
-          movementSoundActiveRef.current = currentTime as any;
-        }
-      } else {
+      if (isShipMoving && !movementSoundActiveRef.current) {
+        // Start continuous movement sound
+        startContinuousMovementSound();
+        movementSoundActiveRef.current = true;
+      } else if (!isShipMoving && movementSoundActiveRef.current) {
+        // Stop continuous movement sound
+        stopContinuousMovementSound();
         movementSoundActiveRef.current = false;
+      }
+
+      // Update sound parameters in real-time when moving
+      if (movementSoundActiveRef.current) {
+        updateContinuousMovementSound(currentShipVelocity, SHIP_MAX_SPEED);
       }
 
       // Only create trail points if ship is moving and enough time has passed
