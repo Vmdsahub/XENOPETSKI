@@ -1083,7 +1083,7 @@ export const SpaceMap: React.FC = () => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src =
-      "https://cdn.builder.io/api/v1/image/assets%2F927080298e954d2fba85d9a91618627d%2F9dad7b08c941443dba533acdcf25a56f?format=webp&width=800";
+      "https://cdn.builder.io/api/v1/image/assets%2F927080298e954d2fba85d9a91618627d%2F687087c48a3141029cb4d8e32ed7e4e0?format=webp&width=800";
     img.onload = () => {
       shipImageRef.current = img;
     };
