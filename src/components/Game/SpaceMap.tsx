@@ -25,7 +25,7 @@ interface Star {
   pulse: number;
   baseX: number; // Posição base para movimento oscilatório
   baseY: number; // Posição base para movimento oscilatório
-  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutuação
+  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutua��ão
   floatPhase: { x: number; y: number }; // Fase do movimento senoidal
 }
 
@@ -144,6 +144,7 @@ export const SpaceMap: React.FC = () => {
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const movementSoundActiveRef = useRef(false);
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
