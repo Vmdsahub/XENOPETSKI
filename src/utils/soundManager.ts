@@ -435,39 +435,47 @@ const createMovementSound = (
       const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
 
       // Only play if there's significant velocity
-      if (normalizedVelocity < 0.1) {
+      if (normalizedVelocity < 0.05) {
         resolve();
         return;
       }
 
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
 
-      oscillator.connect(gainNode);
+      // Connect audio chain for cleaner sound
+      oscillator.connect(filter);
+      filter.connect(gainNode);
       gainNode.connect(audioContext.destination);
 
       // Clean sine wave for futuristic feel
       oscillator.type = "sine";
 
-      // Base frequency with velocity modulation
-      const baseFreq = 150;
-      const targetFreq = baseFreq + normalizedVelocity * 80;
+      // Base frequency with velocity modulation - higher and more audible
+      const baseFreq = 220;
+      const targetFreq = baseFreq + normalizedVelocity * 120;
       oscillator.frequency.setValueAtTime(targetFreq, audioContext.currentTime);
 
-      // Volume based on velocity - keep it subtle
-      const volume = normalizedVelocity * 0.04;
+      // High-pass filter for crystalline clarity
+      filter.type = "highpass";
+      filter.frequency.setValueAtTime(180, audioContext.currentTime);
+      filter.Q.setValueAtTime(0.3, audioContext.currentTime);
+
+      // Volume based on velocity - more audible
+      const volume = normalizedVelocity * 0.15;
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(
         volume,
-        audioContext.currentTime + 0.05,
+        audioContext.currentTime + 0.03,
       );
       gainNode.gain.exponentialRampToValueAtTime(
         0.001,
-        audioContext.currentTime + 0.2,
+        audioContext.currentTime + 0.15,
       );
 
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+      oscillator.stop(audioContext.currentTime + 0.15);
 
       setTimeout(() => resolve(), 220);
     } catch (error) {
