@@ -420,8 +420,27 @@ export const stopEngineSound = (): void => {
   }
 };
 
+// Shared AudioContext for better resource management
+let sharedAudioContext: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext => {
+  if (!sharedAudioContext || sharedAudioContext.state === "closed") {
+    sharedAudioContext = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
+  }
+
+  // Resume context if suspended
+  if (sharedAudioContext.state === "suspended") {
+    sharedAudioContext
+      .resume()
+      .catch((err) => console.warn("Failed to resume audio context:", err));
+  }
+
+  return sharedAudioContext;
+};
+
 /**
- * Creates a movement sound using Web Audio API similar to other sounds
+ * Creates a movement sound using shared AudioContext for reliability
  */
 const createMovementSound = (
   velocity: number,
@@ -429,8 +448,7 @@ const createMovementSound = (
 ): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
 
