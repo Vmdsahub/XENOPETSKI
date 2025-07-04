@@ -607,8 +607,7 @@ export const playAutoPilotActivationSound = (): Promise<void> => {
 const createLaserShootSound = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const startTime = audioContext.currentTime;
 
