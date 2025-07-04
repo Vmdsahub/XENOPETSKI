@@ -209,8 +209,7 @@ const playCollisionSound = (): Promise<void> => {
     lastCollisionSoundTime = now;
 
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       // Create a simple but effective collision sound
       const oscillator = audioContext.createOscillator();
