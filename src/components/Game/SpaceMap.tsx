@@ -1078,6 +1078,17 @@ export const SpaceMap: React.FC = () => {
     planetsRef.current = planets;
   }, []);
 
+  // Load ship image
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src =
+      "https://cdn.builder.io/api/v1/image/assets%2F927080298e954d2fba85d9a91618627d%2F9dad7b08c941443dba533acdcf25a56f?format=webp&width=800";
+    img.onload = () => {
+      shipImageRef.current = img;
+    };
+  }, []);
+
   // Initialize game objects once
   useEffect(() => {
     generateRichStarField();
