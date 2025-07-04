@@ -1504,8 +1504,8 @@ export const SpaceMap: React.FC = () => {
       );
 
       // Play movement sound based on velocity (periodic sound bursts)
-      const velocityThreshold = 0.1;
-      const soundInterval = 300; // Play sound every 300ms when moving
+      const velocityThreshold = 0.08;
+      const soundInterval = 200; // Play sound every 200ms when moving
 
       if (currentShipVelocity > velocityThreshold) {
         if (
