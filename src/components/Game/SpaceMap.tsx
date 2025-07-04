@@ -2145,25 +2145,38 @@ export const SpaceMap: React.FC = () => {
       ctx.scale(shipScale, shipScale);
       ctx.globalAlpha = 1;
 
-      ctx.fillStyle = "#ffffff";
-      ctx.strokeStyle = "#00aaff";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(15, 0);
-      ctx.lineTo(-10, -8);
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(-10, 8);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+      // Render ship image if loaded, otherwise fallback to original drawing
+      if (shipImageRef.current && shipImageRef.current.complete) {
+        const shipSize = 60; // Adjust size as needed
+        ctx.drawImage(
+          shipImageRef.current,
+          -shipSize / 2,
+          -shipSize / 2,
+          shipSize,
+          shipSize,
+        );
+      } else {
+        // Fallback to original ship drawing
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#00aaff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(15, 0);
+        ctx.lineTo(-10, -8);
+        ctx.lineTo(-6, 0);
+        ctx.lineTo(-10, 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
-      ctx.fillStyle = "#ff4400";
-      ctx.beginPath();
-      ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(-8, 4, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = "#ff4400";
+        ctx.beginPath();
+        ctx.arc(-8, -4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(-8, 4, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       ctx.restore();
       ctx.globalAlpha = 1;
