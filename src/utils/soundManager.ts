@@ -833,7 +833,7 @@ export const playLaserShootSound = (): Promise<void> => {
 };
 
 /**
- * Creates a spaceship landing sound using Web Audio API
+ * Creates a spaceship landing sound using Web Audio API - clean and similar to navigation
  */
 const createLandingSound = (): Promise<void> => {
   return new Promise((resolve) => {
@@ -842,98 +842,98 @@ const createLandingSound = (): Promise<void> => {
 
       const startTime = audioContext.currentTime;
 
-      // Create oscillators for a landing sequence sound
-      const osc1 = audioContext.createOscillator(); // Engine sound
-      const osc2 = audioContext.createOscillator(); // Landing thrusters
-      const osc3 = audioContext.createOscillator(); // Atmospheric entry
+      // Create oscillators for a clean landing sequence sound
+      const osc1 = audioContext.createOscillator(); // Main engine
+      const osc2 = audioContext.createOscillator(); // Harmonic
+      const osc3 = audioContext.createOscillator(); // Sub-harmonic
 
       const gain1 = audioContext.createGain();
       const gain2 = audioContext.createGain();
       const gain3 = audioContext.createGain();
       const masterGain = audioContext.createGain();
 
-      // Add filtering for atmospheric entry effect
+      // Add clean filtering similar to navigation sound
       const filter = audioContext.createBiquadFilter();
       const filter2 = audioContext.createBiquadFilter();
 
       // Connect audio nodes
       osc1.connect(gain1);
       osc2.connect(gain2);
-      osc3.connect(filter);
+      osc3.connect(gain3);
 
-      gain1.connect(masterGain);
-      gain2.connect(filter2);
-      filter.connect(gain3);
+      gain1.connect(filter);
+      gain2.connect(filter);
+      gain3.connect(filter);
+
+      filter.connect(filter2);
       filter2.connect(masterGain);
-      gain3.connect(masterGain);
       masterGain.connect(audioContext.destination);
 
-      // Configure filters
+      // Configure filters for clean spaceship landing sound
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(400, startTime);
-      filter.frequency.linearRampToValueAtTime(200, startTime + 2.0);
+      filter.frequency.setValueAtTime(800, startTime);
+      filter.frequency.linearRampToValueAtTime(600, startTime + 2.0);
 
-      filter2.type = "bandpass";
-      filter2.frequency.setValueAtTime(300, startTime);
-      filter2.Q.setValueAtTime(3, startTime);
+      filter2.type = "highpass";
+      filter2.frequency.setValueAtTime(80, startTime);
+      filter2.Q.setValueAtTime(0.5, startTime);
 
-      // Configure oscillators for landing sequence
-      osc1.type = "sine"; // Main engine
-      osc2.type = "triangle"; // Thrusters
-      osc3.type = "sawtooth"; // Atmospheric entry
+      // Configure oscillators for clean engine sound - same types as navigation
+      osc1.type = "sine"; // Main engine tone
+      osc2.type = "triangle"; // Gentle harmonic
+      osc3.type = "sine"; // Sub tone
 
-      // Landing sequence frequencies
-      // Phase 1: Approach (0-0.8s)
-      osc1.frequency.setValueAtTime(150, startTime);
-      osc1.frequency.linearRampToValueAtTime(120, startTime + 0.8);
+      // Landing sequence frequencies - descending like an engine powering down
+      // Phase 1: Approach with higher engine tone
+      osc1.frequency.setValueAtTime(160, startTime);
+      osc1.frequency.linearRampToValueAtTime(120, startTime + 1.5);
+      osc1.frequency.linearRampToValueAtTime(100, startTime + 2.5);
 
-      // Phase 2: Thrusters activate (0.5-1.5s)
-      osc2.frequency.setValueAtTime(220, startTime + 0.5);
+      // Phase 2: Harmonic follows main engine
+      osc2.frequency.setValueAtTime(240, startTime);
       osc2.frequency.linearRampToValueAtTime(180, startTime + 1.5);
+      osc2.frequency.linearRampToValueAtTime(150, startTime + 2.5);
 
-      // Phase 3: Atmospheric entry/landing (0.3-2.0s)
-      osc3.frequency.setValueAtTime(80, startTime + 0.3);
-      osc3.frequency.exponentialRampToValueAtTime(60, startTime + 2.0);
+      // Phase 3: Sub-harmonic provides depth
+      osc3.frequency.setValueAtTime(80, startTime);
+      osc3.frequency.linearRampToValueAtTime(60, startTime + 1.5);
+      osc3.frequency.linearRampToValueAtTime(50, startTime + 2.5);
 
-      // Volume envelopes for realistic landing sequence
-      // Main engine
-      gain1.gain.setValueAtTime(0.08, startTime);
-      gain1.gain.linearRampToValueAtTime(0.12, startTime + 0.5);
-      gain1.gain.exponentialRampToValueAtTime(0.001, startTime + 2.2);
+      // Volume envelopes for smooth landing sequence
+      // Main engine - consistent throughout landing
+      gain1.gain.setValueAtTime(0.06, startTime);
+      gain1.gain.linearRampToValueAtTime(0.08, startTime + 0.5);
+      gain1.gain.linearRampToValueAtTime(0.04, startTime + 2.0);
+      gain1.gain.exponentialRampToValueAtTime(0.001, startTime + 2.8);
 
-      // Thrusters (pulse pattern)
-      gain2.gain.setValueAtTime(0, startTime);
-      gain2.gain.setValueAtTime(0, startTime + 0.5);
-      gain2.gain.linearRampToValueAtTime(0.06, startTime + 0.6);
-      gain2.gain.setValueAtTime(0.06, startTime + 0.8);
-      gain2.gain.setValueAtTime(0.02, startTime + 0.9);
-      gain2.gain.setValueAtTime(0.06, startTime + 1.0);
-      gain2.gain.setValueAtTime(0.02, startTime + 1.1);
-      gain2.gain.exponentialRampToValueAtTime(0.001, startTime + 1.8);
+      // Harmonic - gentle pulses for landing feel
+      gain2.gain.setValueAtTime(0.03, startTime);
+      gain2.gain.linearRampToValueAtTime(0.04, startTime + 0.5);
+      gain2.gain.linearRampToValueAtTime(0.02, startTime + 2.0);
+      gain2.gain.exponentialRampToValueAtTime(0.001, startTime + 2.8);
 
-      // Atmospheric entry
-      gain3.gain.setValueAtTime(0, startTime);
-      gain3.gain.setValueAtTime(0, startTime + 0.3);
-      gain3.gain.linearRampToValueAtTime(0.04, startTime + 0.5);
-      gain3.gain.linearRampToValueAtTime(0.08, startTime + 1.2);
-      gain3.gain.exponentialRampToValueAtTime(0.001, startTime + 2.0);
+      // Sub-harmonic - steady foundation
+      gain3.gain.setValueAtTime(0.02, startTime);
+      gain3.gain.linearRampToValueAtTime(0.025, startTime + 0.5);
+      gain3.gain.linearRampToValueAtTime(0.015, startTime + 2.0);
+      gain3.gain.exponentialRampToValueAtTime(0.001, startTime + 2.8);
 
-      // Master volume with gentle fade out
-      masterGain.gain.setValueAtTime(0.7, startTime);
-      masterGain.gain.setValueAtTime(0.7, startTime + 1.8);
-      masterGain.gain.linearRampToValueAtTime(0, startTime + 2.5);
+      // Master volume - gentle and clean
+      masterGain.gain.setValueAtTime(0.8, startTime);
+      masterGain.gain.setValueAtTime(0.8, startTime + 2.2);
+      masterGain.gain.linearRampToValueAtTime(0, startTime + 3.0);
 
       // Start and stop oscillators
       osc1.start(startTime);
-      osc1.stop(startTime + 2.3);
+      osc1.stop(startTime + 3.0);
 
-      osc2.start(startTime + 0.5);
-      osc2.stop(startTime + 1.9);
+      osc2.start(startTime);
+      osc2.stop(startTime + 3.0);
 
-      osc3.start(startTime + 0.3);
-      osc3.stop(startTime + 2.1);
+      osc3.start(startTime);
+      osc3.stop(startTime + 3.0);
 
-      setTimeout(() => resolve(), 2600);
+      setTimeout(() => resolve(), 3200);
     } catch (error) {
       console.warn("Landing sound failed:", error);
       resolve();
