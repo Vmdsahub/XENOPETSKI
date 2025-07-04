@@ -492,14 +492,14 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
     filterNode.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Configure oscillator for smooth, continuous sound
+    // Configure oscillator for smooth, warm sound
     oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(80, audioContext.currentTime); // Much lower, warmer frequency
 
-    // Configure filter for crystalline clarity
-    filterNode.type = "highpass";
-    filterNode.frequency.setValueAtTime(180, audioContext.currentTime);
-    filterNode.Q.setValueAtTime(0.3, audioContext.currentTime);
+    // Configure filter for warm, comfortable sound (low-pass instead of high-pass)
+    filterNode.type = "lowpass";
+    filterNode.frequency.setValueAtTime(300, audioContext.currentTime); // Cut harsh frequencies
+    filterNode.Q.setValueAtTime(0.1, audioContext.currentTime); // Very gentle filtering
 
     // Start with zero volume
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
