@@ -538,7 +538,7 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
     noiseSource.start();
 
     return {
-      oscillator,
+      oscillator: noiseSource,
       gainNode,
       filterNode,
       audioContext,
