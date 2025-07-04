@@ -733,6 +733,7 @@ const createLaserShootSound = (): Promise<void> => {
 export const playLaserShootSound = (): Promise<void> => {
   return createLaserShootSound().catch((error) => {
     console.warn("Laser shoot sound failed:", error.message);
+    restartAudioContext();
   });
 };
 
