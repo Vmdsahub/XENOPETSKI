@@ -262,8 +262,7 @@ const playCollisionSound = (): Promise<void> => {
 const playNotificationBeep = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
