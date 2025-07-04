@@ -570,15 +570,15 @@ const createContinuousMovementSound = (): typeof continuousMovementSound => {
         try {
           const currentTime = audioContext.currentTime;
           // Smooth fade out
-          gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.2);
+          gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.3);
 
           setTimeout(() => {
             try {
-              oscillator.stop();
+              noiseSource.stop();
             } catch (e) {
-              // Oscillator may already be stopped
+              // Source may already be stopped
             }
-          }, 250);
+          }, 350);
         } catch (error) {
           console.warn("Failed to stop movement sound:", error);
         }
