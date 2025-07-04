@@ -6,6 +6,9 @@ import { gameService } from "../../services/gameService";
 import {
   playLaserShootSound,
   playLandingSound,
+  startContinuousMovementSound,
+  updateContinuousMovementSound,
+  stopContinuousMovementSound,
 } from "../../utils/soundManager";
 
 interface Star {
@@ -22,7 +25,7 @@ interface Star {
   pulse: number;
   baseX: number; // Posição base para movimento oscilatório
   baseY: number; // Posição base para movimento oscilatório
-  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutuação
+  floatAmplitude: { x: number; y: number }; // Amplitude do movimento de flutua��ão
   floatPhase: { x: number; y: number }; // Fase do movimento senoidal
 }
 
@@ -141,6 +144,7 @@ export const SpaceMap: React.FC = () => {
   const [isMousePressed, setIsMousePressed] = useState(false);
   const lastRadarPulseTime = useRef<Map<string, number>>(new Map());
   const planetImagesRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  const movementSoundActiveRef = useRef<boolean>(false);
 
   // Initialize state from store or use defaults
   const getInitialGameState = useCallback((): GameState => {
@@ -1501,6 +1505,25 @@ export const SpaceMap: React.FC = () => {
           gameState.ship.vy * gameState.ship.vy,
       );
 
+      // Continuous movement sound control
+      const velocityThreshold = 0.05;
+      const isShipMoving = currentShipVelocity > velocityThreshold;
+
+      if (isShipMoving && !movementSoundActiveRef.current) {
+        // Start continuous movement sound
+        startContinuousMovementSound();
+        movementSoundActiveRef.current = true;
+      } else if (!isShipMoving && movementSoundActiveRef.current) {
+        // Stop continuous movement sound
+        stopContinuousMovementSound();
+        movementSoundActiveRef.current = false;
+      }
+
+      // Update sound parameters in real-time when moving
+      if (movementSoundActiveRef.current) {
+        updateContinuousMovementSound(currentShipVelocity, SHIP_MAX_SPEED);
+      }
+
       // Only create trail points if ship is moving and enough time has passed
       if (
         currentShipVelocity > 0.1 &&
@@ -2153,6 +2176,11 @@ export const SpaceMap: React.FC = () => {
     return () => {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
+      }
+      // Stop continuous movement sound when component unmounts
+      if (movementSoundActiveRef.current) {
+        stopContinuousMovementSound();
+        movementSoundActiveRef.current = false;
       }
       // Force save final state when component unmounts
       forceSaveShipState({

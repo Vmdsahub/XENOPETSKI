@@ -209,8 +209,7 @@ const playCollisionSound = (): Promise<void> => {
     lastCollisionSoundTime = now;
 
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       // Create a simple but effective collision sound
       const oscillator = audioContext.createOscillator();
@@ -263,8 +262,7 @@ const playCollisionSound = (): Promise<void> => {
 const playNotificationBeep = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -304,8 +302,7 @@ let currentEngineSound: { stop: () => void } | null = null;
 
 const createEngineSound = () => {
   try {
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+    const audioContext = getAudioContext();
 
     const startTime = audioContext.currentTime;
 
@@ -420,6 +417,235 @@ export const stopEngineSound = (): void => {
   }
 };
 
+// Shared AudioContext for better resource management
+let sharedAudioContext: AudioContext | null = null;
+let audioInitialized = false;
+
+const getAudioContext = (): AudioContext => {
+  if (!sharedAudioContext || sharedAudioContext.state === "closed") {
+    sharedAudioContext = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
+
+    // Auto-initialize audio on first use
+    if (!audioInitialized) {
+      initializeAudio();
+      audioInitialized = true;
+    }
+  }
+
+  // Resume context if suspended
+  if (sharedAudioContext.state === "suspended") {
+    sharedAudioContext
+      .resume()
+      .catch((err) => console.warn("Failed to resume audio context:", err));
+  }
+
+  return sharedAudioContext;
+};
+
+// Initialize audio context on user interaction
+const initializeAudio = () => {
+  const enableAudio = () => {
+    if (sharedAudioContext) {
+      sharedAudioContext
+        .resume()
+        .then(() => {
+          console.log("🔊 Audio context initialized");
+          // Remove listeners after first interaction
+          document.removeEventListener("click", enableAudio);
+          document.removeEventListener("keydown", enableAudio);
+          document.removeEventListener("mousedown", enableAudio);
+        })
+        .catch((err) => console.warn("Failed to initialize audio:", err));
+    }
+  };
+
+  // Listen for user interaction to enable audio
+  document.addEventListener("click", enableAudio, { once: true });
+  document.addEventListener("keydown", enableAudio, { once: true });
+  document.addEventListener("mousedown", enableAudio, { once: true });
+};
+
+/**
+ * Continuous movement sound system for smooth, uniform audio
+ */
+let continuousMovementSound: {
+  oscillator: OscillatorNode;
+  gainNode: GainNode;
+  filterNode: BiquadFilterNode;
+  audioContext: AudioContext;
+  updateVelocity: (velocity: number, maxVelocity: number) => void;
+  stop: () => void;
+} | null = null;
+
+const createContinuousMovementSound = (): typeof continuousMovementSound => {
+  try {
+    const audioContext = getAudioContext();
+
+    // Create a more organic whoosh sound using noise
+    const bufferSize = audioContext.sampleRate * 2; // 2 seconds of noise
+    const noiseBuffer = audioContext.createBuffer(
+      1,
+      bufferSize,
+      audioContext.sampleRate,
+    );
+    const output = noiseBuffer.getChannelData(0);
+
+    // Generate pink noise (more natural than white noise)
+    let b0, b1, b2, b3, b4, b5, b6;
+    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.969 * b2 + white * 0.153852;
+      b3 = 0.8665 * b3 + white * 0.3104856;
+      b4 = 0.55 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.016898;
+      output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.05; // Very quiet
+      b6 = white * 0.115926;
+    }
+
+    // Create audio nodes for organic whoosh
+    const noiseSource = audioContext.createBufferSource();
+    const gainNode = audioContext.createGain();
+    const filterNode = audioContext.createBiquadFilter();
+    const filterNode2 = audioContext.createBiquadFilter();
+
+    // Set up the noise buffer
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+
+    // Connect audio chain
+    noiseSource.connect(filterNode);
+    filterNode.connect(filterNode2);
+    filterNode2.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Configure filters for warm, natural whoosh
+    filterNode.type = "lowpass";
+    filterNode.frequency.setValueAtTime(400, audioContext.currentTime);
+    filterNode.Q.setValueAtTime(0.5, audioContext.currentTime);
+
+    filterNode2.type = "highpass";
+    filterNode2.frequency.setValueAtTime(60, audioContext.currentTime);
+    filterNode2.Q.setValueAtTime(0.1, audioContext.currentTime);
+
+    // Start with zero volume
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+
+    // Start the noise source
+    noiseSource.start();
+
+    return {
+      oscillator: noiseSource,
+      gainNode,
+      filterNode,
+      audioContext,
+      updateVelocity: (velocity: number, maxVelocity: number) => {
+        try {
+          const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
+          const currentTime = audioContext.currentTime;
+
+          // Very subtle volume for organic whoosh
+          const targetVolume = normalizedVelocity * 0.08;
+          gainNode.gain.linearRampToValueAtTime(
+            targetVolume,
+            currentTime + 0.3,
+          );
+
+          // Modulate filter cutoff for natural whoosh effect
+          const filterFreq = 200 + normalizedVelocity * 300; // 200-500Hz range
+          filterNode.frequency.linearRampToValueAtTime(
+            filterFreq,
+            currentTime + 0.4,
+          );
+
+          // No frequency modulation needed for noise source
+        } catch (error) {
+          console.warn("Failed to update movement sound:", error);
+        }
+      },
+      stop: () => {
+        try {
+          const currentTime = audioContext.currentTime;
+          // Smooth fade out
+          gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.3);
+
+          setTimeout(() => {
+            try {
+              noiseSource.stop();
+            } catch (e) {
+              // Source may already be stopped
+            }
+          }, 350);
+        } catch (error) {
+          console.warn("Failed to stop movement sound:", error);
+        }
+      },
+    };
+  } catch (error) {
+    console.warn("Failed to create continuous movement sound:", error);
+    return null;
+  }
+};
+
+export const startContinuousMovementSound = (): void => {
+  if (!continuousMovementSound) {
+    continuousMovementSound = createContinuousMovementSound();
+  }
+};
+
+export const updateContinuousMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): void => {
+  if (continuousMovementSound) {
+    continuousMovementSound.updateVelocity(velocity, maxVelocity);
+  }
+};
+
+export const stopContinuousMovementSound = (): void => {
+  if (continuousMovementSound) {
+    continuousMovementSound.stop();
+    continuousMovementSound = null;
+  }
+};
+
+// Legacy function for compatibility
+export const playMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): Promise<void> => {
+  // Not used anymore - keeping for compatibility
+  return Promise.resolve();
+};
+
+// Function to restart audio context if it becomes unresponsive
+const restartAudioContext = () => {
+  if (sharedAudioContext && sharedAudioContext.state === "closed") {
+    console.log("🔄 Restarting audio context...");
+    sharedAudioContext = null;
+    audioInitialized = false;
+  }
+};
+
+// Keep empty functions for compatibility but use different approach
+export const startSpaceshipMovementSound = (): void => {
+  // Not used - will use playMovementSound instead
+};
+
+export const updateSpaceshipMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): void => {
+  // Not used - will use playMovementSound instead
+};
+
+export const stopSpaceshipMovementSound = (): void => {
+  // Not used - will use playMovementSound instead
+};
+
 export const playBarrierCollisionSound = (): Promise<void> => {
   return playCollisionSound().catch((error) => {
     console.warn("Collision sound failed:", error.message);
@@ -432,8 +658,7 @@ export const playBarrierCollisionSound = (): Promise<void> => {
 const createAutoPilotActivationSound = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const startTime = audioContext.currentTime;
 
@@ -503,8 +728,7 @@ export const playAutoPilotActivationSound = (): Promise<void> => {
 const createLaserShootSound = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const startTime = audioContext.currentTime;
 
@@ -589,6 +813,7 @@ const createLaserShootSound = (): Promise<void> => {
 export const playLaserShootSound = (): Promise<void> => {
   return createLaserShootSound().catch((error) => {
     console.warn("Laser shoot sound failed:", error.message);
+    restartAudioContext();
   });
 };
 
@@ -598,8 +823,7 @@ export const playLaserShootSound = (): Promise<void> => {
 const createLandingSound = (): Promise<void> => {
   return new Promise((resolve) => {
     try {
-      const audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
 
       const startTime = audioContext.currentTime;
 
