@@ -6,7 +6,9 @@ import { gameService } from "../../services/gameService";
 import {
   playLaserShootSound,
   playLandingSound,
-  playMovementSound,
+  startContinuousMovementSound,
+  updateContinuousMovementSound,
+  stopContinuousMovementSound,
 } from "../../utils/soundManager";
 
 interface Star {
