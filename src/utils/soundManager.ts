@@ -586,30 +586,86 @@ export const stopEngineSound = (): void => {
   }
 };
 
-export const startSpaceshipMovementSound = (): void => {
-  // Para o som anterior se existir
-  if (currentMovementSound) {
-    currentMovementSound.stop();
-  }
+/**
+ * Creates a movement sound using Web Audio API similar to other sounds
+ */
+const createMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): Promise<void> => {
+  return new Promise((resolve) => {
+    try {
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
 
-  // Cria e inicia novo som de movimento
-  currentMovementSound = createSpaceshipMovementSound();
+      const normalizedVelocity = Math.min(velocity / maxVelocity, 1);
+
+      // Only play if there's significant velocity
+      if (normalizedVelocity < 0.1) {
+        resolve();
+        return;
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Clean sine wave for futuristic feel
+      oscillator.type = "sine";
+
+      // Base frequency with velocity modulation
+      const baseFreq = 150;
+      const targetFreq = baseFreq + normalizedVelocity * 80;
+      oscillator.frequency.setValueAtTime(targetFreq, audioContext.currentTime);
+
+      // Volume based on velocity - keep it subtle
+      const volume = normalizedVelocity * 0.04;
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(
+        volume,
+        audioContext.currentTime + 0.05,
+      );
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.2,
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+
+      setTimeout(() => resolve(), 220);
+    } catch (error) {
+      console.warn("Movement sound failed:", error);
+      resolve();
+    }
+  });
+};
+
+export const playMovementSound = (
+  velocity: number,
+  maxVelocity: number,
+): Promise<void> => {
+  return createMovementSound(velocity, maxVelocity).catch((error) => {
+    console.warn("Movement sound failed:", error.message);
+  });
+};
+
+// Keep empty functions for compatibility but use different approach
+export const startSpaceshipMovementSound = (): void => {
+  // Not used - will use playMovementSound instead
 };
 
 export const updateSpaceshipMovementSound = (
   velocity: number,
   maxVelocity: number,
 ): void => {
-  if (currentMovementSound) {
-    currentMovementSound.updateVelocity(velocity, maxVelocity);
-  }
+  // Not used - will use playMovementSound instead
 };
 
 export const stopSpaceshipMovementSound = (): void => {
-  if (currentMovementSound) {
-    currentMovementSound.stop();
-    currentMovementSound = null;
-  }
+  // Not used - will use playMovementSound instead
 };
 
 export const playBarrierCollisionSound = (): Promise<void> => {
